@@ -1,10 +1,5 @@
-/*
-
-
-TODO (just need to connect firebase auth)
-
 import React, { useState } from "react";
-import { firebase } from "";
+import { auth } from "../authSetup";
 
 export function apiService() {
   const [user, setUser] = useState();
@@ -15,11 +10,11 @@ export function apiService() {
   };
 
   React.useEffect(() => {
-    const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
+    const subscriber = auth.onAuthStateChanged(onAuthStateChanged);
     return subscriber;
   }, []);
 
-  const auth = React.useMemo(
+  const authentication = React.useMemo(
     () => ({
       login: async (email, password) => {
         return new Promise(function (resolve, reject) {
@@ -108,6 +103,5 @@ export function apiService() {
     []
   );
 
-  return { auth, user };
+  return { authentication, user };
 }
-*/
