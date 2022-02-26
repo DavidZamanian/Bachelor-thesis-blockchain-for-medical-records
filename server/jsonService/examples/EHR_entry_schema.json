@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+        "type": "string"
+    },
+    "patientID": {
+      "type": "string"
+    },
+    "healthcareInstitution": {
+      "type": "string"
+    },
+    "medicalPersonnel": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    },
+    "diagnoses": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "prescriptions": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "required": [
+    "date",
+    "patientID",
+    "healthcareInstitution",
+    "medicalPersonnel",
+    "details"
+  ],
+  "additionalProperties": false
+}
