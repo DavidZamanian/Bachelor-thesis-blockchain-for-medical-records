@@ -21,6 +21,9 @@ function App() {
   /**
    * AuthContext makes the authenticaion methods reachable throughout the entire application
    *
+   * Need to think about how we split up patient and doctors, might need to split 'user'
+   * into 'patient' and 'staff'.
+   *
    * @author David Zamanian
    */
 

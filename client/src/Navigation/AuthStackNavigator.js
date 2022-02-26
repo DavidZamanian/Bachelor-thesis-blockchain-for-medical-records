@@ -5,6 +5,13 @@ import { LoginScreen } from "../screens/LoginScreen/LoginScreen";
 const AuthStack = createStackNavigator();
 const LoginStack = createStackNavigator();
 
+/**
+ * The authentication stack. Need to think about how we split up patient and doctors,
+ * might need one more AuthStack to separate.
+ *
+ * @author David Zamanian
+ */
+
 export function AuthStackNavigator() {
   return (
     <AuthStack.Navigator>
