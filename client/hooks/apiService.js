@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { auth } from "../authSetup";
+import { signInWithEmailAndPassword, signOut } from "@firebase/auth";
 
 export function apiService() {
   const [user, setUser] = useState();
@@ -18,9 +19,7 @@ export function apiService() {
     () => ({
       login: async (email, password) => {
         return new Promise(function (resolve, reject) {
-          firebase
-            .auth()
-            .signInWithEmailAndPassword(email, password)
+          signInWithEmailAndPassword(auth, email, password)
             .then(() => {
               resolve("Sign In Success");
             })
@@ -31,9 +30,8 @@ export function apiService() {
       },
       logOut: async () => {
         return new Promise(function (resolve, reject) {
-          firebase
-            .auth()
-            .signOut()
+          alert("Sign out");
+          signOut(auth)
             .then(() => {
               resolve("Sign Out Success");
               console.log("sign out");
