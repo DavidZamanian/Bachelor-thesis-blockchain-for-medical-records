@@ -1,12 +1,15 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StackNavigators } from "./StackNavigators";
-import { AuthContext } from "../../contexts/AuthContext";
 
 const MainStack = createStackNavigator();
 
-export function MainStackNavigator({ navigation }) {
-  const { logOut } = React.useContext(AuthContext);
+export function MainStackNavigator() {
+  /**
+   * This might not be needed but let it stay for now
+   *
+   * @author David Zamanian
+   */
 
   return (
     <MainStack.Navigator>

@@ -1,13 +1,10 @@
-import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { View, Text, SafeAreaView, useWindowDimensions } from "react-native";
 import { apiService } from "./hooks/apiService";
 import { AuthContext } from "./contexts/AuthContext";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { AuthStackNavigator } from "./src/Navigation/AuthStackNavigator";
 import { MainStackNavigator } from "./src/Navigation/MainStackNavigator";
-import { TouchableOpacity } from "react-native-gesture-handler";
 
 const RootStack = createStackNavigator(); //Contains all of our application
 
@@ -15,7 +12,7 @@ function App() {
   const [data, setData] = React.useState(null);
   const { authentication, user } = apiService();
 
-  //Need to restart the server for the message to update
+  //TODO This will be moved
   React.useEffect(() => {
     fetch("http://localhost:4000/api")
       .then((res) => res.json())
@@ -56,10 +53,3 @@ function App() {
 }
 
 export default App;
-
-/*
-      <View>
-        <Text>{!data ? "Loading..." : data}</Text>
-        <Text>Hello</Text>
-      </View>
-*/

@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 import { auth } from "../authSetup";
-import { signInWithEmailAndPassword, signOut } from "@firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+} from "@firebase/auth";
+
+/**
+ * All the methods contacting firebase. Maybe add methods to contact backend aswell,
+ * Or maybe make a new js file to separate stuff.
+ *
+ * @author David Zamanian
+ */
 
 export function apiService() {
   const [user, setUser] = useState();
@@ -43,9 +55,7 @@ export function apiService() {
       },
       register: async (email, password) => {
         return new Promise(function (resolve, reject) {
-          firebase
-            .auth()
-            .createUserWithEmailAndPassword(email, password)
+          createUserWithEmailAndPassword(auth, email, password)
             .then(() => {
               resolve("Sign Up Success");
             })
@@ -56,9 +66,7 @@ export function apiService() {
       },
       updateEmail: async (email, password) => {
         return new Promise(function (resolve, reject) {
-          firebase
-            .auth()
-            .signInWithEmailAndPassword(email, password)
+          signInWithEmailAndPassword(auth, email, password)
             .then(function (userCredential) {
               userCredential.user.updateEmail(newEmail);
               resolve("Email Change Success");
@@ -70,9 +78,7 @@ export function apiService() {
       },
       updatePassword: async (email, password, newPassword) => {
         return new Promise(function (resolve, reject) {
-          firebase
-            .auth()
-            .signInWithEmailAndPassword(email, password)
+          signInWithEmailAndPassword(auth, email, password)
             .then(function (userCredential) {
               userCredential.user.updatePassword(newPassword);
               resolve("Password Change Success");
@@ -85,9 +91,7 @@ export function apiService() {
       },
       resetPassword: async (email) => {
         return new Promise(function (resolve, reject) {
-          firebase
-            .auth()
-            .sendPasswordResetEmail(email)
+          sendPasswordResetEmail(auth, email)
             .then(() => {
               resolve("Email Sent Successfully");
               alert("Email Sent Successfully");
