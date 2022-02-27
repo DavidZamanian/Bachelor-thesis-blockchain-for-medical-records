@@ -12,16 +12,23 @@ const Header = () => {
   function logIn() {}
 
   return (
-    <View style={styles.container}>
-      <View>
-        <TouchableOpacity onPress={() => {}}>
-          <Text>About</Text>
+    <View style={styles.navbar}>
+      <Image
+        source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}
+        style={{width: 70, height: 70}}
+    />
+      <View style={styles.navbar_buttons_container}>
+        <TouchableOpacity style={styles.navbar_button} onPress={() => {}}>
+          <Image style={styles.navbar_button_icon} source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}/>
+          <Text style={styles.navbar_button_text}>About</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => {}}>
-          <Text>Contact</Text>
+        <TouchableOpacity  style={styles.navbar_button} onPress={() => {}}>
+          <Image style={styles.navbar_button_icon} source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}/>
+          <Text style={styles.navbar_button_text}>Contact</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={user ? logOut : logIn}>
-          <Text>{user ? "Sign Out" : "Sign In"}</Text>
+        <TouchableOpacity  style={styles.navbar_button} onPress={user ? logOut : logIn}>
+          <Image style={styles.navbar_button_icon} source={{uri: user ? 'https://reactnative.dev/img/tiny_logo.png': 'https://reactnative.dev/img/tiny_logo.png'}}/>
+          <Text style={styles.navbar_button_text}>{user ? "Sign Out" : "Sign In"}</Text>
         </TouchableOpacity>
       </View>
     </View>
