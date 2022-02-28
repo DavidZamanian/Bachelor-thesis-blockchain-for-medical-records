@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
   main : {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.SECONDARY_COLOR
+    backgroundColor: "white",
   },
   footer : {
     position: 'fixed',
@@ -40,9 +40,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     position: 'relative',
     alignSelf: 'flex-end',
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: theme.SECONDARY_COLOR,
     alignItems: 'center',
   },
   navbar_button_icon: {
@@ -55,7 +52,6 @@ const styles = StyleSheet.create({
   content: {
     width: '100%',
     height: theme.CONTENT_HEIGHT,
-    backgroundColor: theme.SECONDARY_COLOR,
   },
   splitContainer: {
     flexDirection:'row',
