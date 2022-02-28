@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import theme from '../../components/theme.style';
+import theme from './theme.style';
 
 
 const styles = StyleSheet.create({
@@ -65,8 +65,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginContainer: {
-    width: 500,
-    height: 400,
     backgroundColor: 'white',
     borderRadius: 25,
     shadowColor: "#000",
@@ -77,9 +75,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    paddingHorizontal: 90,
-    paddingVertical: 50,
+    paddingHorizontal: 25,
+    paddingVertical: 35,
     justifyContent: 'space-between',
+    marginHorizontal: 15,
   },
   genericHeader: {
     fontSize: 32,
@@ -99,11 +98,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     alignSelf: 'center',
-    width: 325,
+    width: '100%',
   },
   largeButton: {
     height: 50,
-    width:325,
+    width:"100%",
     flexDirection:'row',
     backgroundColor: theme.PRIMARY_COLOR,
     color: theme.SECONDARY_COLOR,

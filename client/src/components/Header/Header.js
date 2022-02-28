@@ -3,7 +3,7 @@ import { View, Text, Image } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { apiService } from "../../../hooks/apiService";
-import styles from "./styles";
+import styles from "../../styles"
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 const Header = () => {

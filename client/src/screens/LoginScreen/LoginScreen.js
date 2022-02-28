@@ -4,7 +4,7 @@ import { AuthContext } from "../../../contexts/AuthContext";
 import { TextInput } from "react-native-gesture-handler";
 import Header from "../../components/Header/Header";
 import { apiService } from "../../../hooks/apiService";
-import styles from './styles';
+import styles from '../../styles';
 import Icon from "react-native-vector-icons/MaterialIcons";
 import ColouredText from "../../components/colouredText";
 import ColouredIcon from "../../components/colouredIcon";
@@ -19,7 +19,7 @@ export function LoginScreen() {
       <Header/>
       <View style={styles.content}>
         <View style={styles.splitContainer}>
-          <View style={{width:'49%', height:'100%', justifyContent:'space-evenly',alignItems:'center'}}>
+          <View style={{flex:'49', height:'100%', justifyContent:'space-evenly',alignItems:'center'}}>
             <View style={styles.loginContainer}>
               <Text style={styles.genericHeader}>Sign In</Text>
               <View>
@@ -59,8 +59,8 @@ export function LoginScreen() {
               </View>
             </View>
           </View>
-          <View style={{width:1, height: '80%',borderLeftWidth:2,borderColor:"lightgray"}}></View>
-          <View style={{width:'49%', height:'100%', justifyContent:'space-evenly'}}>
+          <View style={{flex:'1', height: '80%',borderLeftWidth:2,borderColor:"lightgray"}}></View>
+          <View style={{flex:'49', height:'100%', justifyContent:'space-evenly'}}>
           <View style={{marginLeft:25,flexDirection:'row', alignItems:'center'}}>
               <ColouredIcon name="content-paste"/>
               <ColouredText>Access your medical records any time, any where</ColouredText>

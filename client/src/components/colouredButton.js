@@ -1,11 +1,12 @@
 import React from "react";
 import { View, Text, Image, SafeAreaView, useWindowDimensions, Switch, Button, Pressable, StyleSheet } from "react-native";
 import theme from "../theme.style";
+import style from "../styles";
 
-export default class ColouredText extends React.Component{
+export default class ColouredButton extends React.Component{
     render(){
         return(
-            <Text style={{color:theme.PRIMARY_COLOR, fontSize:20}}>{this.props.children}</Text>
+            <Text style={style.largeButton}>{this.props.children}</Text>
         );
     }
 };

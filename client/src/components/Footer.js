@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../../styles/common.style";
+import styles from "../styles";
 import { View, Text, Image, SafeAreaView, useWindowDimensions, Switch, Button, Pressable, StyleSheet } from "react-native";
 
 export default class Footer extends React.Component{
