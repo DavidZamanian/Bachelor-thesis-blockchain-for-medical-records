@@ -54,7 +54,7 @@ export function LoginScreen() {
                     }
                   }}
                 >
-                  <Icon style={{marginHorizontal:10,}} name="vpn-key" size={35} color="white"/>
+                  <Icon style={{marginHorizontal:10,}} name="key" size={35} color="white"/>
                   <Text style={{color:"white", fontSize:25, marginHorizontal:10,}}>Login</Text>
                 </ColouredButton>
               </View>

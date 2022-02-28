@@ -25,15 +25,15 @@ const Header = () => {
       
       <View style={styles.navbar_buttons_container}>
         <TouchableOpacity style={styles.navbar_button} onPress={() => {}}>
-          <ColouredIcon size={40} name="information-circle-outline" color="white"/>
+          <ColouredIcon size={45} name="information-circle-outline" color="white"/>
           <Text style={styles.navbar_button_text}>About</Text>
         </TouchableOpacity>
         <TouchableOpacity  style={styles.navbar_button} onPress={() => {}}>
-          <ColouredIcon size={40} name="mail-outline" color="white"/>
+          <ColouredIcon size={45} name="mail-outline" color="white"/>
           <Text style={styles.navbar_button_text}>Contact</Text>
         </TouchableOpacity>
         <TouchableOpacity  style={styles.navbar_button} onPress={user ? logOut : logIn}>
-          <ColouredIcon size={40} name={user ? "log-out-outline" : "log-in-outline"}/>
+          <ColouredIcon size={45} name={user ? "log-out-outline" : "log-in-outline"}/>
           <Text style={styles.navbar_button_text}>{user ? "Sign Out" : "Sign In"}</Text>
         </TouchableOpacity>
       </View>
