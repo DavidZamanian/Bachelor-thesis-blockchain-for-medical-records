@@ -25,7 +25,7 @@ The application:
 
 cd to 'client'
 
-run 'expo start'            
+run 'expo start'    (make sure to run this from cmd and not shell //Wendz)
 
 Type: 'w' to view in browser
 
