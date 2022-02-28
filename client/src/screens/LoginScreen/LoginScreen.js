@@ -63,15 +63,15 @@ export function LoginScreen() {
           <View style={{flex:'1', height: '80%',borderLeftWidth:2,borderColor:"lightgray"}}></View>
           <View style={{flex:'49', height:'100%', justifyContent:'center'}}>
           <View style={{marginLeft:25, marginVertical:25, flexDirection:'row', alignItems:'center'}}>
-              <ColouredIcon size={35} name="clipboard"/>
+              <ColouredIcon size={50} name="clipboard"/>
               <ColouredText>Access your medical records any time, any where</ColouredText>
             </View>
             <View style={{marginLeft:25,marginVertical:25,flexDirection:'row', alignItems:'center'}}>
-              <ColouredIcon size={35} name="shield-checkmark"/>
+              <ColouredIcon size={50} name="shield-checkmark"/>
               <ColouredText>Authenticate with BankID</ColouredText>
             </View>
             <View style={{marginLeft:25,marginVertical:25,flexDirection:'row', alignItems:'center'}}>
-              <ColouredIcon size={35} name={"lock-closed"}/>
+              <ColouredIcon size={50} name={"lock-closed"}/>
               <ColouredText>Take control of your data</ColouredText>
             </View>
           </View>
