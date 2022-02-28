@@ -5,6 +5,9 @@ import { TextInput } from "react-native-gesture-handler";
 import Header from "../../components/Header/Header";
 import { apiService } from "../../../hooks/apiService";
 import styles from './styles';
+import Icon from "react-native-vector-icons/MaterialIcons";
+import ColouredText from "../../components/colouredText";
+import ColouredIcon from "../../components/colouredIcon";
 
 export function LoginScreen() {
   const { login } = React.useContext(AuthContext);
@@ -50,24 +53,25 @@ export function LoginScreen() {
                     }
                   }}
                 >
-                <Text>LOGIN</Text>
-              </Pressable>
+                  <Icon style={{marginHorizontal:10,}} name="vpn-key" size={35} color="white"/>
+                  <Text style={{color:"white", fontSize:25, marginHorizontal:10,}}>Login</Text>
+                </Pressable>
               </View>
             </View>
           </View>
           <View style={{width:1, height: '80%',borderLeftWidth:2,borderColor:"lightgray"}}></View>
           <View style={{width:'49%', height:'100%', justifyContent:'space-evenly'}}>
-            <View style={{flexDirection:'row'}}>
-              <Image style={{width:40, height:40}}source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}/>
-              <Text>Access your medical records any time, any where</Text>
+          <View style={{marginLeft:25,flexDirection:'row', alignItems:'center'}}>
+              <ColouredIcon name="content-paste"/>
+              <ColouredText>Access your medical records any time, any where</ColouredText>
             </View>
-            <View style={{flexDirection:'row'}}>
-              <Image style={{width:40, height:40}}source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}/>
-              <Text>Authenticate with BankID</Text>
+            <View style={{marginLeft:25,flexDirection:'row', alignItems:'center'}}>
+              <ColouredIcon name="lock"/>
+              <ColouredText>Authenticate with BankID</ColouredText>
             </View>
-            <View style={{flexDirection:'row'}}>
-              <Image style={{width:40, height:40}}source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}/>
-              <Text>Take control of your data</Text>
+            <View style={{marginLeft:25,flexDirection:'row', alignItems:'center'}}>
+              <ColouredIcon name={"verified-user"}/>
+              <ColouredText>Take control of your data</ColouredText>
             </View>
           </View>
         </View>

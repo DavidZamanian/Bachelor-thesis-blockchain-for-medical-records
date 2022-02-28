@@ -4,6 +4,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { apiService } from "../../../hooks/apiService";
 import styles from "./styles";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const Header = () => {
   const { authentication, user } = apiService();
@@ -19,15 +20,15 @@ const Header = () => {
     />
       <View style={styles.navbar_buttons_container}>
         <TouchableOpacity style={styles.navbar_button} onPress={() => {}}>
-          <Image style={styles.navbar_button_icon} source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}/>
+          <Icon size={40} name="info-outline" color="white"/>
           <Text style={styles.navbar_button_text}>About</Text>
         </TouchableOpacity>
         <TouchableOpacity  style={styles.navbar_button} onPress={() => {}}>
-          <Image style={styles.navbar_button_icon} source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}/>
+          <Icon size={40} name="email" color="white"/>
           <Text style={styles.navbar_button_text}>Contact</Text>
         </TouchableOpacity>
         <TouchableOpacity  style={styles.navbar_button} onPress={user ? logOut : logIn}>
-          <Image style={styles.navbar_button_icon} source={{uri: user ? 'https://reactnative.dev/img/tiny_logo.png': 'https://reactnative.dev/img/tiny_logo.png'}}/>
+          <Icon size={40} name={user ? "logout" : "login"} color="white"/>
           <Text style={styles.navbar_button_text}>{user ? "Sign Out" : "Sign In"}</Text>
         </TouchableOpacity>
       </View>

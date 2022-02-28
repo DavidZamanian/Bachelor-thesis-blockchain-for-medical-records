@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 import theme from '../../components/theme.style';
 
+
 const styles = StyleSheet.create({
   main : {
     width: '100%',
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
   largeTextInputForm: {
     height: 40,
     textAlign: 'center',
-    fontSize: 30,
+    fontSize: 22,
     margin: 12,
     borderWidth: 1,
     borderRadius: 10,
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
     textAlign: 'center',
     justifyContent: 'center',
-    alignSelf:'center', 
+    alignSelf:'center',
   },
 });
 export default styles;
