@@ -4,7 +4,8 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { apiService } from "../../../hooks/apiService";
 import styles from "../../styles"
-import Icon from "react-native-vector-icons/MaterialIcons";
+import ColouredIcon from "../colouredIcon";
+import ContrastText from "../contrastText";
 
 const Header = () => {
   const { authentication, user } = apiService();
@@ -14,21 +15,25 @@ const Header = () => {
 
   return (
     <View style={styles.navbar}>
+      <View style={styles.navbar_logo_container}> 
       <Image
         source={{uri: 'https://reactnative.dev/img/tiny_logo.png',}}
         style={{width: 70, height: 70}}
-    />
+      />
+      <ContrastText>Bachelor Project</ContrastText>
+      </View>
+      
       <View style={styles.navbar_buttons_container}>
         <TouchableOpacity style={styles.navbar_button} onPress={() => {}}>
-          <Icon size={40} name="info-outline" color="white"/>
+          <ColouredIcon size={40} name="information-circle-outline" color="white"/>
           <Text style={styles.navbar_button_text}>About</Text>
         </TouchableOpacity>
         <TouchableOpacity  style={styles.navbar_button} onPress={() => {}}>
-          <Icon size={40} name="email" color="white"/>
+          <ColouredIcon size={40} name="mail-outline" color="white"/>
           <Text style={styles.navbar_button_text}>Contact</Text>
         </TouchableOpacity>
         <TouchableOpacity  style={styles.navbar_button} onPress={user ? logOut : logIn}>
-          <Icon size={40} name={user ? "logout" : "login"} color="white"/>
+          <ColouredIcon size={40} name={user ? "log-out-outline" : "log-in-outline"}/>
           <Text style={styles.navbar_button_text}>{user ? "Sign Out" : "Sign In"}</Text>
         </TouchableOpacity>
       </View>

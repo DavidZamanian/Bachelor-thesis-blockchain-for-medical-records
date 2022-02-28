@@ -5,7 +5,7 @@ import { TextInput } from "react-native-gesture-handler";
 import Header from "../../components/Header/Header";
 import { apiService } from "../../../hooks/apiService";
 import styles from '../../styles';
-import Icon from "react-native-vector-icons/MaterialIcons";
+import Icon from "react-native-vector-icons/Ionicons";
 import ColouredText from "../../components/colouredText";
 import ColouredIcon from "../../components/colouredIcon";
 import ColouredButton from "../../components/colouredButton";
@@ -61,17 +61,17 @@ export function LoginScreen() {
             </View>
           </View>
           <View style={{flex:'1', height: '80%',borderLeftWidth:2,borderColor:"lightgray"}}></View>
-          <View style={{flex:'49', height:'100%', justifyContent:'space-evenly'}}>
-          <View style={{marginLeft:25,flexDirection:'row', alignItems:'center'}}>
-              <ColouredIcon name="content-paste"/>
+          <View style={{flex:'49', height:'100%', justifyContent:'center'}}>
+          <View style={{marginLeft:25, marginVertical:25, flexDirection:'row', alignItems:'center'}}>
+              <ColouredIcon size={35} name="clipboard"/>
               <ColouredText>Access your medical records any time, any where</ColouredText>
             </View>
-            <View style={{marginLeft:25,flexDirection:'row', alignItems:'center'}}>
-              <ColouredIcon name="lock"/>
+            <View style={{marginLeft:25,marginVertical:25,flexDirection:'row', alignItems:'center'}}>
+              <ColouredIcon size={35} name="shield-checkmark"/>
               <ColouredText>Authenticate with BankID</ColouredText>
             </View>
-            <View style={{marginLeft:25,flexDirection:'row', alignItems:'center'}}>
-              <ColouredIcon name={"verified-user"}/>
+            <View style={{marginLeft:25,marginVertical:25,flexDirection:'row', alignItems:'center'}}>
+              <ColouredIcon size={35} name={"lock-closed"}/>
               <ColouredText>Take control of your data</ColouredText>
             </View>
           </View>

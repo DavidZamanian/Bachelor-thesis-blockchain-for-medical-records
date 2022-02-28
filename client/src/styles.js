@@ -20,19 +20,24 @@ const styles = StyleSheet.create({
   navbar : {
     width: '100%',
     height: theme.NAVBAR_HEIGHT,
-    backgroundColor: theme.PRIMARY_COLOR,
+    backgroundColor: theme.SECONDARY_COLOR,
     color: "white",
-    padding: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingRight: 10,
-    paddingLeft: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  navbar_logo_container:{
+    backgroundColor: theme.PRIMARY_COLOR,
+    width:300,
+    height:"100%",
+    borderBottomRightRadius:500,
+    flexDirection:"row",
+    alignItems:"center",
+    padding: 10,
+  },
   navbar_buttons_container:{
     flexDirection: 'row',
+    margin:10,
   },
   navbar_button: {
     width: 70,
@@ -47,7 +52,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   navbar_button_text: {
-    color: theme.SECONDARY_COLOR,
+    color: theme.PRIMARY_COLOR,
   },
   content: {
     width: '100%',
