@@ -8,6 +8,7 @@ import styles from '../../styles';
 import Icon from "react-native-vector-icons/MaterialIcons";
 import ColouredText from "../../components/colouredText";
 import ColouredIcon from "../../components/colouredIcon";
+import ColouredButton from "../../components/colouredButton";
 
 export function LoginScreen() {
   const { login } = React.useContext(AuthContext);
@@ -43,8 +44,8 @@ export function LoginScreen() {
                   returnKeyType="done"
                   secureTextEntry
                 />
-                <Pressable
-                  style={styles.largeButton}
+                <ColouredButton
+                  
                   onPress={async () => {
                     try {
                       await login(email, password);
@@ -55,7 +56,7 @@ export function LoginScreen() {
                 >
                   <Icon style={{marginHorizontal:10,}} name="vpn-key" size={35} color="white"/>
                   <Text style={{color:"white", fontSize:25, marginHorizontal:10,}}>Login</Text>
-                </Pressable>
+                </ColouredButton>
               </View>
             </View>
           </View>

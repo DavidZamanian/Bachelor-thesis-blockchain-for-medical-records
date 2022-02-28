@@ -6,7 +6,9 @@ import style from "../styles";
 export default class ColouredButton extends React.Component{
     render(){
         return(
-            <Text style={style.largeButton}>{this.props.children}</Text>
+            <Pressable style={style.largeButton} onPress={()=>{this.props.onPress(this.props.btnName)}}>
+                {this.props.children}
+            </Pressable>
         );
     }
 };
