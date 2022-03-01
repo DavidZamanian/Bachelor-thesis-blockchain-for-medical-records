@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { auth } from "../authSetup";
+import { auth, database } from "../firebaseSetup";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -26,6 +26,8 @@ export function apiService() {
     const subscriber = auth.onAuthStateChanged(onAuthStateChanged);
     return subscriber;
   }, []);
+
+  const submit = React.useMemo(() => ({}), []);
 
   const authentication = React.useMemo(
     () => ({
