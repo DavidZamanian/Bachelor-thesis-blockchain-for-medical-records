@@ -6,6 +6,7 @@ import {
   sendPasswordResetEmail,
   signOut,
 } from "@firebase/auth";
+import { ref, set } from "firebase/database";
 
 /**
  * All the methods contacting firebase. Maybe add methods to contact backend aswell,
@@ -27,7 +28,30 @@ export function apiService() {
     return subscriber;
   }, []);
 
-  const submit = React.useMemo(() => ({}), []);
+  const submit = React.useMemo(
+    () => ({
+      addNewUser: async (
+        uid,
+        firstName,
+        lastName,
+        address,
+        email,
+        publicKey
+      ) => {
+        return new Promise(function (resolve, reject) {
+          set(ref(database, "users/" + uid), {
+            uid: uid,
+            firstName: firstName,
+            lastName: lastName,
+            address: address,
+            email: email,
+            publicKey: publicKey,
+          });
+        });
+      },
+    }),
+    []
+  );
 
   const authentication = React.useMemo(
     () => ({
