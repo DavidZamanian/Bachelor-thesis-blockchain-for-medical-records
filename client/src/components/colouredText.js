@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Image, SafeAreaView, useWindowDimensions, Switch, Button, Pressable, StyleSheet } from "react-native";
-import theme from "./theme.style"
+import theme from "../theme.style";
 
 export default class ColouredText extends React.Component{
     render(){

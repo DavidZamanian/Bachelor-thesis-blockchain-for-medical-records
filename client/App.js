@@ -19,7 +19,7 @@ function App() {
       .then((data) => setData(data.message));
   }, []);
   /**
-   * AuthContext makes the authenticaion methods reachable throughout the entire application
+   * AuthContext makes the authentication methods reachable throughout the entire application
    *
    * Need to think about how we split up patient and doctors, might need to split 'user'
    * into 'patient' and 'staff'.

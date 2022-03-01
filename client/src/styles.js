@@ -1,12 +1,12 @@
 import { StyleSheet } from "react-native";
-import theme from '../../components/theme.style';
+import theme from './theme.style';
 
 
 const styles = StyleSheet.create({
   main : {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.SECONDARY_COLOR
+    backgroundColor: "white",
   },
   footer : {
     position: 'fixed',
@@ -20,19 +20,24 @@ const styles = StyleSheet.create({
   navbar : {
     width: '100%',
     height: theme.NAVBAR_HEIGHT,
-    backgroundColor: theme.PRIMARY_COLOR,
+    backgroundColor: theme.SECONDARY_COLOR,
     color: "white",
-    padding: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingRight: 10,
-    paddingLeft: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  navbar_logo_container:{
+    backgroundColor: theme.PRIMARY_COLOR,
+    width:300,
+    height:"100%",
+    borderBottomRightRadius:500,
+    flexDirection:"row",
+    alignItems:"center",
+    padding: 10,
+  },
   navbar_buttons_container:{
     flexDirection: 'row',
+    margin:10,
   },
   navbar_button: {
     width: 70,
@@ -40,9 +45,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     position: 'relative',
     alignSelf: 'flex-end',
-    borderWidth: 1,
-    borderRadius: 10,
-    borderColor: theme.SECONDARY_COLOR,
     alignItems: 'center',
   },
   navbar_button_icon: {
@@ -50,12 +52,11 @@ const styles = StyleSheet.create({
     height: 50,
   },
   navbar_button_text: {
-    color: theme.SECONDARY_COLOR,
+    color: theme.PRIMARY_COLOR,
   },
   content: {
     width: '100%',
     height: theme.CONTENT_HEIGHT,
-    backgroundColor: theme.SECONDARY_COLOR,
   },
   splitContainer: {
     flexDirection:'row',
@@ -65,8 +66,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginContainer: {
-    width: 500,
-    height: 400,
     backgroundColor: 'white',
     borderRadius: 25,
     shadowColor: "#000",
@@ -77,9 +76,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    paddingHorizontal: 90,
-    paddingVertical: 50,
+    paddingHorizontal: 25,
+    paddingVertical: 35,
     justifyContent: 'space-between',
+    marginHorizontal: 15,
   },
   genericHeader: {
     fontSize: 32,
@@ -99,11 +99,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     alignSelf: 'center',
-    width: 325,
+    width: '100%',
   },
   largeButton: {
     height: 50,
-    width:325,
+    width:"100%",
     flexDirection:'row',
     backgroundColor: theme.PRIMARY_COLOR,
     color: theme.SECONDARY_COLOR,
