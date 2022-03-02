@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, setState } from "react";
 import { Text, View, Pressable , Image, SafeAreaView, FlatList} from "react-native";
 import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
@@ -11,39 +11,98 @@ import ContrastIcon from "../../../components/contrastIcon";
 import ContrastText from "../../../components/contrastText";
 import styles from "../../../styles";
 
+  
+
+  
 
 
 export function NewEntryScreen() {
 
-  const testData = [
+  // Storing the states for inputs
+  const [inputPrescription, setInputPrescription] = useState("");
+  const [inputDosage, setInputDosage] = useState("");
+
+  // These would be empty, but for testing purposes... keep it for now.
+  const prescriptions = [
     {
-      id:'1',
       name:'PollenStopper 2000',
       dosage:'1 pill twice a day when needed'
     },
     {
-      id:'2',
       name:'StomachAcheCleanser',
       dosage:'no more than 4 dosage per day'
     },
     {
-      id:'3',
       name:'OuchHinderer',
       dosage:'1 pill every other day'
     },
     {
-      id:'4',
       name:'EyeDropper',
       dosage:'1 pill every other day'
     },
     {
-      id:'5',
       name:'TummyHelper',
       dosage:'1 pill every other day'
     }
   ];
+  const diagnoses = [
+    {
+      id:'1',
+      diagnosis:'Birch allergy'
+    },
+    {
+      id:'2',
+      diagnosis:'Tummy ache'
+    }
+  ];
 
+  const [prescriptionsList, setPrescriptionsList] = useState(prescriptions);
+
+
+  /*
+    Method is given an index of a prescription to be deleted.
+    It deletes the prescription at (index).
+    NOTE: The <FlatList> will automatically update when this change to the state is made.
+    
+    @Chrimle 
+  */
+  const removePrescription = (index) => {
   
+    setPrescriptionsList((prevState) => {
+      // Debugging purposes
+      //alert(prescriptionsList[index].name); 
+
+      prevState.splice(index,1);
+      
+      return [...prevState];
+    })
+    
+  }
+
+  /*
+    Method gathers TextInput values for Prescription name and dosage.
+    Adds it to locally stored JSON object.
+    Clears both TextInput fields.
+    
+    @Chrimle 
+  */
+  const addPrescription = () => {
+
+    setPrescriptionsList((prevState) => {
+      
+      prevState.push({name:inputPrescription,dosage:inputDosage});
+
+      return [...prevState];
+    })
+    setInputPrescription((prevState) => {
+      return "";
+    })
+    setInputDosage((prevState) => {
+      return "";
+    })
+  }
+  
+
   return (
     <View style={styles.main}>
       <Header/>
@@ -88,7 +147,8 @@ export function NewEntryScreen() {
             <ScrollView style={{borderWidth:1, borderRadius:5, maxHeight:175, maxWidth:500,}}>
               <SafeAreaView>
                 <FlatList
-                  data={testData}
+                  data={prescriptionsList}
+                  extraata={prescriptionsList}
                   keyExtractor={({item, index}) => index}
                   renderItem={({item, index}) => (
                     <View style={[styles.genericListItem,{ backgroundColor: index % 2 == 0 ? "#F1F1F1": "#FDFDFD"}]}>
@@ -97,45 +157,47 @@ export function NewEntryScreen() {
                         <Text>{item.dosage}</Text>
                       </View>
                       
-                      <RemoveButton/>
+                      <RemoveButton onPress={() => {removePrescription(index)}}/>
                     </View>
                   )}
                 />
               </SafeAreaView>
             </ScrollView>
-            <View style={{flexDirection:'row', marginHorizontal:15,}}>
+            <View style={{flexDirection:'row',}}>
               <View style={{flex:2}}>
                 <TextInput
                   style={styles.regularTextInput}
                   placeholder="Name of prescription"
                   placeholderTextColor="black"
+                  onChangeText={setInputPrescription}
+                  value={inputPrescription}
                 />
                 <TextInput
                   style={styles.regularTextInput}
                   placeholder="Dosage"
                   placeholderTextColor="black"
+                  onChangeText={setInputDosage}
+                  value={inputDosage}
                 />
               </View>
               <View style={{flex:1, margin:15, justifyContent:"center"}}>
-                <TouchableOpacity style={styles.largeButton}>
+                <TouchableOpacity style={styles.largeButton} onPress={() => addPrescription()}>
                   <ContrastIcon name="add-outline" size={20}/>
                   <ContrastText>Add</ContrastText>
                 </TouchableOpacity>
               </View>
             </View>
-            <Text style={styles.genericListItemHeader}>TODO IN PROGRESS:</Text>
+            <Text style={[styles.genericListItemHeader,{marginTop:15}]}>Diagnoses (Very WIP, not functional!):</Text>
             <ScrollView style={{borderWidth:1, borderRadius:5, maxHeight:175, maxWidth:500,}}>
               <SafeAreaView>
                 <FlatList
-                  data={testData}
+                  data={diagnoses}
                   keyExtractor={({item, index}) => index}
                   renderItem={({item, index}) => (
                     <View style={[styles.genericListItem,{ backgroundColor: index % 2 == 0 ? "#F1F1F1": "#FDFDFD"}]}>
-                      <View >
-                        <Text style={styles.genericListItemText}>{item.name}</Text>
-                        <Text>{item.dosage}</Text>
+                      <View>
+                        <Text style={styles.genericListItemText}>{item.diagnosis}</Text>
                       </View>
-                      
                       <RemoveButton/>
                     </View>
                   )}
@@ -146,12 +208,7 @@ export function NewEntryScreen() {
               <View style={{flex:2}}>
                 <TextInput
                   style={styles.regularTextInput}
-                  placeholder="Name of prescription"
-                  placeholderTextColor="black"
-                />
-                <TextInput
-                  style={styles.regularTextInput}
-                  placeholder="Dosage"
+                  placeholder="Diagnosis"
                   placeholderTextColor="black"
                 />
               </View>
@@ -168,3 +225,5 @@ export function NewEntryScreen() {
     </View>
   );
 }
+
+
