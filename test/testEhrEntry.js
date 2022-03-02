@@ -70,14 +70,14 @@ describe("set prescriptions", function() {
     it("sets the correct prescriptions in the ehrEntry, for non-empty prescriptions array", function() {
         const ehrEntry = new EhrEntry();
         const prescriptions = ["pollen stopper", "stomach happy"];
-        ehrEntry.setDiagnoses(prescriptions);
+        ehrEntry.setPrescriptions(prescriptions);
         assert.equal(ehrEntry.prescriptions, prescriptions);
     });
 
     it("sets the correct prescriptions in the ehrEntry, for empty prescriptions array", function() {
         const ehrEntry = new EhrEntry();
         const prescriptions = [];
-        ehrEntry.setDiagnoses(prescriptions);
+        ehrEntry.setPrescriptions(prescriptions);
         assert.equal(ehrEntry.prescriptions, prescriptions);
     });
 });
