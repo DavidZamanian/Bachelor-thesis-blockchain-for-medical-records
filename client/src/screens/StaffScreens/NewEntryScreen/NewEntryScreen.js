@@ -1,5 +1,5 @@
 import React, { useState, setState } from "react";
-import { Text, View, Pressable , Image, SafeAreaView, FlatList} from "react-native";
+import { Text, View, Pressable , Image, SafeAreaView, FlatList, Alert} from "react-native";
 import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -18,10 +18,14 @@ import styles from "../../../styles";
 
 export function NewEntryScreen() {
 
-  // Storing the states for inputs
+  // Storing the states of inputs
   const [inputPrescription, setInputPrescription] = useState("");
   const [inputDosage, setInputDosage] = useState("");
   const [inputDiagnosis, setInputDiagnosis] = useState("");
+  const [inputDetails, setInputDetails] = useState("");
+  /* For patient ID to be pre-filled, enter it here below */
+  const [inputPatient, setInputPatient] = useState("1234 5678 1234");
+
 
   // These would be empty, but for testing purposes... keep it for now.
   const prescriptions = [
@@ -61,7 +65,7 @@ export function NewEntryScreen() {
   /*
     Method is given an index of a prescription to be deleted.
     It deletes the prescription at (index).
-    NOTE: The <FlatList> will automatically update when this change to the state is made.
+    The <FlatList> will automatically re-render to reflect this change.
     
     @Chrimle 
   */
@@ -78,8 +82,9 @@ export function NewEntryScreen() {
 
   /*
     Method gathers TextInput values for Prescription name and dosage.
-    Adds it to locally stored JSON object.
-    Clears both TextInput fields.
+    Adds it to locally stored JSON object, by updating the state.
+    The <FlatList> will automatically trigger a re-render to reflect the new state.
+    Clears both <TextInput> fields.
     
     @Chrimle 
   */
@@ -101,7 +106,13 @@ export function NewEntryScreen() {
   
 
 
-  // Remove a diagnosis
+  /* 
+    Method for removing a diagnosis.
+    This removes a diagnosis at index from the list of diagnoses.
+    This in turn triggers a re-render of the <FlatList> of diagnoses.
+
+    @Chrimle
+  */
   const removeDiagnosis = (index) => {
   
     setDiagnosesList((prevState) => {
@@ -112,7 +123,13 @@ export function NewEntryScreen() {
     })
     
   }
+  /* 
+    Method for adding diagnosis to the list of diagnoses
+    This updates the list, triggers a re-render of the <FlatList>,
+    and clears the old text in the <TextInput>
 
+    @Chrimle
+  */
   const addDiagnosis = () => {
 
     setDiagnosesList((prevState) => {
@@ -124,6 +141,14 @@ export function NewEntryScreen() {
     setInputDiagnosis((prevState) => {
       return "";
     })
+  }
+
+  const submitData = () => {
+
+    // Trigger a popup warning
+    
+    // Package patient ID, details, prescriptions and diagnoses into a final JSON to be sent.
+    
   }
 
 
@@ -150,6 +175,8 @@ export function NewEntryScreen() {
                 style={styles.largeTextInputForm}
                 placeholder="XXXX XXXX XXXX"
                 placeholderTextColor="Black"
+                onChangeText={setInputPatient}
+                value={inputPatient}
                 disabled
               />
               <View style={{flexDirection:"row",backgroundColor:"cornsilk", padding:5, borderRadius:10, justifyContent:"center"}}>
@@ -164,6 +191,8 @@ export function NewEntryScreen() {
                 placeholder="Details..."
                 placeholderTextColor="Black"
                 multiline={true}
+                onChangeText={setInputDetails}
+                value={inputDetails}
               />
             </View>
           </View>
@@ -242,12 +271,16 @@ export function NewEntryScreen() {
                 />
               </View>
               <View style={{flex:1, margin:15, justifyContent:"center"}}>
-                <TouchableOpacity style={styles.largeButton} onPress={() => addDiagnosis()}>
+                <ColouredButton onPress={() => addDiagnosis()}>
                   <ContrastIcon name="add-outline" size={20}/>
                   <ContrastText>Add</ContrastText>
-                </TouchableOpacity>
+                </ColouredButton>
               </View>
             </View>
+            <ColouredButton onPress={() => submitData()}>
+              <ContrastIcon name="checkmark-circle-outline" size={40}/>
+              <ContrastText>Complete</ContrastText>
+            </ColouredButton>
           </View>
         </View>
       </View>
