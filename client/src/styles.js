@@ -169,8 +169,7 @@ const styles = StyleSheet.create({
     fontSize:20,
     color:theme.PRIMARY_COLOR,
   },
-  removeButton:{
-    backgroundColor: "#DA1414",
+  normalButton:{
     flexDirection:"row",
     justifyContent:"center",
     alignItems:"center",
@@ -184,6 +183,32 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     height:40,
+  },
+  popupWindow:{
+    height:500,
+    width:500,
+    backgroundColor:"white",
+    borderRadius:15,
+    blurRadius:20
+  },
+  popupButton:{
+    borderRadius:15,
+    padding:10,
+    marginHorizontal:10,
+  },
+  greyButton:{
+    backgroundColor:"#F5F5F5",
+    borderColor:"#545D69",
+    borderWidth:2
+  },
+  primaryButton:{
+    backgroundColor:theme.PRIMARY_COLOR,
+  },
+  greyText: {
+    color:"#545D69",
+  },
+  contrastText: {
+    color: theme.SECONDARY_COLOR,
   }
 });
 export default styles;
