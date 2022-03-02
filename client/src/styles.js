@@ -91,7 +91,6 @@ const styles = StyleSheet.create({
     color: 'darkgray',
   },
   largeTextInputForm: {
-    height: 40,
     textAlign: 'center',
     fontSize: 22,
     margin: 12,
@@ -99,7 +98,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     alignSelf: 'center',
-    width: '100%',
+    width:"100%",
   },
   largeButton: {
     height: 50,
@@ -114,6 +113,54 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     justifyContent: 'center',
     alignSelf:'center',
+    padding:5,
   },
+  navigation_text:{
+    fontSize: 28,
+    color: theme.PRIMARY_COLOR,
+    justifyContent: 'center',
+    alignSelf:'center',
+  },
+  multilineTextInputForm: {
+    fontSize:16,
+    margin: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    alignSelf: 'center',
+    width:'100%',
+    height:350,
+  },
+  genericListItem: {
+    padding:10,
+    flexDirection:"row",
+    justifyContent:"space-between",
+    alignItems:"center",
+  },
+  genericListItemText: {
+    fontSize:16,
+    fontWeight:"bold",
+    height:20,
+  },
+  genericListItemHeader: {
+    fontSize:20,
+    color:theme.PRIMARY_COLOR,
+  },
+  removeButton:{
+    backgroundColor: "#DA1414",
+    flexDirection:"row",
+    justifyContent:"center",
+    alignItems:"center",
+    padding:5,
+    borderRadius:5,
+  },
+  regularTextInput:{
+    fontSize: 16,
+    margin: 5,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    flex:1,
+  }
 });
 export default styles;
