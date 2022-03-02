@@ -1,9 +1,8 @@
 import React, { useState, setState } from "react";
-import { Text, View, Pressable , Image, SafeAreaView, FlatList, Alert} from "react-native";
+import { Text, View, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
 import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
 import Icon from "react-native-vector-icons/Ionicons";
-import ColouredText from "../../../components/colouredText";
 import ColouredIcon from "../../../components/colouredIcon";
 import ColouredButton from "../../../components/colouredButton";
 import RemoveButton from "../../../components/removeButton";
@@ -23,15 +22,18 @@ export function NewEntryScreen() {
   const [inputDosage, setInputDosage] = useState("");
   const [inputDiagnosis, setInputDiagnosis] = useState("");
   const [inputDetails, setInputDetails] = useState("");
-  /* For patient ID to be pre-filled, enter it here below */
+  /* For patient ID to be preled, enter it here below */
   const [inputPatient, setInputPatient] = useState("1234 5678 1234");
 
+
+  /* This is the popup window - whether it is visible or no */ 
+  const [modalVisible, setModalVisible] = useState(false);
 
   // These would be empty, but for testing purposes... keep it for now.
   const prescriptions = [
     {
       name:'PollenStopper 2000',
-      dosage:'1 pill twice a day when needed'
+      dosage:'1 pill twice a day when neede'
     },
     {
       name:'StomachAcheCleanser',
@@ -144,11 +146,15 @@ export function NewEntryScreen() {
   }
 
   const submitData = () => {
-
-    // Trigger a popup warning
-    
     // Package patient ID, details, prescriptions and diagnoses into a final JSON to be sent.
     
+  }
+
+  const openPopup = () => {
+    // Trigger a popup warning
+    // Show the pop up window (Modal)
+    setModalVisible(true);
+
   }
 
 
@@ -158,6 +164,39 @@ export function NewEntryScreen() {
     <View style={styles.main}>
       <Header/>
       <View style={styles.content}>
+        <Modal
+          
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            alert("Modal has been closed.");
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={{width:"100%", height:"100%", backgroundColor:'rgba(0,0,0,0.80)', justifyContent:"center", alignItems:"center",}}>
+            <View style={styles.popupWindow}>
+              <View style={{flexDirection:"row", justifyContent:"center", padding:10, borderBottomColor:"grey", borderBottomWidth:2}}>
+                <ColouredIcon name="warning" size={40}/>
+                <Text style={[styles.genericHeader,{alignSelf:"flex-end"}]}>Before Submitting</Text>
+              </View>
+              <View style={{padding:20, flex:5, justifyContent:"space-evenly"}}>
+                <Text style={{fontSize:20,fontWeight:"bold", textAlign:"center"}}>You are about to submit a record entry for:</Text>
+                <Text style={{fontSize:25, textAlign:"center"}}>Patient ID: {inputPatient}</Text>
+                <Text style={{fontSize:20, fontStyle:"italic", textAlign:"center"}}>By submitting, you ensure this record is meant for the individual listed above.</Text>
+              </View>
+              <View style={{flex:1, padding:10, borderTopColor:"grey", borderTopWidth:2, flexDirection:"row", justifyContent:"flex-end"}}>
+                <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.greyButton,{height:"100%"}]} onPress={()=>{setModalVisible(false)}}>
+                  <Text style={[styles.greyText,{fontWeight:"bold"}]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.primaryButton,{height:"100%"}]} onPress={()=>{submitData()}}>
+                  <Text style={[styles.contrastText,{fontWeight:"bold"}]}>Submit</Text>
+                </TouchableOpacity>
+                
+              </View>
+            </View>
+          </View>
+        </Modal>
         <View style={{width:250}}>
         <TouchableOpacity style={{flexDirection:'row', margin:15, width:250}}>
           <ColouredIcon name="arrow-back-circle-outline" size={40}/>
@@ -277,7 +316,7 @@ export function NewEntryScreen() {
                 </ColouredButton>
               </View>
             </View>
-            <ColouredButton onPress={() => submitData()}>
+            <ColouredButton onPress={() => openPopup()}>
               <ContrastIcon name="checkmark-circle-outline" size={40}/>
               <ContrastText>Complete</ContrastText>
             </ColouredButton>
