@@ -147,7 +147,7 @@ export function NewEntryScreen() {
 
   const submitData = () => {
     // Package patient ID, details, prescriptions and diagnoses into a final JSON to be sent.
-    
+    alert("This ain't implemented, fool!");
   }
 
   const openPopup = () => {
