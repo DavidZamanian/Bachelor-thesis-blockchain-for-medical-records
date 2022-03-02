@@ -1,5 +1,5 @@
 import * as FileSystem from 'fs';
-import * as Ajv from 'ajv';
+import Ajv from 'ajv';
 
 /**
  * Class for dealing with JSON files, including conversion to and from javascript objects, 

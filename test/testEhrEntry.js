@@ -1,8 +1,13 @@
+/**
+ * Tests for the class EhrEntry.
+ * @author Hampus Jernkrook
+ */
+
 // CommonJS version of imports:
 //const assert = require("assert");
 //const JSONService = require("../server/jsonService/jsonService.js");
 // ES6 version:
-import EhrEntry from "../server/jsonHandling/EhrEntry.js";
+import EhrEntry from "../server/jsonHandling/ehrEntry.js";
 import * as assert from "assert";
 
 describe("set patient id", function() {
