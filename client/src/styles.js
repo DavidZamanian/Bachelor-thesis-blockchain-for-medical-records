@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     padding: 10,
-    flex:1,
+    height:40,
   }
 });
 export default styles;

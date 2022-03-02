@@ -21,6 +21,7 @@ export function NewEntryScreen() {
   // Storing the states for inputs
   const [inputPrescription, setInputPrescription] = useState("");
   const [inputDosage, setInputDosage] = useState("");
+  const [inputDiagnosis, setInputDiagnosis] = useState("");
 
   // These would be empty, but for testing purposes... keep it for now.
   const prescriptions = [
@@ -47,17 +48,15 @@ export function NewEntryScreen() {
   ];
   const diagnoses = [
     {
-      id:'1',
       diagnosis:'Birch allergy'
     },
     {
-      id:'2',
       diagnosis:'Tummy ache'
     }
   ];
 
   const [prescriptionsList, setPrescriptionsList] = useState(prescriptions);
-
+  const [diagnosesList, setDiagnosesList] = useState(diagnoses);
 
   /*
     Method is given an index of a prescription to be deleted.
@@ -68,9 +67,7 @@ export function NewEntryScreen() {
   */
   const removePrescription = (index) => {
   
-    setPrescriptionsList((prevState) => {
-      // Debugging purposes
-      //alert(prescriptionsList[index].name); 
+    setPrescriptionsList((prevState) => { 
 
       prevState.splice(index,1);
       
@@ -102,6 +99,35 @@ export function NewEntryScreen() {
     })
   }
   
+
+
+  // Remove a diagnosis
+  const removeDiagnosis = (index) => {
+  
+    setDiagnosesList((prevState) => {
+
+      prevState.splice(index,1);
+      
+      return [...prevState];
+    })
+    
+  }
+
+  const addDiagnosis = () => {
+
+    setDiagnosesList((prevState) => {
+      
+      prevState.push({diagnosis:inputDiagnosis});
+
+      return [...prevState];
+    })
+    setInputDiagnosis((prevState) => {
+      return "";
+    })
+  }
+
+
+
 
   return (
     <View style={styles.main}>
@@ -163,7 +189,7 @@ export function NewEntryScreen() {
                 />
               </SafeAreaView>
             </ScrollView>
-            <View style={{flexDirection:'row',}}>
+            <View style={{flexDirection:'row',maxWidth:500}}>
               <View style={{flex:2}}>
                 <TextInput
                   style={styles.regularTextInput}
@@ -187,33 +213,36 @@ export function NewEntryScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-            <Text style={[styles.genericListItemHeader,{marginTop:15}]}>Diagnoses (Very WIP, not functional!):</Text>
+            <Text style={styles.genericListItemHeader}>Diagnoses:</Text>
             <ScrollView style={{borderWidth:1, borderRadius:5, maxHeight:175, maxWidth:500,}}>
               <SafeAreaView>
                 <FlatList
-                  data={diagnoses}
+                  data={diagnosesList}
+                  extraata={diagnosesList}
                   keyExtractor={({item, index}) => index}
                   renderItem={({item, index}) => (
                     <View style={[styles.genericListItem,{ backgroundColor: index % 2 == 0 ? "#F1F1F1": "#FDFDFD"}]}>
-                      <View>
+                      <View >
                         <Text style={styles.genericListItemText}>{item.diagnosis}</Text>
                       </View>
-                      <RemoveButton/>
+                      <RemoveButton onPress={() => {removeDiagnosis(index)}}/>
                     </View>
                   )}
                 />
               </SafeAreaView>
             </ScrollView>
-            <View style={{flexDirection:'row', marginHorizontal:15,}}>
+            <View style={{flexDirection:'row',maxWidth:500}}>
               <View style={{flex:2}}>
                 <TextInput
                   style={styles.regularTextInput}
                   placeholder="Diagnosis"
                   placeholderTextColor="black"
+                  onChangeText={setInputDiagnosis}
+                  value={inputDiagnosis}
                 />
               </View>
               <View style={{flex:1, margin:15, justifyContent:"center"}}>
-                <TouchableOpacity style={styles.largeButton}>
+                <TouchableOpacity style={styles.largeButton} onPress={() => addDiagnosis()}>
                   <ContrastIcon name="add-outline" size={20}/>
                   <ContrastText>Add</ContrastText>
                 </TouchableOpacity>
