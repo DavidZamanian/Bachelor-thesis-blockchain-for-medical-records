@@ -1,4 +1,4 @@
-import * as FileSystem from 'fs';
+import * as fs from 'fs';
 import Ajv from 'ajv';
 
 /**
@@ -16,7 +16,7 @@ export default class JSONService {
      * @param {string} path - the path at which to create the new file.
      */
    static toJsonFile(object, path){
-        FileSystem.writeFile(path, JSON.stringify(object), (error) => {
+        fs.writeFile(path, JSON.stringify(object), (error) => {
            if (error) throw error;
        });
    }
@@ -26,10 +26,11 @@ export default class JSONService {
     * @param {string} path - the path to the file to convert to a JS object. 
     * @returns the created object. 
     */
-   static fromJsonFile(path){
+   static fromJsonFile(path) {
+       let obj;
        fs.readFile(path, (error, content) => {
            if (error) throw error;
-           const obj = JSON.parse(content);
+           obj = JSON.parse(content);
        });
        return obj;
    }
