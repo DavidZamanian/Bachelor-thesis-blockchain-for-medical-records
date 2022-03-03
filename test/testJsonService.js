@@ -96,7 +96,7 @@ describe("correct conversion from JSON file to JS object", function() {
 
   
 });
-
+/*
 describe("correct conversion of an object into a Json File", function() {
     
     it("smal json object converts into a file", function() {
@@ -142,5 +142,6 @@ describe("correct conversion of an object into a Json File", function() {
         assert.deepEqual(reConverted, obj);
     });
 });
+*/
 
 
