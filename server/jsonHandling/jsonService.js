@@ -16,7 +16,7 @@ export default class JSONService {
      * @param {string} path - the path at which to create the new file.
      */
    static toJsonFile(object, path){
-        fs.writeFile(path, JSON.stringify(object), (error) => {
+        fs.writeFileSync(path, JSON.stringify(object), (error) => {
            if (error) throw error;
        });
    }
@@ -29,11 +29,11 @@ export default class JSONService {
    static fromJsonFile(path) {
        return JSON.parse(fs.readFileSync(path, "utf-8", (error, content) => {
            if (error) { 
-                //console.log("ERROR");
+                console.log("ERROR");
                 throw error; 
             }
            else { 
-            //console.log("NO ERROR");
+            console.log("NO ERROR");
             return content;
             }
        }));
