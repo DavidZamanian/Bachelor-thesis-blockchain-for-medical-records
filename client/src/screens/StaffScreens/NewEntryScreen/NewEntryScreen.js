@@ -17,20 +17,11 @@ import styles from "../../../styles";
 
 export function NewEntryScreen() {
 
-  // Storing the states of inputs
-  const [inputPrescription, setInputPrescription] = useState("");
-  const [inputDosage, setInputDosage] = useState("");
-  const [inputDiagnosis, setInputDiagnosis] = useState("");
-  const [inputDetails, setInputDetails] = useState("");
-  /* For patient ID to be preled, enter it here below */
-  const [inputPatient, setInputPatient] = useState("1234 5678 1234");
+  
 
-
-  /* This is the popup window - whether it is visible or no */ 
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // These would be empty, but for testing purposes... keep it for now.
+  // These are for testing purposes only
   const prescriptions = [
+    /*
     {
       name:'PollenStopper 2000',
       dosage:'1 pill twice a day when neede'
@@ -50,17 +41,34 @@ export function NewEntryScreen() {
     {
       name:'TummyHelper',
       dosage:'1 pill every other day'
-    }
+    }*/
+
   ];
   const diagnoses = [
+    /*
     {
       diagnosis:'Birch allergy'
     },
     {
       diagnosis:'Tummy ache'
-    }
+    }*/
   ];
 
+
+
+  // Storing the states of inputs
+  const [inputPrescription, setInputPrescription] = useState("");
+  const [inputDosage, setInputDosage] = useState("");
+  const [inputDiagnosis, setInputDiagnosis] = useState("");
+  const [inputDetails, setInputDetails] = useState("");
+  /* For patient ID to be preled, enter it here below */
+  const [inputPatient, setInputPatient] = useState("1234 5678 1234");
+
+
+  /* This is the popup window - whether it is visible or no */ 
+  const [modalVisible, setModalVisible] = useState(false);
+
+  /* These can have useState(prescriptions) for testing purposes*/
   const [prescriptionsList, setPrescriptionsList] = useState(prescriptions);
   const [diagnosesList, setDiagnosesList] = useState(diagnoses);
 
@@ -146,8 +154,12 @@ export function NewEntryScreen() {
   }
 
   const submitData = () => {
-    // Package patient ID, details, prescriptions and diagnoses into a final JSON to be sent.
+    
     alert("This ain't implemented, fool!");
+
+    // Package patient ID, details, prescriptions and diagnoses into a final JSON to be sent.
+    // packageJSONMethod(inputPatient, inputDetails, prescriptionsList,diagnosesList);
+    
   }
 
   const openPopup = () => {
