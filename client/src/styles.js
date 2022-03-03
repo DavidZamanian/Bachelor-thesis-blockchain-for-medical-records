@@ -25,15 +25,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   navbar_logo_container:{
     backgroundColor: theme.PRIMARY_COLOR,
-    width:300,
+    minWidth:325,
+    width:"50%",
     height:"100%",
     borderBottomRightRadius:500,
     flexDirection:"row",
     alignItems:"center",
     padding: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84,
   },
   navbar_buttons_container:{
     flexDirection: 'row',
@@ -91,7 +106,6 @@ const styles = StyleSheet.create({
     color: 'darkgray',
   },
   largeTextInputForm: {
-    height: 40,
     textAlign: 'center',
     fontSize: 22,
     margin: 12,
@@ -99,7 +113,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     alignSelf: 'center',
-    width: '100%',
+    width:"100%",
   },
   largeButton: {
     height: 50,
@@ -108,12 +122,93 @@ const styles = StyleSheet.create({
     backgroundColor: theme.PRIMARY_COLOR,
     color: theme.SECONDARY_COLOR,
     borderRadius: 25,
-    borderWidth: 1,
+    borderWidth: 2,
+    borderColor: theme.SECONDARY_COLOR,
     alignItems: 'center',
     textAlignVertical: 'center',
     textAlign: 'center',
     justifyContent: 'center',
     alignSelf:'center',
+    padding:5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84,
   },
+  navigation_text:{
+    fontSize: 28,
+    color: theme.PRIMARY_COLOR,
+    justifyContent: 'center',
+    alignSelf:'center',
+  },
+  multilineTextInputForm: {
+    fontSize:16,
+    margin: 12,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    alignSelf: 'center',
+    width:'100%',
+    height:350,
+  },
+  genericListItem: {
+    padding:10,
+    flexDirection:"row",
+    justifyContent:"space-between",
+    alignItems:"center",
+  },
+  genericListItemText: {
+    fontSize:16,
+    fontWeight:"bold",
+    height:20,
+  },
+  genericListItemHeader: {
+    fontSize:20,
+    color:theme.PRIMARY_COLOR,
+  },
+  normalButton:{
+    flexDirection:"row",
+    justifyContent:"center",
+    alignItems:"center",
+    padding:5,
+    borderRadius:5,
+  },
+  regularTextInput:{
+    fontSize: 16,
+    margin: 5,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    height:40,
+  },
+  popupWindow:{
+    height:500,
+    width:500,
+    backgroundColor:"white",
+    borderRadius:15,
+    blurRadius:20
+  },
+  popupButton:{
+    borderRadius:15,
+    padding:10,
+    marginHorizontal:10,
+  },
+  greyButton:{
+    backgroundColor:"#F5F5F5",
+    borderColor:"#545D69",
+    borderWidth:2
+  },
+  primaryButton:{
+    backgroundColor:theme.PRIMARY_COLOR,
+  },
+  greyText: {
+    color:"#545D69",
+  },
+  contrastText: {
+    color: theme.SECONDARY_COLOR,
+  }
 });
 export default styles;
