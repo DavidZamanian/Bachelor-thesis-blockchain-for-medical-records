@@ -55,10 +55,13 @@ describe("validate against schema", function() {
 });
 
 describe("correct conversion from JSON file to JS object", function() {
-    
+    /*
     it("empty file converts to an empty object", function() {
-        
-    });
+        const expected = {}
+        const actual = JSONService.fromJsonFile(path.join(example_directory, "empty.json"));
+        assert.deepEqual(actual, expected);
+    });*/
+    
 
     it("small json file converts to correct JS object", function() {
         const expected = {
@@ -70,4 +73,24 @@ describe("correct conversion from JSON file to JS object", function() {
 
         assert.deepEqual(actual, expected);
     });
+
+    it("big json file converts to correct JS object", function(){
+        const expected = {
+            date: "2022-02-25",
+            patientID: "fdjsajkfvhkcjasjcas",
+            healthcareInstitution: "Ostra sjukhuset",
+            medicalPersonnel: "Lolly Pop",
+            details: "thick throat",
+            diagnoses: ["allergy against birch"],
+            prescriptions: [
+                "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
+                "pollenStopperSpray 2 pills 2 times / day"
+            ]
+        }
+
+        const actual = JSONService.fromJsonFile(path.join(example_directory, "EHR_entry.json"));
+        assert.deepEqual(actual, expected);
+    });
+    
 });
+
