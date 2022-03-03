@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const tmp_directory = "./tmp_files";
-const example_directory = "./json_examples";
+const example_directory = "./test/json_examples";
 
 describe("validate against schema", function() {
     it("valid object yields true", function() {
@@ -55,20 +55,19 @@ describe("validate against schema", function() {
 });
 
 describe("correct conversion from JSON file to JS object", function() {
-    /*
+    
     it("empty file converts to an empty object", function() {
         
     });
-*/
+
     it("small json file converts to correct JS object", function() {
         const expected = {
             foo: 1,
             bar: "abc"
         }
 
-        const actual = JSONService.fromJsonFile("./json_examples/fooBar.json"); //path.join(example_directory, "fooBar.json")
-        //console.log(actual);
+        const actual = JSONService.fromJsonFile(path.join(example_directory, "fooBar.json")); 
 
-        assert.equal(actual, expected);
+        assert.deepEqual(actual, expected);
     });
 });

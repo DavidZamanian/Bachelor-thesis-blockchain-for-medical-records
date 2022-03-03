@@ -27,12 +27,16 @@ export default class JSONService {
     * @returns the created object. 
     */
    static fromJsonFile(path) {
-       let obj;
-       fs.readFile(path, (error, content) => {
-           if (error) throw error;
-           obj = JSON.parse(content);
-       });
-       return obj;
+       return JSON.parse(fs.readFileSync(path, "utf-8", (error, content) => {
+           if (error) { 
+                //console.log("ERROR");
+                throw error; 
+            }
+           else { 
+            //console.log("NO ERROR");
+            return content;
+            }
+       }));
    }
 
    /**
