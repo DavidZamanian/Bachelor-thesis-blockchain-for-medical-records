@@ -12,7 +12,7 @@ const tmp_directory = "./test/tmp_files";
 const example_directory = "./test/json_examples";
 
 describe("validate against schema", function() {
-    it("valid object yields true", function() {
+    it("small valid object yields true", function() {
         //completely taken from 
         // https://ajv.js.org/guide/getting-started.html#basic-data-validation 
         const schema = {
@@ -53,6 +53,13 @@ describe("validate against schema", function() {
 
         assert.strictEqual(JSONService.isValid(schema, data), false);
     });
+
+    it("large valid object yields true", function() {
+        const schema = JSONService.fromJsonFile(path.join(example_directory, "EHR_entry_schema.json"));
+        delete schema["$schema"];
+        const data = JSONService.fromJsonFile(path.join(example_directory, "EHR_entry.json"));
+        assert.ok(JSONService.isValid(schema, data));
+    });
 });
 
 describe("correct conversion from JSON file to JS object", function() {
@@ -77,7 +84,7 @@ describe("correct conversion from JSON file to JS object", function() {
 
     it("big json file converts to correct JS object", function(){
         const expected = {
-            date: "2022-02-25",
+            date: "2022-03-04T08:44:44.118Z",
             patientID: "fdjsajkfvhkcjasjcas",
             healthcareInstitution: "Ostra sjukhuset",
             medicalPersonnel: "Lolly Pop",
@@ -96,6 +103,8 @@ describe("correct conversion from JSON file to JS object", function() {
 
   
 });
+
+// commented out due to problems with CI on github. comment back in for testing locally.
 /*
 describe("correct conversion of an object into a Json File", function() {
     
@@ -118,7 +127,7 @@ describe("correct conversion of an object into a Json File", function() {
 
     it("larger JS object converts correctly into JSON file", function() {
         const obj = {
-            date: "2022-02-25",
+            date: "2022-03-04T08:44:44.118Z",
             patientID: "fdjsajkfvhkcjasjcas",
             healthcareInstitution: "Ostra sjukhuset",
             medicalPersonnel: "Lolly Pop",
