@@ -9,6 +9,7 @@ import RemoveButton from "../../../components/removeButton";
 import ContrastIcon from "../../../components/contrastIcon";
 import ContrastText from "../../../components/contrastText";
 import styles from "../../../styles";
+import EhrEntry from "../../../../../server/jsonHandling/ehrEntry";
 
   
 
@@ -63,7 +64,8 @@ export function NewEntryScreen() {
   const [inputDetails, setInputDetails] = useState("");
   /* For patient ID to be preled, enter it here below */
   const [inputPatient, setInputPatient] = useState("1234 5678 1234");
-
+  const medicalPerson = "Placeholder Staff";
+  const healthcareInst = "Placeholder Hospital";
 
   /* This is the popup window - whether it is visible or no */ 
   const [modalVisible, setModalVisible] = useState(false);
@@ -153,13 +155,40 @@ export function NewEntryScreen() {
     })
   }
 
+
+  /* 
+    Method for submitting data.
+    Create an EHR entry object, and populate it with data.
+    (Includes a work-around for prescription names and dosages being separate).
+    The resulting contents of the EHR object is printed as an alert message - for testing.
+
+    @Chrimle
+  */
   const submitData = () => {
     
-    alert("This ain't implemented, fool!");
+    const ehr = new EhrEntry();
 
-    // Package patient ID, details, prescriptions and diagnoses into a final JSON to be sent.
-    // packageJSONMethod(inputPatient, inputDetails, prescriptionsList,diagnosesList);
+    ehr.setPatientID(inputPatient);
+    ehr.setMedicalPersonnel(medicalPerson);
+    ehr.setHealthcareInstitution(healthcareInst);
+    ehr.setDetails(inputDetails.toString());
     
+    // Merge prescription name and dosage into single string
+    const prescriptList = [];
+    prescriptionsList.forEach(element => prescriptList.push(element.name.toString()+" "+element.dosage.toString()));
+    ehr.setPrescriptions(prescriptList);
+
+    // Create list of diagnoses
+    const diagnoseList = [];
+    diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
+    ehr.setDiagnoses(diagnoseList);
+
+    // Mainly for testing and debugging
+    alert("Patient ID: "+ehr.patientID+
+    "\nStaff:"+ehr.medicalPersonnel+
+    "\nInstitution:"+ehr.healthcareInstitution+
+    "\nPrescriptions:"+ehr.prescriptions+
+    "\nDiagnoses:"+ehr.diagnoses);
   }
 
   const openPopup = () => {
@@ -182,7 +211,7 @@ export function NewEntryScreen() {
           transparent={true}
           visible={modalVisible}
           onRequestClose={() => {
-            alert("Modal has been closed.");
+            alert("The submission was cancelled.");
             setModalVisible(!modalVisible);
           }}
         >
