@@ -10,6 +10,15 @@
 import EhrEntry from "../server/jsonHandling/ehrEntry.js";
 import * as assert from "assert";
 
+describe("set date", function() {
+    it("sets the correct date in the ehrEntry", function() {
+        const ehrEntry = new EhrEntry();
+        const date = new Date().toJSON();
+        ehrEntry.setDate(date);
+        assert.equal(ehrEntry.date, date);
+    })
+});
+
 describe("set patient id", function() {
     it("sets the correct patient id in the ehrEntry", function() {
         const ehrEntry = new EhrEntry();
