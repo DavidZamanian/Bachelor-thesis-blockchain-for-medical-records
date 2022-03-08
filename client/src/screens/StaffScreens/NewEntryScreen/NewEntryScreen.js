@@ -10,7 +10,6 @@ import ContrastIcon from "../../../components/contrastIcon";
 import ContrastText from "../../../components/contrastText";
 import styles from "../../../styles";
 import EhrEntry from "../../../../../server/jsonHandling/ehrEntry";
-
   
 
   
@@ -166,7 +165,7 @@ export function NewEntryScreen() {
   */
   const submitData = () => {
     
-    const ehr = new EhrEntry();
+    let ehr = new EhrEntry();
 
     ehr.setPatientID(inputPatient);
     ehr.setMedicalPersonnel(medicalPerson);
@@ -174,21 +173,28 @@ export function NewEntryScreen() {
     ehr.setDetails(inputDetails.toString());
     
     // Merge prescription name and dosage into single string
-    const prescriptList = [];
+    let prescriptList = [];
     prescriptionsList.forEach(element => prescriptList.push(element.name.toString()+" "+element.dosage.toString()));
     ehr.setPrescriptions(prescriptList);
 
     // Create list of diagnoses
-    const diagnoseList = [];
+    let diagnoseList = [];
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
     ehr.setDiagnoses(diagnoseList);
 
+    // Set date to current time and date
+    let dateNow = new Date().toJSON();
+    ehr.setDate(dateNow);
+
+
     // Mainly for testing and debugging
-    alert("Patient ID: "+ehr.patientID+
+    alert("Date: "+ehr.date+
+    "\nPatient ID: "+ehr.patientID+
     "\nStaff:"+ehr.medicalPersonnel+
     "\nInstitution:"+ehr.healthcareInstitution+
     "\nPrescriptions:"+ehr.prescriptions+
-    "\nDiagnoses:"+ehr.diagnoses);
+    "\nDiagnoses:"+ehr.diagnoses+
+    "\nDetails:"+ehr.details);
   }
 
   const openPopup = () => {
