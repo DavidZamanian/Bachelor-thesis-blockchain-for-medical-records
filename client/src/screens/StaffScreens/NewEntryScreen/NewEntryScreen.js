@@ -10,6 +10,7 @@ import ContrastIcon from "../../../components/contrastIcon";
 import ContrastText from "../../../components/contrastText";
 import styles from "../../../styles";
 import EhrEntry from "../../../../../server/jsonHandling/ehrEntry";
+import Footer from "../../../components/Footer";
 
   
 
@@ -364,6 +365,7 @@ export function NewEntryScreen() {
           </View>
         </View>
       </View>
+      <Footer/>
     </View>
   );
 }

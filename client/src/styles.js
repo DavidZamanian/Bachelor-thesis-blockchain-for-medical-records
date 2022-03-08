@@ -11,11 +11,27 @@ const styles = StyleSheet.create({
   footer : {
     position: 'fixed',
     bottom: 0,
-    height: 25,
+    height: 40,
     width: '100%',
-    backgroundColor: theme.PRIMARY_COLOR,
-    color: theme.SECONDARY_COLOR,
+    backgroundColor: theme.SECONDARY_COLOR,
     textAlign: 'center',
+    flexDirection:"row",
+    alignItems:"center",
+    justifyContent:"space-evenly",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.35,
+    shadowRadius: 3.84,
+  },
+  footerIcon:{
+    color:theme.PRIMARY_COLOR,
+    marginHorizontal:5,
+  },
+  footerText:{
+    color:theme.PRIMARY_COLOR,
   },
   navbar : {
     width: '100%',
