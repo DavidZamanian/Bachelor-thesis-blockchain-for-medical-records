@@ -290,7 +290,6 @@ export function NewEntryScreen() {
               <SafeAreaView>
                 <FlatList
                   data={prescriptionsList}
-                  extraata={prescriptionsList}
                   keyExtractor={({item, index}) => index}
                   renderItem={({item, index}) => (
                     <View style={[styles.genericListItem,{ backgroundColor: index % 2 == 0 ? "#F1F1F1": "#FDFDFD"}]}>
@@ -334,7 +333,6 @@ export function NewEntryScreen() {
               <SafeAreaView>
                 <FlatList
                   data={diagnosesList}
-                  extraata={diagnosesList}
                   keyExtractor={({item, index}) => index}
                   renderItem={({item, index}) => (
                     <View style={[styles.genericListItem,{ backgroundColor: index % 2 == 0 ? "#F1F1F1": "#FDFDFD"}]}>
