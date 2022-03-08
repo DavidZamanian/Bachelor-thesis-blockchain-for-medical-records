@@ -16,6 +16,9 @@ const Header = () => {
   const onPressContact = () => {
     navigation.navigate("NewEntryScreen");
   };
+  const onPressAbout = () => {
+    navigation.navigate("PatientSearchScreen");
+  };
 
   function logIn() {}
 
@@ -30,7 +33,7 @@ const Header = () => {
       </View>
 
       <View style={styles.navbar_buttons_container}>
-        <TouchableOpacity style={styles.navbar_button} onPress={() => {}}>
+        <TouchableOpacity style={styles.navbar_button} onPress={onPressAbout}>
           <ColouredIcon
             size={45}
             name="information-circle-outline"

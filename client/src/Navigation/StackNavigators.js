@@ -3,6 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { EHROverviewDVScreen } from "../screens/StaffScreens/EHROverviewDVScreen";
 import { EHROverviewPVScreen } from "../screens/PatientScreens/EHROverviewScreen/EHROverviewPVScreen";
 import { NewEntryScreen } from "../screens/StaffScreens/NewEntryScreen/NewEntryScreen";
+import { PatientSearchScreen } from "../screens/StaffScreens/PatientSearchScreen/PatientSearchScreen";
 import Header from "../components/Header/Header";
 
 const Stack = createStackNavigator();
@@ -39,6 +40,13 @@ const StackNavigators = () => {
         }}
         name="NewEntryScreen"
         component={NewEntryScreen}
+      />
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="PatientSearchScreen"
+        component={PatientSearchScreen}
       />
     </Stack.Navigator>
   );
