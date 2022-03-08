@@ -20,6 +20,47 @@ export function EHROverviewPVScreen() {
   const [prescriptionsList, setPrescriptionsList] = useState(patientPrescriptions);
   const [diagnosesList, setDiagnosesList] = useState(patientDiagnoses);
 
+  const journals = [
+    {
+      date: "2022-03-04T08:44:44.118Z",
+      patientID: "fdjsajkfvhkcjasjcas",
+      healthcareInstitution: "Ostra sjukhuset",
+      medicalPersonnel: "Lolly Pop",
+      details: "thick throat",
+      diagnoses: ["allergy against birch"],
+      prescriptions: [
+        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
+        "pollenStopperSpray 2 pills 2 times / day"
+      ]
+    },
+    {
+      date: "2022-03-04T08:44:44.118Z",
+      patientID: "fdjsajkfvhkcjasjcas",
+      healthcareInstitution: "Ostra sjukhuset",
+      medicalPersonnel: "Lolly Pop",
+      details: "thick throat",
+      diagnoses: ["allergy against birch"],
+      prescriptions: [
+        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
+        "pollenStopperSpray 2 pills 2 times / day"
+      ]
+    },
+    {
+      date: "2022-03-04T08:44:44.118Z",
+      patientID: "fdjsajkfvhkcjasjcas",
+      healthcareInstitution: "Ostra sjukhuset",
+      medicalPersonnel: "Lolly Pop",
+      details: "thick throat",
+      diagnoses: ["allergy against birch"],
+      prescriptions: [
+        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
+        "pollenStopperSpray 2 pills 2 times / day"
+      ]
+    },
+  ]
+
+
+
   return (
     <View>
       <Header />
@@ -81,7 +122,29 @@ export function EHROverviewPVScreen() {
           </View>
           <View style={styles.rowContainer}>
             <View style={[styles.container,styles.doubleContainer]}>
-              <Text style={styles.header}>Long list of journal entries here...</Text>
+              <Text style={styles.header}>Past record entries</Text>
+              <FlatList
+              data={journals}
+              keyExtractor={({item, index}) => index}
+              ListHeaderComponent={
+                <View style={{flexDirection:"row"}}>
+                  <Text style={styles.journalItemText}>Date</Text>
+                  <Text style={styles.journalItemText}>Location</Text>
+                  <Text style={styles.journalItemText}>Doctor</Text>
+                  <Text style={styles.journalItemText}>Prescriptions</Text>
+                  <Text style={styles.journalItemText}>Diagnoses</Text>
+                </View>
+              }
+              renderItem={({item, index}) => (
+                <View style={[styles.journalListItem,{ backgroundColor: index % 2 == 0 ? "#E1E1E1": "#FDFDFD"}]}>
+                  <Text style={styles.journalItemText}>{item.date.toString().slice(0,10)}</Text>
+                  <Text style={styles.journalItemText}>{item.healthcareInstitution}</Text>
+                  <Text style={styles.journalItemText}>{item.medicalPersonnel}</Text>
+                  <Text style={styles.journalItemText}>{item.prescriptions.length}</Text>
+                  <Text style={styles.journalItemText}>{item.diagnoses.length}</Text>
+                </View>
+              )}
+              />
             </View>
           </View>
         </View>

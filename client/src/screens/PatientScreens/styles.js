@@ -79,6 +79,14 @@ const styles = StyleSheet.create({
         fontWeight:"700",
         marginVertical:5,
     },
+    journalListItem:{
+        padding:10,
+        flexDirection:"row",
+    },
+    journalItemText:{
+        fontSize:18,
+        marginHorizontal:10,
+    },
 });
 
 export default styles;
