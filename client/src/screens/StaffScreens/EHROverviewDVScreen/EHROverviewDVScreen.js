@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { useRoute } from "@react-navigation/native";
+import styles from "./styles";
 
 export function EHROverviewDVScreen(props) {
 
@@ -13,6 +14,7 @@ export function EHROverviewDVScreen(props) {
   
   return (
     <View>
+      
       <Text>Medical Record Overview (Doctors View) Screen </Text>
       
     </View>
