@@ -9,6 +9,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import ColouredText from "../../components/colouredText";
 import ColouredIcon from "../../components/colouredIcon";
 import ColouredButton from "../../components/colouredButton";
+import Footer from "../../components/Footer";
 
 export function LoginScreen() {
   const { login } = React.useContext(AuthContext);
@@ -77,6 +78,7 @@ export function LoginScreen() {
           </View>
         </View>
       </View>
+      <Footer/>
     </View>
   );
 }

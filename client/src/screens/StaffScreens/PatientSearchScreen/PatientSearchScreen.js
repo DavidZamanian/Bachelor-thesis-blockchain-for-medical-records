@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Text, View } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
+import Footer from "../../../components/Footer";
 import Header from "../../../components/Header/Header";
 import ThemeButton from "../../../components/themeButton";
 import styles from "./styles";
@@ -74,6 +75,7 @@ export function PatientSearchScreen() {
           </View>
         </View>
       </View> 
+      <Footer />
     </View>
   );
 };
