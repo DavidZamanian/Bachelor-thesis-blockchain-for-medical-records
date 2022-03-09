@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRoute } from "@react-navigation/native";
 import { Text, View } from "react-native";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header/Header";
@@ -8,9 +9,13 @@ import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../../theme.style";
 
-export function EHROverviewPVScreen() {
+export function EHROverviewPVScreen(props) {
 
-  const patientID = 1234567890;
+  const route = useRoute();
+  
+
+
+  const patientID = props.route.params == null ? 1234567890 : props.route.params;
   const patientEmail = "example@example.com";
   const patientAddress = "42nd Example Street, Example City";
   const patientFirstname = "John";
@@ -65,6 +70,13 @@ export function EHROverviewPVScreen() {
   // Workaround: added ">0" to journalExpanded[index] of the show-condition - no issues!
   const [journalExpanded, setJournalExpanded] = useState([false*(journals.length)]);
 
+
+  /* 
+    Method for toggle the collapsing of a journal entry.
+    Takes index as parameter to identify which one to toggle.
+
+    @Chrimle
+  */
   const toggleExpandJournal = (index) => {
     setJournalExpanded((prevState) => {
       prevState.splice(index,1,!journalExpanded.at(index))
@@ -72,6 +84,10 @@ export function EHROverviewPVScreen() {
     })
   }
 
+
+  const configurePrivacy = () => {
+    alert("attempting to configure privacy setting for:"+patientID)
+  } 
 
   return (
     <View>
@@ -101,9 +117,9 @@ export function EHROverviewPVScreen() {
               </View>
             </View>
             <View style={styles.container}>
-              <Text style={styles.header}>Add EHR entry</Text>
-              <Text style={styles.description}>Create a new EHR entry for the current patient, including diagnoses and prescriptions.</Text>
-              <ThemeButton labelText="Add" labelSize={25} iconName="add-outline" iconSize={30} bWidth={120} bHeight={60}/>
+              <Text style={styles.header}>Data Privacy</Text>
+              <Text style={styles.description}>Configure what regions can access and view your medical record. You can change this at any time.</Text>
+              <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => configurePrivacy()}/>
             </View>
           </View>
           <View style={styles.rowContainer}>
