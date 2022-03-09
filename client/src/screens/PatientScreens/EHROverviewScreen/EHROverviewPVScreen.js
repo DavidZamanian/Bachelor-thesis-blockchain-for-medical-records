@@ -85,6 +85,15 @@ export function EHROverviewPVScreen(props) {
   }
 
 
+  /*
+    Method for configuring data privacy settings.
+    Should trigger popup with Region options.
+    Needs to gather list of all available regions
+    Needs to fetch currently permitted regions and tick "True" for those.
+    The responsible popup will feature a submit button and call another method for data submission.
+
+    @Chrimle
+  */
   const configurePrivacy = () => {
     alert("attempting to configure privacy setting for:"+patientID)
   } 

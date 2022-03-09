@@ -85,7 +85,12 @@ export function EHROverviewDVScreen(props) {
     })
   }
 
+  /*
+    Method for redirecting to NewEntryScreen to make a new EHR entry
+    Possibly check privilege before proceeding?
 
+    @Chrimle
+  */
   const requestAddEHR = () => {
     alert("attempting to create an EHR for patient:"+patientID)
     navigation.navigate("NewEntryScreen",patientID);
