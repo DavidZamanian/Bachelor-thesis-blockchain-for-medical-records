@@ -8,25 +8,50 @@ import ThemeButton from "../../../components/themeButton";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../../theme.style";
+import { database, ref, onValue} from "../../../../firebaseSetup";
 
 export function EHROverviewDVScreen(props) {
 
-  const navigation = useNavigation();
   const route = useRoute();
-  
+  const navigation = useNavigation();
+
+  const patientID = props.route.params == null ? 8701104455 : props.route.params;
+
+  const placeholderEmail = "example@example.com";
+  const placeholderFirstname = "John";
+  const placeholderLastname = "Smith";
+  const placeholderAddress = "42nd Example Street, Example City";
+  const placeholderPhone = "0707123456";
+  const placeholderPrescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
+  const placeholderDiagnoses = ["Birch Allergy"];
 
 
-  const patientID = props.route.params == null ? 1234567890 : props.route.params;
-  const patientEmail = "example@example.com";
-  const patientAddress = "42nd Example Street, Example City";
-  const patientFirstname = "John";
-  const patientLastname = "Smith";
-  const patientPhone = "0707123456";
-  const patientPrescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
-  const patientDiagnoses = ["Birch Allergy"];
 
-  const [prescriptionsList, setPrescriptionsList] = useState(patientPrescriptions);
-  const [diagnosesList, setDiagnosesList] = useState(patientDiagnoses);
+  const [patientEmail,setPatientEmail] = useState(placeholderEmail);
+  const [patientAddress,setPatientAddress] = useState(placeholderAddress);
+  const [patientFirstname,setPatientFirstname] = useState(placeholderFirstname);
+  const [patientLastname,setPatientLastname] = useState(placeholderLastname);
+  const [patientPhone,setPatientPhone] = useState(placeholderPhone);
+  const [patientPrescriptions,setPatientPrescriptions] = useState(placeholderPrescriptions);
+  const [patientDiagnoses,setPatientDiagnoses] = useState(placeholderDiagnoses);
+
+  const patientRef = ref(database, 'Users/' + patientID);
+  onValue(patientRef, (snapshot) => 
+    {
+      if(snapshot.val() === null){
+        alert("ERROR: This patient does not exist:"+patientID)
+      }
+      else if (snapshot.val().email != patientEmail){
+        setPatientEmail(snapshot.val().email)
+        setPatientAddress(snapshot.val().address)
+        setPatientFirstname(snapshot.val().firstName)
+        setPatientLastname(snapshot.val().lastName)
+        setPatientPhone(snapshot.val().phoneNr)
+
+        
+      }
+    }
+  );
 
   const journals = [
     {
@@ -133,7 +158,7 @@ export function EHROverviewDVScreen(props) {
           <View style={styles.container}>
             <Text style={styles.header}>Prescriptions</Text>
             <FlatList
-              data={prescriptionsList}
+              data={patientPrescriptions}
               keyExtractor={({item, index}) => index}
               renderItem={({item, index}) => (
                 <View>
@@ -145,7 +170,7 @@ export function EHROverviewDVScreen(props) {
           <View style={styles.container}>
             <Text style={styles.header}>Diagnoses</Text>
             <FlatList
-              data={diagnosesList}
+              data={patientDiagnoses}
               keyExtractor={({item, index}) => index}
               renderItem={({item, index}) => (
                 <View>
