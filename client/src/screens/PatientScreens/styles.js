@@ -82,11 +82,26 @@ const styles = StyleSheet.create({
     journalListItem:{
         padding:10,
         flexDirection:"row",
+        alignItems:"center",
+    },
+    journalListHeader:{
+        fontWeight:"600",
     },
     journalItemText:{
         fontSize:18,
         marginHorizontal:10,
+        flex:2,
+        textAlign:"center",
     },
+    detailButton:{
+        borderRadius:10,
+        borderWidth:1,
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        padding:10,
+    }
 });
 
 export default styles;

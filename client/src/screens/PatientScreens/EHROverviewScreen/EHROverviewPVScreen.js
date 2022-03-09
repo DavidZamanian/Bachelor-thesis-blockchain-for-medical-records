@@ -5,6 +5,8 @@ import Header from "../../../components/Header/Header";
 import styles from "../styles";
 import ThemeButton from "../../../components/themeButton";
 import { FlatList } from "react-native-gesture-handler";
+import Icon from "react-native-vector-icons/Ionicons";
+import theme from "../../../theme.style";
 
 export function EHROverviewPVScreen() {
 
@@ -124,24 +126,26 @@ export function EHROverviewPVScreen() {
             <View style={[styles.container,styles.doubleContainer]}>
               <Text style={styles.header}>Past record entries</Text>
               <FlatList
+              style={{width:"100%"}}
               data={journals}
               keyExtractor={({item, index}) => index}
               ListHeaderComponent={
-                <View style={{flexDirection:"row"}}>
-                  <Text style={styles.journalItemText}>Date</Text>
-                  <Text style={styles.journalItemText}>Location</Text>
-                  <Text style={styles.journalItemText}>Doctor</Text>
-                  <Text style={styles.journalItemText}>Prescriptions</Text>
-                  <Text style={styles.journalItemText}>Diagnoses</Text>
+                <View style={styles.journalListItem}>
+                  <Text style={[styles.journalItemText,styles.journalListHeader]}>Date</Text>
+                  <Text style={[styles.journalItemText,styles.journalListHeader,{flex:4}]}>Location</Text>
+                  <Text style={[styles.journalItemText,styles.journalListHeader]}>Details</Text>
+                  <Text style={[styles.journalItemText,styles.journalListHeader,{flex:4}]}>Issued by</Text>
+                  <Text style={[styles.journalItemText,styles.journalListHeader,{flex:1}]}></Text>
                 </View>
               }
               renderItem={({item, index}) => (
-                <View style={[styles.journalListItem,{ backgroundColor: index % 2 == 0 ? "#E1E1E1": "#FDFDFD"}]}>
+                <View style={[styles.journalListItem,{ backgroundColor: "#F3F3F3"}]}>
                   <Text style={styles.journalItemText}>{item.date.toString().slice(0,10)}</Text>
-                  <Text style={styles.journalItemText}>{item.healthcareInstitution}</Text>
-                  <Text style={styles.journalItemText}>{item.medicalPersonnel}</Text>
-                  <Text style={styles.journalItemText}>{item.prescriptions.length}</Text>
-                  <Text style={styles.journalItemText}>{item.diagnoses.length}</Text>
+                  <Text style={[styles.journalItemText,{flex:4}]}>{item.healthcareInstitution}</Text>
+                  <ThemeButton  labelText="See details" labelSize={15} iconSize={15} extraStyle={[styles.detailButton,styles.journalItemText]}/>
+                  <Text style={[styles.journalItemText,{flex:4}]}>{item.medicalPersonnel}</Text>
+                  <Icon name="chevron-down-outline" size={25} color={theme.PRIMARY_COLOR} style={[styles.journalItemText,{flex:1}]}/>
+                  
                 </View>
               )}
               />

@@ -9,7 +9,7 @@ const ThemeButton = (props) => {
     return(
         <TouchableOpacity 
         onPress={onPress}
-        style={[extraStyle,{
+        style={[{
             height:bHeight,
             width:bWidth,
             flexDirection:'row',
@@ -28,7 +28,7 @@ const ThemeButton = (props) => {
             shadowOpacity: 0.5,
             shadowRadius: 3.84,
             alignItems:"center",
-        }]}>
+        },extraStyle]}>
             <Icon name={iconName} size={iconSize} color="white"/>
             <Text style={{fontSize:labelSize, color:"white",alignSelf:"center",fontWeight:"bold"}}>{labelText}</Text>
         </TouchableOpacity>
