@@ -64,7 +64,7 @@ export function NewEntryScreen(props) {
   const [inputDiagnosis, setInputDiagnosis] = useState("");
   const [inputDetails, setInputDetails] = useState("");
   /* For patient ID to be preled, enter it here below */
-  const [inputPatient, setInputPatient] = useState(props.route.params.toString());
+  const [inputPatient, setInputPatient] = useState(props.route.params == null ? "PROVIDE PATIENT ID!" : props.route.params.toString());
   const medicalPerson = "Placeholder Staff";
   const healthcareInst = "Placeholder Hospital";
 

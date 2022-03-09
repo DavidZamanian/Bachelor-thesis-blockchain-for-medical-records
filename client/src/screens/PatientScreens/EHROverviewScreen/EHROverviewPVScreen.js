@@ -121,6 +121,9 @@ export function EHROverviewPVScreen(props) {
         >
           <View style={{width:"100%", height:"100%", backgroundColor:'rgba(0,0,0,0.80)', justifyContent:"center", alignItems:"center",}}>
             <View style={styles.popupWindow}>
+              <View style={{flexDirection:"row", justifyContent:"center", padding:10, borderBottomColor:"grey", borderBottomWidth:2}}>
+                <Text style={styles.contentHeader}>HEADER</Text>
+              </View>
             </View>
           </View>
         </Modal>

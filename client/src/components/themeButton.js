@@ -29,7 +29,7 @@ const ThemeButton = (props) => {
             shadowRadius: 3.84,
             alignItems:"center",
         },extraStyle]}>
-            <Icon name={iconName} size={iconSize} color="white"/>
+            <Icon name={iconName} size={iconSize} color="white" style={{marginRight:5}}/>
             <Text style={{fontSize:labelSize, color:"white",alignSelf:"center",fontWeight:"bold"}}>{labelText}</Text>
         </TouchableOpacity>
     );
