@@ -1,4 +1,5 @@
 import React, { useState, setState } from "react";
+import { useRoute } from "@react-navigation/native";
 import { Text, View, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
 import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
@@ -16,9 +17,9 @@ import Footer from "../../../components/Footer";
   
 
 
-export function NewEntryScreen() {
+export function NewEntryScreen(props) {
 
-  
+  const route = useRoute();
 
   // These are for testing purposes only
   const prescriptions = [
@@ -63,7 +64,7 @@ export function NewEntryScreen() {
   const [inputDiagnosis, setInputDiagnosis] = useState("");
   const [inputDetails, setInputDetails] = useState("");
   /* For patient ID to be preled, enter it here below */
-  const [inputPatient, setInputPatient] = useState("1234 5678 1234");
+  const [inputPatient, setInputPatient] = useState(props.route.params.toString());
   const medicalPerson = "Placeholder Staff";
   const healthcareInst = "Placeholder Hospital";
 

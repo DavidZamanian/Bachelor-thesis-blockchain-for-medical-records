@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { Text, View } from "react-native";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header/Header";
@@ -11,6 +11,7 @@ import theme from "../../../theme.style";
 
 export function EHROverviewDVScreen(props) {
 
+  const navigation = useNavigation();
   const route = useRoute();
   
 
@@ -87,6 +88,7 @@ export function EHROverviewDVScreen(props) {
 
   const requestAddEHR = () => {
     alert("attempting to create an EHR for patient:"+patientID)
+    navigation.navigate("NewEntryScreen",patientID);
   } 
 
   return (
