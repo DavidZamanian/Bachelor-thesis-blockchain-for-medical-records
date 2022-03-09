@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import theme from "../../theme.style";
+import theme from "../../../theme.style";
 
 const styles = StyleSheet.create({
     content:{
@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     rowContainer:{
         flexDirection:"row",
         justifyContent:"center",
-        marginVertical:25,
+        marginVertical:15,
     },
     container:{
         backgroundColor:"white",
@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
         minHeight:100,
         maxWidth:400,
         flex:1,
-        marginHorizontal:25,
+        marginHorizontal:15,
         borderRadius:25,
         elevation:5,
         shadowColor: "#000",
@@ -84,6 +84,15 @@ const styles = StyleSheet.create({
         flexDirection:"row",
         alignItems:"center",
     },
+    journalContainer:{
+        borderColor:"#777777",
+        borderWidth:1,
+    },
+    journalExpandedContainer:{
+        backgroundColor:"white",
+        borderTopWidth:1,
+        borderTopColor:"#777777",
+    },
     journalListHeader:{
         fontWeight:"600",
     },
@@ -101,6 +110,26 @@ const styles = StyleSheet.create({
             height: 0,
         },
         padding:10,
+    },
+    journalDetailsHeader:{
+        fontSize:18,
+        color:theme.PRIMARY_COLOR,
+        fontWeight:"bold",
+        marginVertical:5,
+    },
+    journalDetails:{
+        fontWeight:"bold",
+    },
+    journalAuthor:{
+        color:"#666666",
+        fontWeight:"bold"
+    },
+    journalExpandedRow:{
+        flexDirection:"row",
+    },
+    journalDataBlock:{
+        margin:5,
+        padding:5,
     }
 });
 

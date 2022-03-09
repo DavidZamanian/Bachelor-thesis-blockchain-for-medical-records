@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Text, View } from "react-native";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header/Header";
-import styles from "../styles";
+import styles from "./styles";
 import ThemeButton from "../../../components/themeButton";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../../theme.style";
 
@@ -61,6 +61,16 @@ export function EHROverviewPVScreen() {
     },
   ]
 
+  // This causes a bug where the first journal expand will show a "0" from the start
+  // Workaround: added ">0" to journalExpanded[index] of the show-condition - no issues!
+  const [journalExpanded, setJournalExpanded] = useState([false*(journals.length)]);
+
+  const toggleExpandJournal = (index) => {
+    setJournalExpanded((prevState) => {
+      prevState.splice(index,1,!journalExpanded.at(index))
+      return[...prevState]
+    })
+  }
 
 
   return (
@@ -138,16 +148,42 @@ export function EHROverviewPVScreen() {
                   <Text style={[styles.journalItemText,styles.journalListHeader,{flex:1}]}></Text>
                 </View>
               }
-              renderItem={({item, index}) => (
-                <View style={[styles.journalListItem,{ backgroundColor: "#F3F3F3"}]}>
-                  <Text style={styles.journalItemText}>{item.date.toString().slice(0,10)}</Text>
-                  <Text style={[styles.journalItemText,{flex:4}]}>{item.healthcareInstitution}</Text>
-                  <ThemeButton  labelText="See details" labelSize={15} iconSize={15} extraStyle={[styles.detailButton,styles.journalItemText]}/>
-                  <Text style={[styles.journalItemText,{flex:4}]}>{item.medicalPersonnel}</Text>
-                  <Icon name="chevron-down-outline" size={25} color={theme.PRIMARY_COLOR} style={[styles.journalItemText,{flex:1}]}/>
-                  
+              renderItem={({item, index}) => 
+
+                <View style={styles.journalContainer}>
+                  <TouchableOpacity style={[styles.journalListItem,{ backgroundColor: journalExpanded[index] ? theme.SECONDARY_COLOR :"#F3F3F3"}]} onPress={() => toggleExpandJournal(index)}>
+                    <Text style={styles.journalItemText}>{item.date.toString().slice(0,10)}</Text>
+                    <Text style={[styles.journalItemText,{flex:4}]}>{item.healthcareInstitution}</Text>
+                    <ThemeButton  labelText="See details" labelSize={15} iconSize={15} extraStyle={[styles.detailButton,styles.journalItemText]}/>
+                    <Text style={[styles.journalItemText,{flex:4}]}>{item.medicalPersonnel}</Text>
+                    <Icon name={journalExpanded[index] ? "chevron-up-outline" : "chevron-down-outline"} color={theme.PRIMARY_COLOR} style={[styles.journalItemText,{flex:1, fontSize:40}]}/>
+                  </TouchableOpacity>
+                  {journalExpanded[index]>0 && 
+                    <View style={styles.journalExpandedContainer}>
+                      <View style={styles.journalExpandedRow}>
+                        <View style={styles.journalDataBlock}>
+                          <Text style={styles.journalDetailsHeader}>Details</Text>
+                          <Text style={styles.journalDetails}>{item.details}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.journalExpandedRow}>
+                        <View style={styles.journalDataBlock}>
+                          <Text style={styles.journalDetailsHeader}>Prescriptions</Text>
+                          {item.prescriptions.map(txt => {return (<Text>{txt}</Text>)})}
+                        </View>
+                        <View style={styles.journalDataBlock}>
+                          <Text style={styles.journalDetailsHeader}>Diagnoses</Text>
+                          {item.diagnoses.map(txt => {return (<Text>{txt}</Text>)})}
+                        </View>
+                        <View style={styles.journalDataBlock}>
+                          <Text style={styles.journalDetailsHeader}>Written by</Text>
+                          <Text style={styles.journalAuthor}>{item.medicalPersonnel}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  }
                 </View>
-              )}
+              }
               />
             </View>
           </View>
