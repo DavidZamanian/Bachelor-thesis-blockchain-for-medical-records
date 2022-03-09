@@ -56,15 +56,13 @@ export function NewEntryScreen(props) {
     }*/
   ];
 
-
-
   // Storing the states of inputs
   const [inputPrescription, setInputPrescription] = useState("");
   const [inputDosage, setInputDosage] = useState("");
   const [inputDiagnosis, setInputDiagnosis] = useState("");
   const [inputDetails, setInputDetails] = useState("");
-  /* For patient ID to be preled, enter it here below */
-  const [inputPatient, setInputPatient] = useState(props.route.params == null ? "PROVIDE PATIENT ID!" : props.route.params.toString());
+  /* For patient ID to be prefilled, enter it here below */
+  const [inputPatient, setInputPatient] = useState(props.route.params === undefined ? "PROVIDE PATIENT ID!" : props.route.params.toString());
   const medicalPerson = "Placeholder Staff";
   const healthcareInst = "Placeholder Hospital";
 

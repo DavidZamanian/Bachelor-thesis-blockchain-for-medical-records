@@ -92,7 +92,7 @@ export function EHROverviewDVScreen(props) {
     @Chrimle
   */
   const requestAddEHR = () => {
-    alert("attempting to create an EHR for patient:"+patientID)
+    //alert("attempting to create an EHR for patient:"+patientID)
     navigation.navigate("NewEntryScreen",patientID);
   } 
 
