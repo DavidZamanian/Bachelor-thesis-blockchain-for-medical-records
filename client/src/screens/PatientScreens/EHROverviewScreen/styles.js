@@ -130,7 +130,14 @@ const styles = StyleSheet.create({
     journalDataBlock:{
         margin:5,
         padding:5,
-    }
+    },
+    popupWindow:{
+        height:500,
+        width:500,
+        backgroundColor:"white",
+        borderRadius:15,
+        blurRadius:20
+      },
 });
 
 export default styles;

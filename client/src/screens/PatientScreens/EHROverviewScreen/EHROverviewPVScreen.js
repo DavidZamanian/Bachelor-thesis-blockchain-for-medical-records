@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRoute } from "@react-navigation/native";
-import { Text, View } from "react-native";
+import { Text, View, Modal } from "react-native";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header/Header";
 import styles from "./styles";
@@ -70,6 +70,8 @@ export function EHROverviewPVScreen(props) {
   // Workaround: added ">0" to journalExpanded[index] of the show-condition - no issues!
   const [journalExpanded, setJournalExpanded] = useState([false*(journals.length)]);
 
+  /* This is the popup window - whether it is visible or no */ 
+  const [modalVisible, setModalVisible] = useState(false);
 
   /* 
     Method for toggle the collapsing of a journal entry.
@@ -96,12 +98,32 @@ export function EHROverviewPVScreen(props) {
   */
   const configurePrivacy = () => {
     alert("attempting to configure privacy setting for:"+patientID)
+    setModalVisible(true);
+  } 
+
+  const submitData = () => {
+    alert("Settings submitted...")
+    setModalVisible(false);
   } 
 
   return (
     <View>
       <Header />
         <View style={styles.content}>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            alert("The submission was cancelled.");
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={{width:"100%", height:"100%", backgroundColor:'rgba(0,0,0,0.80)', justifyContent:"center", alignItems:"center",}}>
+            <View style={styles.popupWindow}>
+            </View>
+          </View>
+        </Modal>
           <Text style={styles.contentHeader}>Patient Overview</Text>
           <View style={styles.rowContainer}>
             <View style={styles.container}>
