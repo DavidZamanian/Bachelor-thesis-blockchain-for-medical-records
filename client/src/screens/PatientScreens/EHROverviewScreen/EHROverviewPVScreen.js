@@ -84,14 +84,6 @@ export function EHROverviewPVScreen(props) {
     }
   );
 
-
-
-
-  
-  
-
-  
-
   const journals = [
     {
       date: "2022-03-04T08:44:44.118Z",
@@ -151,11 +143,26 @@ export function EHROverviewPVScreen(props) {
     })
   }
 
+  /* 
+    Submit new permitted regions
+
+    @Chrimle
+  */
   const submitData = () => {
-    alert("Settings submitted...")
+    alert("Submitting settings...");
+
+    const regStrings = regions.map(function(item) {
+      return item['name']+" "+item['enabled']+"\n";
+    });
+    alert(regStrings.toString())
     setModalVisible(false);
   }
 
+  /* 
+    Toggle the (index):th checkbox on or off
+
+    @Chrimle
+  */
   const toggleCheckbox = (index) => {
     setRegions((prevState) => {
       prevState[index].enabled = !prevState[index].enabled; 
@@ -201,8 +208,8 @@ export function EHROverviewPVScreen(props) {
                 }/>
               </View>
               <View style={{flex:1,flexDirection:"row",borderTopColor:"grey",borderTopWidth:1,alignItems:"center",justifyContent:"space-evenly"}}>
-                <TouchableOpacity style={[styles.popupButton,styles.greyButton]}><Text>Discard changes</Text></TouchableOpacity>
-                <TouchableOpacity style={[styles.popupButton,styles.primaryButton]}><Text style={{color:"white"}}>Submit changes</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.popupButton,styles.greyButton]}><Text>Discard changes</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => submitData()} style={[styles.popupButton,styles.primaryButton]}><Text style={{color:"white"}}>Submit changes</Text></TouchableOpacity>
               </View>
             </View>
           </View>
