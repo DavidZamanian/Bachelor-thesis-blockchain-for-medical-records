@@ -16,11 +16,6 @@ export function EHROverviewPVScreen(props) {
 
   const patientID = props.route.params == null ? 8701104455 : props.route.params;
 
-  const placeholderEmail = "example@example.com";
-  const placeholderFirstname = "John";
-  const placeholderLastname = "Smith";
-  const placeholderAddress = "42nd Example Street, Example City";
-  const placeholderPhone = "0707123456";
   const placeholderPrescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
   const placeholderDiagnoses = ["Birch Allergy"];
   const placeholderPatientRegions = ["Vastra Gotaland","Skane"];
@@ -48,41 +43,50 @@ export function EHROverviewPVScreen(props) {
     {name:"Norrbotten","enabled":false},
   ];
 
-  const [patientEmail,setPatientEmail] = useState(placeholderEmail);
-  const [patientAddress,setPatientAddress] = useState(placeholderAddress);
-  const [patientFirstname,setPatientFirstname] = useState(placeholderFirstname);
-  const [patientLastname,setPatientLastname] = useState(placeholderLastname);
-  const [patientPhone,setPatientPhone] = useState(placeholderPhone);
   const [patientPrescriptions,setPatientPrescriptions] = useState(placeholderPrescriptions);
   const [patientDiagnoses,setPatientDiagnoses] = useState(placeholderDiagnoses);
   const [patientRegions,setPatientRegions] = useState(placeholderPatientRegions);
   const [regions,setRegions] = useState(placeholderRegions);
 
-
-  const patientRef = ref(database, 'Users/' + patientID);
-  onValue(patientRef, (snapshot) => 
+  const [patientInfo,setPatientInfo] = useState(
     {
-      if(snapshot.val() === null){
-        alert("ERROR: This patient does not exist:"+patientID)
-      }
-      else if (snapshot.val().email != patientEmail){
-        setPatientEmail(snapshot.val().email)
-        setPatientAddress(snapshot.val().address)
-        setPatientFirstname(snapshot.val().firstName)
-        setPatientLastname(snapshot.val().lastName)
-        setPatientPhone(snapshot.val().phoneNr)
-        // GET DIAGNOSES
-        // GET PRESCRIPTIONS
-        // GET ALL AVAILABLE REGIONS
-        // GET CURRENTLY PERMITTED REGIONS
-        setRegions((prevState) => {
-          patientRegions.forEach((reg) => prevState.find(r => r.name === reg).enabled = true)
-          
-          return[...prevState]
-        })
-      }
+      patientId:null,
+      email:"example@example.com",
+      firstName:"John",
+      lastName:"Smith",
+      address:"42nd Example Street, Example City",
+      phoneNr:"0707123456",
     }
   );
+
+  /* 
+    Gather patient info from Firebase (runs automatically at the start) 
+  */
+    const fetchPatientData = () => {
+      const patientRef = ref(database, 'Users/' + patientID);
+      onValue(patientRef, (snapshot) => 
+        {
+          if(snapshot.val() === null){
+            alert("ERROR: This patient does not exist:"+patientID)
+          }
+          else if (patientID != patientInfo.patientId){
+            setPatientInfo(prevState => ({
+              patientId:patientID,
+              firstName:snapshot.val().firstName,
+              lastName:snapshot.val().lastName,
+              email:snapshot.val().email,
+              address:snapshot.val().address,
+              phoneNr:snapshot.val().phoneNr,
+            }));
+            setRegions((prevState) => {
+              patientRegions.forEach((reg) => prevState.find(r => r.name === reg).enabled = true)
+              
+              return[...prevState]
+            })
+          }
+        }
+      );
+    }
 
   const journals = [
     {
@@ -171,6 +175,8 @@ export function EHROverviewPVScreen(props) {
     })
   } 
 
+  // FETCH PATIENT DATA
+  fetchPatientData();
   return (
     <View>
       <Header />
@@ -221,19 +227,19 @@ export function EHROverviewPVScreen(props) {
               <View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Full name: </Text>
-                  <Text style={styles.contactValue}>{patientLastname}, {patientFirstname}</Text>
+                  <Text style={styles.contactValue}>{patientInfo.lastName}, {patientInfo.firstName}</Text>
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Address: </Text>
-                  <Text style={styles.contactValue}>{patientAddress}</Text>
+                  <Text style={styles.contactValue}>{patientInfo.address}</Text>
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Phone: </Text>
-                  <Text style={styles.contactValue}>{patientPhone}</Text>
+                  <Text style={styles.contactValue}>{patientInfo.phoneNr}</Text>
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Email: </Text>
-                  <Text style={styles.contactValue}>{patientEmail}</Text>
+                  <Text style={styles.contactValue}>{patientInfo.email}</Text>
                 </View>
               </View>
             </View>
