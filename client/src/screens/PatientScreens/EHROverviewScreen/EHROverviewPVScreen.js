@@ -181,23 +181,28 @@ export function EHROverviewPVScreen(props) {
         >
           <View style={{width:"100%", height:"100%", backgroundColor:'rgba(0,0,0,0.80)', justifyContent:"center", alignItems:"center",}}>
             <View style={styles.popupWindow}>
-              <View style={{flexDirection:"row", justifyContent:"center", padding:10, borderBottomColor:"grey", borderBottomWidth:2}}>
+              <View style={{flex:1,flexDirection:"row", justifyContent:"center", padding:10, borderBottomColor:"grey", borderBottomWidth:2}}>
                 <Text style={styles.contentHeader}>Configure Data Privacy</Text>
               </View>
-              <View>
+              <View style={{flex:7}}>
+                <Text style={[styles.description,{padding:10}]}>Select which regions you allow to read your medical record, by checking the corresponding box. Regions you currently have given permission to are pre-filled.</Text>
                 <FlatList
-                style={{width:"100%", height:250}}
+                style={styles.regionList}
                 data={regions}
                 numColumns={3}
                 keyExtractor={({item, index}) => index}
                 renderItem={({item, index}) => 
-                  <View style={{flex: 1, flexDirection: 'row', margin: 1, alignItems:"center"}}>
-                    <TouchableOpacity style={[styles.checkbox,{backgroundColor:item.enabled ? "green":"red"}]} onPress={() => toggleCheckbox(index)}>
+                  <View style={styles.regionContainer}>
+                    <TouchableOpacity style={[styles.checkbox,{backgroundColor:item.enabled ? theme.PRIMARY_COLOR:"white"}]} onPress={() => toggleCheckbox(index)}>
                       {item.enabled && <Icon name="checkmark-outline" size={20} color="white"/>}
                     </TouchableOpacity>
-                    <Text>{item.name}</Text>
+                    <Text style={styles.regionLabel}>{item.name}</Text>
                   </View>
                 }/>
+              </View>
+              <View style={{flex:1,flexDirection:"row",borderTopColor:"grey",borderTopWidth:1,alignItems:"center",justifyContent:"space-evenly"}}>
+                <TouchableOpacity style={[styles.popupButton,styles.greyButton]}><Text>Discard changes</Text></TouchableOpacity>
+                <TouchableOpacity style={[styles.popupButton,styles.primaryButton]}><Text style={{color:"white"}}>Submit changes</Text></TouchableOpacity>
               </View>
             </View>
           </View>

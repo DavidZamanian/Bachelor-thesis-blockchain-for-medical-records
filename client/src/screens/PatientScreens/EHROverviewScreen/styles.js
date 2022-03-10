@@ -138,13 +138,39 @@ const styles = StyleSheet.create({
         borderRadius:15,
         blurRadius:20
     },
+    popupButton:{
+        borderRadius:15,
+        padding:10,
+        marginHorizontal:10,
+    },
+    greyButton:{
+        backgroundColor:"#F5F5F5",
+        borderColor:"#545D69",
+        borderWidth:2
+    },
+    primaryButton:{
+        backgroundColor:theme.PRIMARY_COLOR,
+    },
     checkbox:{
         width:25,
         height:25,
         borderColor:"black",
         borderWidth:1,
         borderRadius:5,
-    }
+    },
+    regionList:{
+        paddingHorizontal:20,
+    },
+    regionContainer:{
+        flex: 1,
+        flexDirection: 'row',
+        margin: 1,
+        alignItems:"center"
+    },
+    regionLabel:{
+        margin:10,
+    },
+
 });
 
 export default styles;
