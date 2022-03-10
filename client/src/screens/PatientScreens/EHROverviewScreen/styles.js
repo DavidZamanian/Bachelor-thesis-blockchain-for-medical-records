@@ -137,7 +137,14 @@ const styles = StyleSheet.create({
         backgroundColor:"white",
         borderRadius:15,
         blurRadius:20
-      },
+    },
+    checkbox:{
+        width:25,
+        height:25,
+        borderColor:"black",
+        borderWidth:1,
+        borderRadius:5,
+    }
 });
 
 export default styles;

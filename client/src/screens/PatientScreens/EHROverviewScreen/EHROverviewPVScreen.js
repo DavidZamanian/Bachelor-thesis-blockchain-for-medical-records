@@ -23,8 +23,30 @@ export function EHROverviewPVScreen(props) {
   const placeholderPhone = "0707123456";
   const placeholderPrescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
   const placeholderDiagnoses = ["Birch Allergy"];
-
-
+  const placeholderPatientRegions = ["Vastra Gotaland","Skane"];
+  const placeholderRegions = [
+    {name:"Stockholm","enabled":false},
+    {name:"Uppsala","enabled":false},
+    {name:"Sormland","enabled":false},
+    {name:"Ostergotland","enabled":false},
+    {name:"Jonkoping","enabled":false},
+    {name:"Kronoberg","enabled":false},
+    {name:"Kalmar","enabled":false},
+    {name:"Gotland","enabled":false},
+    {name:"Blekinge","enabled":false},
+    {name:"Skane","enabled":false},
+    {name:"Halland","enabled":false},
+    {name:"Vastra Gotaland","enabled":false},
+    {name:"Varmland","enabled":false},
+    {name:"Orebro","enabled":false},
+    {name:"Vastmanland","enabled":false},
+    {name:"Dalarna","enabled":false},
+    {name:"Gavleborg","enabled":false},
+    {name:"Vasternorrland","enabled":false},
+    {name:"Jamtland","enabled":false},
+    {name:"Vasterbotten","enabled":false},
+    {name:"Norrbotten","enabled":false},
+  ];
 
   const [patientEmail,setPatientEmail] = useState(placeholderEmail);
   const [patientAddress,setPatientAddress] = useState(placeholderAddress);
@@ -33,6 +55,9 @@ export function EHROverviewPVScreen(props) {
   const [patientPhone,setPatientPhone] = useState(placeholderPhone);
   const [patientPrescriptions,setPatientPrescriptions] = useState(placeholderPrescriptions);
   const [patientDiagnoses,setPatientDiagnoses] = useState(placeholderDiagnoses);
+  const [patientRegions,setPatientRegions] = useState(placeholderPatientRegions);
+  const [regions,setRegions] = useState(placeholderRegions);
+
 
   const patientRef = ref(database, 'Users/' + patientID);
   onValue(patientRef, (snapshot) => 
@@ -46,8 +71,15 @@ export function EHROverviewPVScreen(props) {
         setPatientFirstname(snapshot.val().firstName)
         setPatientLastname(snapshot.val().lastName)
         setPatientPhone(snapshot.val().phoneNr)
-
-        
+        // GET DIAGNOSES
+        // GET PRESCRIPTIONS
+        // GET ALL AVAILABLE REGIONS
+        // GET CURRENTLY PERMITTED REGIONS
+        setRegions((prevState) => {
+          patientRegions.forEach((reg) => prevState.find(r => r.name === reg).enabled = true)
+          
+          return[...prevState]
+        })
       }
     }
   );
@@ -119,24 +151,17 @@ export function EHROverviewPVScreen(props) {
     })
   }
 
-
-  /*
-    Method for configuring data privacy settings.
-    Should trigger popup with Region options.
-    Needs to gather list of all available regions
-    Needs to fetch currently permitted regions and tick "True" for those.
-    The responsible popup will feature a submit button and call another method for data submission.
-
-    @Chrimle
-  */
-  const configurePrivacy = () => {
-    alert("attempting to configure privacy setting for:"+patientID)
-    setModalVisible(true);
-  } 
-
   const submitData = () => {
     alert("Settings submitted...")
     setModalVisible(false);
+  }
+
+  const toggleCheckbox = (index) => {
+    setRegions((prevState) => {
+      prevState[index].enabled = !prevState[index].enabled; 
+      
+      return[...prevState]
+    })
   } 
 
   return (
@@ -147,6 +172,8 @@ export function EHROverviewPVScreen(props) {
           animationType="none"
           transparent={true}
           visible={modalVisible}
+          horizontal={false}
+          numColumns={3}
           onRequestClose={() => {
             alert("The submission was cancelled.");
             setModalVisible(!modalVisible);
@@ -155,7 +182,22 @@ export function EHROverviewPVScreen(props) {
           <View style={{width:"100%", height:"100%", backgroundColor:'rgba(0,0,0,0.80)', justifyContent:"center", alignItems:"center",}}>
             <View style={styles.popupWindow}>
               <View style={{flexDirection:"row", justifyContent:"center", padding:10, borderBottomColor:"grey", borderBottomWidth:2}}>
-                <Text style={styles.contentHeader}>HEADER</Text>
+                <Text style={styles.contentHeader}>Configure Data Privacy</Text>
+              </View>
+              <View>
+                <FlatList
+                style={{width:"100%", height:250}}
+                data={regions}
+                numColumns={3}
+                keyExtractor={({item, index}) => index}
+                renderItem={({item, index}) => 
+                  <View style={{flex: 1, flexDirection: 'row', margin: 1, alignItems:"center"}}>
+                    <TouchableOpacity style={[styles.checkbox,{backgroundColor:item.enabled ? "green":"red"}]} onPress={() => toggleCheckbox(index)}>
+                      {item.enabled && <Icon name="checkmark-outline" size={20} color="white"/>}
+                    </TouchableOpacity>
+                    <Text>{item.name}</Text>
+                  </View>
+                }/>
               </View>
             </View>
           </View>
@@ -186,7 +228,7 @@ export function EHROverviewPVScreen(props) {
             <View style={styles.container}>
               <Text style={styles.header}>Data Privacy</Text>
               <Text style={styles.description}>Configure what regions can access and view your medical record. You can change this at any time.</Text>
-              <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => configurePrivacy()}/>
+              <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => setModalVisible(true)}/>
             </View>
           </View>
           <View style={styles.rowContainer}>
