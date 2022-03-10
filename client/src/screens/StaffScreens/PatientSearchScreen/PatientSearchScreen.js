@@ -59,6 +59,7 @@ export function PatientSearchScreen() {
               PLACE CODE HERE
               This is where a check for permission COULD be made. 
             */
+            setPatientID("");
             redirectTo();
           }
         });

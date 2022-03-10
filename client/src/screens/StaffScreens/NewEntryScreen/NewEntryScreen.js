@@ -1,5 +1,5 @@
 import React, { useState, setState } from "react";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Text, View, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
 import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
@@ -20,6 +20,7 @@ import Footer from "../../../components/Footer";
 export function NewEntryScreen(props) {
 
   const route = useRoute();
+  const navigation = useNavigation();
 
   // These are for testing purposes only
   const prescriptions = [
@@ -195,6 +196,10 @@ export function NewEntryScreen(props) {
     "\nPrescriptions:"+ehr.prescriptions+
     "\nDiagnoses:"+ehr.diagnoses+
     "\nDetails:"+ehr.details);
+
+
+    /* INSERT CHECK IF DATA SUBMISSION WAS SUCCESSFULL BEFORE THIS*/
+    navigation.navigate("PatientSearchScreen");
   }
 
   const openPopup = () => {
@@ -204,6 +209,9 @@ export function NewEntryScreen(props) {
 
   }
 
+  const cancelAndReturn = () => {
+    navigation.navigate("EHROverviewDoctorV",inputPatient);
+  }
 
 
 
@@ -245,7 +253,7 @@ export function NewEntryScreen(props) {
           </View>
         </Modal>
         <View style={{width:250}}>
-        <TouchableOpacity style={{flexDirection:'row', margin:15, width:250}}>
+        <TouchableOpacity style={{flexDirection:'row', margin:15, width:250}} onPress={() => cancelAndReturn()}>
           <ColouredIcon name="arrow-back-circle-outline" size={40}/>
           <Text style={styles.navigation_text}>Cancel & Return</Text>
         </TouchableOpacity>
