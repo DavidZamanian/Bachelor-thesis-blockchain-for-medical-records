@@ -17,11 +17,6 @@ export function EHROverviewDVScreen(props) {
 
   const patientID = props.route.params == null ? 8701104455 : props.route.params;
 
-  const placeholderEmail = "example@example.com";
-  const placeholderFirstname = "John";
-  const placeholderLastname = "Smith";
-  const placeholderAddress = "42nd Example Street, Example City";
-  const placeholderPhone = "0707123456";
   const placeholderPrescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
   const placeholderDiagnoses = ["Birch Allergy"];
 
@@ -30,11 +25,11 @@ export function EHROverviewDVScreen(props) {
   const [patientInfo,setPatientInfo] = useState(
     {
       patientId:null,
-      email:placeholderEmail,
-      firstName:placeholderFirstname,
-      lastName:placeholderLastname,
-      address:placeholderAddress,
-      phoneNr:placeholderPhone,
+      email:"example@example.com",
+      firstName:"John",
+      lastName:"Smith",
+      address:"42nd Example Street, Example City",
+      phoneNr:"0707123456",
     }
   );
 
