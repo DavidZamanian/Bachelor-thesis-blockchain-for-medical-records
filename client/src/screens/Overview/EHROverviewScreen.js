@@ -1,61 +1,48 @@
 import React, { useState } from "react";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { Text, View, Modal } from "react-native";
-import Footer from "../../../components/Footer";
-import Header from "../../../components/Header/Header";
+import Footer from "../../components/Footer";
+import Header from "../../components/Header/Header";
 import styles from "./styles";
-import ThemeButton from "../../../components/themeButton";
+import ThemeButton from "../../components/themeButton";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
-import theme from "../../../theme.style";
-import { database, ref, onValue} from "../../../../firebaseSetup";
+import theme from "../../theme.style";
+import { database, ref, onValue} from "../../../firebaseSetup";
 
-export function EHROverviewPVScreen(props) {
+export function EHROverviewScreen(props) {
 
   const route = useRoute();
+  const navigation = useNavigation();
 
+  /* TODO: Replace this in some way, need to cross-reference with Firebase with User UID */
   const patientID = props.route.params == null ? 8701104455 : props.route.params;
+
+
+  // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
+  const placeholderRole = "doctor";
+
+  const [doctorRole,setDoctorRole] = useState(false);
 
   const placeholderPrescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
   const placeholderDiagnoses = ["Birch Allergy"];
   const placeholderPatientRegions = ["Vastra Gotaland","Skane"];
-  const placeholderRegions = [
-    {name:"Stockholm","enabled":false},
-    {name:"Uppsala","enabled":false},
-    {name:"Sormland","enabled":false},
-    {name:"Ostergotland","enabled":false},
-    {name:"Jonkoping","enabled":false},
-    {name:"Kronoberg","enabled":false},
-    {name:"Kalmar","enabled":false},
-    {name:"Gotland","enabled":false},
-    {name:"Blekinge","enabled":false},
-    {name:"Skane","enabled":false},
-    {name:"Halland","enabled":false},
-    {name:"Vastra Gotaland","enabled":false},
-    {name:"Varmland","enabled":false},
-    {name:"Orebro","enabled":false},
-    {name:"Vastmanland","enabled":false},
-    {name:"Dalarna","enabled":false},
-    {name:"Gavleborg","enabled":false},
-    {name:"Vasternorrland","enabled":false},
-    {name:"Jamtland","enabled":false},
-    {name:"Vasterbotten","enabled":false},
-    {name:"Norrbotten","enabled":false},
-  ];
+  const placeholderRegions=["Stockholm","Uppsala","Sormland","Ostergotland","Jonkoping","Kronoberg","Kalmar","Gotland","Blekinge","Skane","Halland","Varmland","Orebro","Vastmanland","Dalarna","Gavleborg","Vasternorrland","Jamtland","Vasterbotten","Norrbotten","Vastra Gotaland"];
 
-  const [patientPrescriptions,setPatientPrescriptions] = useState(placeholderPrescriptions);
-  const [patientDiagnoses,setPatientDiagnoses] = useState(placeholderDiagnoses);
-  const [patientRegions,setPatientRegions] = useState(placeholderPatientRegions);
-  const [regions,setRegions] = useState(placeholderRegions);
+  const [regions,setRegions] = useState([]);
 
   const [patientInfo,setPatientInfo] = useState(
     {
       patientId:null,
-      email:"example@example.com",
-      firstName:"John",
-      lastName:"Smith",
-      address:"42nd Example Street, Example City",
-      phoneNr:"0707123456",
+      email:"ErrorEmail",
+      firstName:"ErrorFirstName",
+      lastName:"ErrorLastName",
+      address:"ErrorAddress",
+      phoneNr:"ErrorPhoneNr",
+      prescriptions:[],
+      diagnoses:[],
+      permittedRegions:[],
+      journals:[],
     }
   );
 
@@ -63,24 +50,53 @@ export function EHROverviewPVScreen(props) {
     Gather patient info from Firebase (runs automatically at the start) 
   */
     const fetchPatientData = () => {
+      if (patientInfo.patientId !== null){
+        return;
+      }
       const patientRef = ref(database, 'Users/' + patientID);
       onValue(patientRef, (snapshot) => 
         {
           if(snapshot.val() === null){
             alert("ERROR: This patient does not exist:"+patientID)
           }
-          else if (patientID != patientInfo.patientId){
-            setPatientInfo(prevState => ({
+          else{
+            
+            // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
+            const userRole                = placeholderRole; //snapshot.val().role 
+            const allRegions              = placeholderRegions;
+            const patientJournals         = placeholderJournals;
+            const patientPermittedRegions = placeholderPatientRegions;
+            const patientPrescriptions    = placeholderPrescriptions;
+            const patientDiagnoses        = placeholderDiagnoses;
+            
+            setDoctorRole(userRole == "doctor")
+
+            alert("accessing patient:"+patientID)
+            setJournalExpanded((prevState) => {
+              prevState = [];
+              patientJournals.forEach(() => prevState.push(false))
+              return[...prevState]
+            })
+            // getPatientContactInfo
+            setPatientInfo(() => ({
               patientId:patientID,
               firstName:snapshot.val().firstName,
               lastName:snapshot.val().lastName,
               email:snapshot.val().email,
               address:snapshot.val().address,
               phoneNr:snapshot.val().phoneNr,
-            }));
+              // getPrescriptions
+              // getDiagnoses
+              // getPermittedRegions
+              prescriptions:patientPrescriptions,
+              diagnoses:patientDiagnoses,
+              permittedRegions:patientPermittedRegions,
+              journals:patientJournals
+            }))
             setRegions((prevState) => {
-              patientRegions.forEach((reg) => prevState.find(r => r.name === reg).enabled = true)
-              
+              prevState = [];
+              allRegions.forEach((reg) => prevState.push({name:reg,enabled:false}))
+              patientPermittedRegions.forEach((reg) => prevState.find(r => r.name === reg).enabled = true)
               return[...prevState]
             })
           }
@@ -88,7 +104,7 @@ export function EHROverviewPVScreen(props) {
       );
     }
 
-  const journals = [
+  const placeholderJournals = [
     {
       date: "2022-03-04T08:44:44.118Z",
       patientID: "fdjsajkfvhkcjasjcas",
@@ -127,9 +143,14 @@ export function EHROverviewPVScreen(props) {
     },
   ]
 
+  
+  
+
   // This causes a bug where the first journal expand will show a "0" from the start
   // Workaround: added ">0" to journalExpanded[index] of the show-condition - no issues!
-  const [journalExpanded, setJournalExpanded] = useState([false*(journals.length)]);
+  const [journalExpanded, setJournalExpanded] = useState([]);
+
+  
 
   /* This is the popup window - whether it is visible or no */ 
   const [modalVisible, setModalVisible] = useState(false);
@@ -142,7 +163,7 @@ export function EHROverviewPVScreen(props) {
   */
   const toggleExpandJournal = (index) => {
     setJournalExpanded((prevState) => {
-      prevState.splice(index,1,!journalExpanded.at(index))
+      prevState.splice(index,1,!prevState.at(index))
       return[...prevState]
     })
   }
@@ -154,7 +175,6 @@ export function EHROverviewPVScreen(props) {
   */
   const submitData = () => {
     alert("Submitting settings...");
-
     const regStrings = regions.map(function(item) {
       return item['name']+" "+item['enabled']+"\n";
     });
@@ -170,10 +190,24 @@ export function EHROverviewPVScreen(props) {
   const toggleCheckbox = (index) => {
     setRegions((prevState) => {
       prevState[index].enabled = !prevState[index].enabled; 
-      
       return[...prevState]
     })
   } 
+
+
+  /*
+    Method for redirecting to NewEntryScreen to make a new EHR entry
+    Possibly check privilege before proceeding?
+
+    @Chrimle
+  */
+    const requestAddEHR = () => {
+      // CHECK PRIVILEGE?
+      alert(patientInfo.patientId)
+      navigation.navigate("NewEntryScreen",patientInfo.patientId);
+
+    }
+
 
   // FETCH PATIENT DATA
   fetchPatientData();
@@ -243,17 +277,26 @@ export function EHROverviewPVScreen(props) {
                 </View>
               </View>
             </View>
-            <View style={styles.container}>
-              <Text style={styles.header}>Data Privacy</Text>
-              <Text style={styles.description}>Configure what regions can access and view your medical record. You can change this at any time.</Text>
-              <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => setModalVisible(true)}/>
-            </View>
+            { doctorRole ?
+              // Doctor Version
+              <View style={styles.container}>
+                <Text style={styles.header}>Add EHR entry</Text>
+                <Text style={styles.description}>Create a new EHR entry for the current patient, including diagnoses and prescriptions.</Text>
+                <ThemeButton labelText="Add" labelSize={25} iconName="add-outline" iconSize={30} bWidth={120} bHeight={60} onPress={() => requestAddEHR()}/>
+              </View>
+            : // Patient Version
+              <View style={styles.container}>
+                <Text style={styles.header}>Data Privacy</Text>
+                <Text style={styles.description}>Configure what regions can access and view your medical record. You can change this at any time.</Text>
+                <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => setModalVisible(true)}/>
+              </View>
+            }
           </View>
           <View style={styles.rowContainer}>
           <View style={styles.container}>
             <Text style={styles.header}>Prescriptions</Text>
             <FlatList
-              data={patientPrescriptions}
+              data={patientInfo.prescriptions}
               keyExtractor={({item, index}) => index}
               renderItem={({item, index}) => (
                 <View>
@@ -265,7 +308,7 @@ export function EHROverviewPVScreen(props) {
           <View style={styles.container}>
             <Text style={styles.header}>Diagnoses</Text>
             <FlatList
-              data={patientDiagnoses}
+              data={patientInfo.diagnoses}
               keyExtractor={({item, index}) => index}
               renderItem={({item, index}) => (
                 <View>
@@ -280,7 +323,7 @@ export function EHROverviewPVScreen(props) {
               <Text style={styles.header}>Past record entries</Text>
               <FlatList
               style={{width:"100%"}}
-              data={journals}
+              data={patientInfo.journals}
               keyExtractor={({item, index}) => index}
               ListHeaderComponent={
                 <View style={styles.journalListItem}>
