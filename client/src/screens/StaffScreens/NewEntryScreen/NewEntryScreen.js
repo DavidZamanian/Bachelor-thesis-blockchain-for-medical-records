@@ -1,4 +1,5 @@
 import React, { useState, setState } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Text, View, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
 import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
@@ -16,9 +17,10 @@ import Footer from "../../../components/Footer";
   
 
 
-export function NewEntryScreen() {
+export function NewEntryScreen(props) {
 
-  
+  const route = useRoute();
+  const navigation = useNavigation();
 
   // These are for testing purposes only
   const prescriptions = [
@@ -55,15 +57,13 @@ export function NewEntryScreen() {
     }*/
   ];
 
-
-
   // Storing the states of inputs
   const [inputPrescription, setInputPrescription] = useState("");
   const [inputDosage, setInputDosage] = useState("");
   const [inputDiagnosis, setInputDiagnosis] = useState("");
   const [inputDetails, setInputDetails] = useState("");
-  /* For patient ID to be preled, enter it here below */
-  const [inputPatient, setInputPatient] = useState("1234 5678 1234");
+  /* For patient ID to be prefilled, enter it here below */
+  const [inputPatient, setInputPatient] = useState(props.route.params === undefined ? "PROVIDE PATIENT ID!" : props.route.params.toString());
   const medicalPerson = "Placeholder Staff";
   const healthcareInst = "Placeholder Hospital";
 
@@ -196,6 +196,10 @@ export function NewEntryScreen() {
     "\nPrescriptions:"+ehr.prescriptions+
     "\nDiagnoses:"+ehr.diagnoses+
     "\nDetails:"+ehr.details);
+
+
+    /* INSERT CHECK IF DATA SUBMISSION WAS SUCCESSFULL BEFORE THIS*/
+    navigation.navigate("PatientSearchScreen");
   }
 
   const openPopup = () => {
@@ -205,6 +209,9 @@ export function NewEntryScreen() {
 
   }
 
+  const cancelAndReturn = () => {
+    navigation.navigate("EHROverviewDoctorV",inputPatient);
+  }
 
 
 
@@ -246,7 +253,7 @@ export function NewEntryScreen() {
           </View>
         </Modal>
         <View style={{width:250}}>
-        <TouchableOpacity style={{flexDirection:'row', margin:15, width:250}}>
+        <TouchableOpacity style={{flexDirection:'row', margin:15, width:250}} onPress={() => cancelAndReturn()}>
           <ColouredIcon name="arrow-back-circle-outline" size={40}/>
           <Text style={styles.navigation_text}>Cancel & Return</Text>
         </TouchableOpacity>
@@ -290,7 +297,6 @@ export function NewEntryScreen() {
               <SafeAreaView>
                 <FlatList
                   data={prescriptionsList}
-                  extraata={prescriptionsList}
                   keyExtractor={({item, index}) => index}
                   renderItem={({item, index}) => (
                     <View style={[styles.genericListItem,{ backgroundColor: index % 2 == 0 ? "#F1F1F1": "#FDFDFD"}]}>
@@ -334,7 +340,6 @@ export function NewEntryScreen() {
               <SafeAreaView>
                 <FlatList
                   data={diagnosesList}
-                  extraata={diagnosesList}
                   keyExtractor={({item, index}) => index}
                   renderItem={({item, index}) => (
                     <View style={[styles.genericListItem,{ backgroundColor: index % 2 == 0 ? "#F1F1F1": "#FDFDFD"}]}>

@@ -1,6 +1,6 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import { EHROverviewDVScreen } from "../screens/StaffScreens/EHROverviewDVScreen";
+import { EHROverviewDVScreen } from "../screens/StaffScreens/EHROverviewDVScreen/EHROverviewDVScreen";
 import { EHROverviewPVScreen } from "../screens/PatientScreens/EHROverviewScreen/EHROverviewPVScreen";
 import { NewEntryScreen } from "../screens/StaffScreens/NewEntryScreen/NewEntryScreen";
 import { PatientSearchScreen } from "../screens/StaffScreens/PatientSearchScreen/PatientSearchScreen";

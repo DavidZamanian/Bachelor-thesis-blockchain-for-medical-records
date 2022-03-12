@@ -9,16 +9,17 @@ const ThemeButton = (props) => {
     return(
         <TouchableOpacity 
         onPress={onPress}
-        style={[extraStyle,{
+        style={[{
             height:bHeight,
             width:bWidth,
             flexDirection:'row',
             backgroundColor: theme.PRIMARY_COLOR,
             borderRadius: 100,
-            borderWidth: 4,
-            borderColor: "white",
+            borderWidth: 3,
+            borderColor: theme.SECONDARY_COLOR,
             justifyContent: 'center',
             padding:5,
+            elevation:5,
             shadowColor: "#000",
             shadowOffset: {
               width: 0,
@@ -26,8 +27,9 @@ const ThemeButton = (props) => {
             },
             shadowOpacity: 0.5,
             shadowRadius: 3.84,
-        }]}>
-            <Icon name={iconName} size={iconSize} color="white"/>
+            alignItems:"center",
+        },extraStyle]}>
+            <Icon name={iconName} size={iconSize} color="white" style={{marginRight:5}}/>
             <Text style={{fontSize:labelSize, color:"white",alignSelf:"center",fontWeight:"bold"}}>{labelText}</Text>
         </TouchableOpacity>
     );
