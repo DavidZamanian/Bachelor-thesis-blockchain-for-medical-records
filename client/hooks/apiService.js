@@ -6,7 +6,7 @@ import {
   sendPasswordResetEmail,
   signOut,
 } from "@firebase/auth";
-import { ref, set } from "firebase/database";
+import { ref, set, update } from "firebase/database";
 
 /**
  * All the methods contacting firebase. Maybe add methods to contact backend aswell,
@@ -28,25 +28,45 @@ export function apiService() {
     return subscriber;
   }, []);
 
-  const submit = React.useMemo(
+  const updateInfo = React.useMemo(
     () => ({
-      addNewUser: async (
-        uid,
-        firstName,
-        lastName,
-        address,
-        email,
-        publicKey
-      ) => {
+      updateEmail: async (uid, email) => {
         return new Promise(function (resolve, reject) {
-          set(ref(database, "users/" + uid), {
-            uid: uid,
-            firstName: firstName,
-            lastName: lastName,
-            address: address,
+          update(ref(database, "Users/" + uid), {
             email: email,
-            publicKey: publicKey,
-          });
+          })
+            .then(() => {
+              resolve("Email updated successfully");
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        });
+      },
+      updateAddress: async (uid, address) => {
+        return new Promise(function (resolve, reject) {
+          update(ref(database, "Users/" + uid), {
+            address: address,
+          })
+            .then(() => {
+              resolve("Address updated successfully");
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        });
+      },
+      updatePhoneNr: async (uid, phoneNr) => {
+        return new Promise(function (resolve, reject) {
+          update(ref(database, "Users/" + uid), {
+            phoneNr: phoneNr,
+          })
+            .then(() => {
+              resolve("Phone number updated successfully");
+            })
+            .catch((error) => {
+              reject(error);
+            });
         });
       },
     }),
@@ -131,5 +151,5 @@ export function apiService() {
     []
   );
 
-  return { authentication, user };
+  return { authentication, user, updateInfo };
 }
