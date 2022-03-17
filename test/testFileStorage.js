@@ -9,8 +9,8 @@ import CouldNotResolveCidError from "../server/fileStorage/couldNotResolveCidErr
 import * as assert from "assert";
 // import chai from "chai";
 // const expect = chai.expect;
-const fileStorage = new FileStorage(false);
-/*
+const fileStorage = new FileStorage();
+
 describe("check if we get the right url", function () {
     it("returns the correct url for a valid cid", async function () {
         
@@ -23,9 +23,8 @@ describe("check if we get the right url", function () {
     it('throws an error for wrong cid', async function() {
         await expect(fileStorage.retrieveFilesHelper("_")).to.be.rejected.and.be.an.instanceOf(CouldNotResolveCidError);
     });
-    
+    */
 });
-*/
 
 describe("check removing the cid ", function () {
     it("returns directoryname/filename from a valid path", function () {
