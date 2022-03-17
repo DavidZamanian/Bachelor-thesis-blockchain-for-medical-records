@@ -5,6 +5,7 @@ import { getFilesFromPath } from 'web3.storage'
 import * as http from "https";
 import * as fs from "fs";
 import CouldNotResolveCidError from './couldNotResolveCidError.js';
+import DownloadError from './downloadError.js';
 
 /**
  * Class for storing and retrieving files from the distributed file storage. 
@@ -114,8 +115,8 @@ export default class FileStorage {
      */
     async downloadAll(urls, dir) {
         for (let i = 0; i < urls.length; i++) {
-            await this.download(urls[i], `${dir}/${this.getFileName(urls[i])}`, (err, data) => { //TODO handle error
-                if (err) throw error;
+            await this.download(urls[i], `${dir}/${this.getFileName(urls[i])}`, (err) => { //TODO handle error
+                if (err) throw new DownloadError(err.message);
             });
         }
     }
@@ -130,21 +131,23 @@ export default class FileStorage {
      * NOTE: this method is directly copied from Vince Yuan's post in the stackoverflow thread:
      * https://stackoverflow.com/questions/11944932/how-to-download-a-file-with-node-js-without-using-third-party-libraries.
      * Copied 2022-03-11.
-     * Only changes made by us are some changes to comments and using `let` instead of `var`. 
+     * Only changes made by us are some changes to comments and using `let` instead of `var`, as well as handling errors on `file`.
      * @param {String} url to the file to be retrieve
      * @param {String} dest path to where the file will be downloaded, including both directory and file name. 
-     * @param {Function} cb callback function
+     * @param {Function} cb callback function taking an error as parameter.
      */
     async download(url, dest, cb) {
         let file = fs.createWriteStream(dest);
+        file.on("error", (err) => cb(err));
         let request = http.get(url, function(response) {
             response.pipe(file);
             file.on('finish', function() {
                 file.close(cb);  
-        });
+            });
+            file.on("error", (err) => cb(err));
         }).on('error', function(err) { 
             fs.unlink(dest); //delete the file if an error occurred. 
-            if (cb) cb(err.message);
+            if (cb) cb(err);
         });
     }
 }
@@ -158,30 +161,29 @@ console.log(cid);
 await fileStorage.retrieveFiles(cid);
 console.log("COMPLETE")
 */
-
+//==========================
+/*
 const fileStorage = new FileStorage();
 const cid = "bafybeiayhizcizphaxfhzmezvb3ncppjscqudglxzrq3wna2ew4o3iohty";
 const downloads_directory = "./tmp_test_download";
+*/
 
-/*
 // checking the urls
+/*
 const urls = await fileStorage.retrieveFilesHelper(cid);
 console.log(urls);
-// downloading into ./tmp_test_download
-fileStorage.retrieveFiles(cid, "./tmp_test_download");
 */
+// downloading into ./tmp_test_download
+//fileStorage.retrieveFiles(cid, "./tmp_test_download");
+
 
 //checking errors
 //===================
 // incorrect cid
 // Error: Response was not ok: 500 Internal Server Error - Check for { "ok": false } on the Response object before calling .unixFsIterator
-fileStorage.retrieveFiles("_", downloads_directory);
+// fileStorage.retrieveFiles("_", downloads_directory);
 //===================
 // incorrect downloads folder
 // Error: ENOENT: no such file or directory, open '_/test1.txt'
-//fileStorage.retrieveFiles(cid, "_");
+// fileStorage.retrieveFiles(cid, "_");
 //===================
-
-
-//downloadAll(urls);
-//await retrieveFiles2("bafkreigcpqi4tl43cxjxjvfuyslc4aisalywd3jubbhw5sx5hyeklyqnu4");
