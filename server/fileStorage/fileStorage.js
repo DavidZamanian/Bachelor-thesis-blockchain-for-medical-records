@@ -4,6 +4,7 @@ import { getFilesFromPath } from 'web3.storage'
 
 import * as http from "https";
 import * as fs from "fs";
+import CouldNotResolveCidError from './couldNotResolveCidError.js';
 
 /**
  * Class for storing and retrieving files from the distributed file storage. 
@@ -79,8 +80,11 @@ export default class FileStorage {
      * @param {String} cid content identifier for the file to be retrieved
      * @returns Array of urls of the files to be retrieved 
      */
-    async retrieveFilesHelper(cid) { //TODO HANLDE ERRONONOUS CID
+    async retrieveFilesHelper(cid) { 
         const res = await this.client.get(cid)
+        if (!res.ok) { // handling erronous cid.
+            throw new CouldNotResolveCidError(`${res.status} ${res.statusText}`);
+        }
         let urls = []
         for await (const entry of res.unixFsIterator()) {
             if (entry.type === "raw") {
@@ -157,11 +161,26 @@ console.log("COMPLETE")
 
 const fileStorage = new FileStorage();
 const cid = "bafybeiayhizcizphaxfhzmezvb3ncppjscqudglxzrq3wna2ew4o3iohty";
+const downloads_directory = "./tmp_test_download";
+
+/*
 // checking the urls
 const urls = await fileStorage.retrieveFilesHelper(cid);
 console.log(urls);
 // downloading into ./tmp_test_download
 fileStorage.retrieveFiles(cid, "./tmp_test_download");
+*/
+
+//checking errors
+//===================
+// incorrect cid
+// Error: Response was not ok: 500 Internal Server Error - Check for { "ok": false } on the Response object before calling .unixFsIterator
+fileStorage.retrieveFiles("_", downloads_directory);
+//===================
+// incorrect downloads folder
+// Error: ENOENT: no such file or directory, open '_/test1.txt'
+//fileStorage.retrieveFiles(cid, "_");
+//===================
 
 
 //downloadAll(urls);
