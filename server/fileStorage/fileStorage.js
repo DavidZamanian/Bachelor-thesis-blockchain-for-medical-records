@@ -2,24 +2,26 @@ import { Web3Storage } from 'web3.storage'
 
 import { getFilesFromPath } from 'web3.storage'
 
-import { File } from 'web3.storage'
-
 import * as http from "https";
 import * as fs from "fs";
 
 /**
- * Class for handling File Storage to Web3Storage as well as retrieving files 
- * Inspired by https://docs.web3.storage
+ * Class for storing and retrieving files from the distributed file storage. 
+ * Currently connects to Web3Storage.
+ * Methods are for the most part copied/inspired by pages found at https://docs.web3.storage.
  * @author Hampus Jernkrook
  * @author Edenia Isaac
  */
 export default class FileStorage {
+    /**
+     * Initialises a FileStorage object and sets the storage client to connect to. 
+     */
     constructor() {
         this.client = this.makeStorageClient();
     }
 
     /**
-     * Sets API token from enviroment variable
+     * Gets the web3.storage API token from the WEB3STORAGE_TOKEN enviroment variable
      * @returns API token
      */
     getAccessToken() {
@@ -42,7 +44,7 @@ export default class FileStorage {
     /**
      * Uploading files to Web3.Storage
      * @param {String} dir path to the directory containing the files to be stored 
-     * @returns (cid) content identifier for the uploaded files
+     * @returns {String} (cid) content identifier for the uploaded files
      */
     async storeFiles(dir) {
         const files = await this.getFiles(dir);
@@ -53,7 +55,7 @@ export default class FileStorage {
     /**
      * Helper method for preparing the files for upload
      * @param {String} path path to the directory containing the files to be stored
-     * @returns Array of files to be used directly wiht the @function put client method
+     * @returns Array of files to be used directly with the @function put client method
      */
     async getFiles(path) {
         const files = await getFilesFromPath(path);
@@ -63,20 +65,21 @@ export default class FileStorage {
 
 
     /**
-     * Method to retrieve files from Web3.Storage
-     * @param {String} cid content identifier for the file to be retrieved
+     * Method to retrieve files from Web3.Storage and download into the given directory. 
+     * @param {String} cid content identifier at IPFS/web3.storage for the content archive to be retrieved.
+     * @param {String} dir directory to download the files into. 
      */
-    async retrieveFiles(cid) {
+    async retrieveFiles(cid, dir) {
         const urls = await this.retrieveFilesHelper(cid);
-        await this.downloadAll(urls,cid);
+        await this.downloadAll(urls, dir);
     }
 
     /**
-     * Method to get the files urls 
-     * @param {Strinf} cid content identifier for the file to be retrieved
-     * @returns Array of urls to the files to be retrieved 
+     * Method to get the files' urls, where they can be accesses via an ipfs web interface. 
+     * @param {String} cid content identifier for the file to be retrieved
+     * @returns Array of urls of the files to be retrieved 
      */
-    async retrieveFilesHelper(cid) {
+    async retrieveFilesHelper(cid) { //TODO HANLDE ERRONONOUS CID
         const res = await this.client.get(cid)
         let urls = []
         for await (const entry of res.unixFsIterator()) {
@@ -88,10 +91,11 @@ export default class FileStorage {
     }
 
     /**
-     * Method to get urls in the right format 
+     * Method to get urls in the right format. The path is on the form <cid>/<dir>/<file>. 
+     * This method returns the <dir>/<file>-part. 
      * @param {String} path - Path to file 
-     * @param {String} cid - content indentifier to file
-     * @returns url to the files to be retrieved 
+     * @param {String} cid - content indentifier to the content archive where the files resides. 
+     * @returns the path with the prefix cid removed.
      */
     removeCidPrefix(path, cid) {
         path = path.replace(cid, "");
@@ -100,59 +104,65 @@ export default class FileStorage {
 
 
     /**
-     * Method to go through urls array and download the files into a temporary folder
+     * Method to go through urls and download the files into the specified directory.
      * @param {Array} urls Array of urls to the files to be retrieved 
-     * @param {String} cid content indentifier to files
+     * @param {String} dir the directory to download the files into. 
      */
-    async downloadAll(urls,cid) {
+    async downloadAll(urls, dir) {
         for (let i = 0; i < urls.length; i++) {
-            await this.download(urls[i], `./tmp_test_download${this.getFileName(urls[i],cid)}`, (err, data) => {
+            await this.download(urls[i], `${dir}/${this.getFileName(urls[i])}`, (err, data) => { //TODO handle error
                 if (err) throw error;
             });
         }
     }
-    
-    /**
-     * Method to get the name of the file from url
-     * @param {String} url to the file to be retrieve
-     * @param {String} cid content indentifier to file
-     * @returns File name
-     */
-    getFileName(url,cid){
-        url = url.replace(`https://${cid}.ipfs.dweb.link/tmp_test_upload`, "");
-        return url;
+
+    getFileName(url) {
+        const urlParts = url.split("/");
+        return urlParts[urlParts.length - 1]; // the last url part is the filename
     }
 
     /**
-     * Help Method to download a file into a temporary folder
-     * Inspiried by https://stackoverflow.com/questions/11944932/how-to-download-a-file-with-node-js-without-using-third-party-libraries
-     * @param {Strinf} url to the file to be retrieve
-     * @param {String} dest path to where the file will be downloaded 
+     * Method to download a single file into the specified location. 
+     * NOTE: this method is directly copied from Vince Yuan's post in the stackoverflow thread:
+     * https://stackoverflow.com/questions/11944932/how-to-download-a-file-with-node-js-without-using-third-party-libraries.
+     * Copied 2022-03-11.
+     * Only changes made by us are some changes to comments and using `let` instead of `var`. 
+     * @param {String} url to the file to be retrieve
+     * @param {String} dest path to where the file will be downloaded, including both directory and file name. 
      * @param {Function} cb callback function
      */
     async download(url, dest, cb) {
         let file = fs.createWriteStream(dest);
         let request = http.get(url, function(response) {
-        response.pipe(file);
-        file.on('finish', function() {
-            file.close(cb);  
+            response.pipe(file);
+            file.on('finish', function() {
+                file.close(cb);  
         });
         }).on('error', function(err) { 
-            fs.unlink(dest); // Delete the file async. (But we don't check the result)
+            fs.unlink(dest); //delete the file if an error occurred. 
             if (cb) cb(err.message);
         });
     }
 }
 
 // TESTING
+/*
 const fileStorage = new FileStorage();
 console.log(fileStorage);
 const cid = await fileStorage.storeFiles("./tmp_test_upload");
 console.log(cid);
 await fileStorage.retrieveFiles(cid);
 console.log("COMPLETE")
-//await retrieveFiles("bafybeiayhizcizphaxfhzmezvb3ncppjscqudglxzrq3wna2ew4o3iohty");
-//let urls = await retrieveFiles2("bafybeiayhizcizphaxfhzmezvb3ncppjscqudglxzrq3wna2ew4o3iohty");
-//console.log(urls);
+*/
+
+const fileStorage = new FileStorage();
+const cid = "bafybeiayhizcizphaxfhzmezvb3ncppjscqudglxzrq3wna2ew4o3iohty";
+// checking the urls
+const urls = await fileStorage.retrieveFilesHelper(cid);
+console.log(urls);
+// downloading into ./tmp_test_download
+fileStorage.retrieveFiles(cid, "./tmp_test_download");
+
+
 //downloadAll(urls);
 //await retrieveFiles2("bafkreigcpqi4tl43cxjxjvfuyslc4aisalywd3jubbhw5sx5hyeklyqnu4");
