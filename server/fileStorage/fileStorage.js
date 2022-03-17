@@ -115,7 +115,7 @@ export default class FileStorage {
      */
     async downloadAll(urls, dir) {
         for (let i = 0; i < urls.length; i++) {
-            await this.download(urls[i], `${dir}/${this.getFileName(urls[i])}`, (err) => { //TODO handle error
+            await this.download(urls[i], `${dir}/${this.getFileName(urls[i])}`, (err) => {
                 if (err) throw new DownloadError(err.message);
             });
         }
@@ -150,18 +150,12 @@ export default class FileStorage {
             if (cb) cb(err);
         });
     }
+
+    
 }
 
-// TESTING
-/*
-const fileStorage = new FileStorage();
-console.log(fileStorage);
-const cid = await fileStorage.storeFiles("./tmp_test_upload");
-console.log(cid);
-await fileStorage.retrieveFiles(cid);
-console.log("COMPLETE")
-*/
-//==========================
+
+// SCRIPT FOR TESTING - FOR DEVELOPMENT PURPOSES
 /*
 const fileStorage = new FileStorage();
 const cid = "bafybeiayhizcizphaxfhzmezvb3ncppjscqudglxzrq3wna2ew4o3iohty";
