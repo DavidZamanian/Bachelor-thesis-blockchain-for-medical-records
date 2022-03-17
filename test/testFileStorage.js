@@ -34,7 +34,7 @@ describe("check removing the cid ", function () {
         let path = "bafybeig2ni6bdohftpj62m4cqxf2tu2s5plza7enpi7ynyp3nqvmvd4n4u/tmp_test_upload/test1.txt"
         path = fileStorage.removeCidPrefix(path,cid);
 
-        const actual = "/tmp_test_upload/test1.txt"
+        const actual = "/tmp_test_upload/test1.txt";
 
         assert.strictEqual(path, actual);
     });
@@ -45,10 +45,10 @@ describe("check removing the cid ", function () {
 describe("check getting the file name", function () {
     it("returns the correct file name ending a valid url", function () {
     
-        const url = "https://bafkreigrexvw7ufm6qfzpstqfanekco3n3m2x4b4peenem6voyepqcff5m.ipfs.dweb.link/tmp_test_upload/test1.txt"
+        const url = "https://bafkreigrexvw7ufm6qfzpstqfanekco3n3m2x4b4peenem6voyepqcff5m.ipfs.dweb.link/tmp_test_upload/test1.txt";
         const filename = fileStorage.getFileName(url);
 
-        const actual = "test1.txt"
+        const actual = "test1.txt";
 
         assert.strictEqual(filename, actual);
    
