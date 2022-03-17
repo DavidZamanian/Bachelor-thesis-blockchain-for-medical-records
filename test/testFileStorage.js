@@ -1,13 +1,12 @@
 /**
  * Test for fileStorage class
  * @author Edenia Isaac
+ * @author Hampus Jernkrook
  */
 
 import FileStorage from "../server/fileStorage/fileStorage.js";
 import CouldNotResolveCidError from "../server/fileStorage/couldNotResolveCidError.js";
 import * as assert from "assert";
-import * as fs from 'fs';
-import * as path from 'path';
 // import chai from "chai";
 // const expect = chai.expect;
 const fileStorage = new FileStorage();

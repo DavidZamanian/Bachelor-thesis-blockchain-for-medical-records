@@ -23,7 +23,9 @@ export default class FileStorage {
     }
 
     /**
-     * Gets the web3.storage API token from the WEB3STORAGE_TOKEN enviroment variable
+     * Gets the web3.storage API token from the WEB3STORAGE_TOKEN enviroment variable.
+     * Copied from https://docs.web3.storage/how-tos/store/. 
+     * 
      * @returns API token
      */
     getAccessToken() {
@@ -35,7 +37,8 @@ export default class FileStorage {
 
 
     /**
-     * Creates a Web3Storage client object by passing in an API token 
+     * Creates a Web3Storage client object by passing in an API token.
+     * Copied from https://docs.web3.storage/how-tos/store/. 
      * @returns Web3Storage client object
      */
     makeStorageClient() {
@@ -44,7 +47,9 @@ export default class FileStorage {
 
     
     /**
-     * Uploading files to Web3.Storage
+     * Uploads files to Web3.Storage. 
+     * Copied and slighlty modified from https://docs.web3.storage/how-tos/store/. 
+     * 
      * @param {String} dir path to the directory containing the files to be stored 
      * @returns {String} (cid) content identifier for the uploaded files
      */
@@ -55,7 +60,9 @@ export default class FileStorage {
     }
 
     /**
-     * Helper method for preparing the files for upload
+     * Fetches the files in the specified path (directory) to an array of Files.
+     * Copied and slighlty modified from https://docs.web3.storage/how-tos/store/.  
+     * 
      * @param {String} path path to the directory containing the files to be stored
      * @returns Array of files to be used directly with the @function put client method
      */
@@ -78,6 +85,9 @@ export default class FileStorage {
 
     /**
      * Method to get the files' urls, where they can be accesses via an ipfs web interface. 
+     * Inspired by https://docs.web3.storage/how-tos/retrieve/#using-the-client-libraries 
+     * and https://docs.web3.storage/reference/js-client-library/#retrieve-files. 
+     * 
      * @param {String} cid content identifier for the file to be retrieved
      * @returns Array of urls of the files to be retrieved 
      */
@@ -155,12 +165,18 @@ export default class FileStorage {
 }
 
 
-// SCRIPT FOR TESTING - FOR DEVELOPMENT PURPOSES
+// SCRIPT FOR TESTING - FOR DEVELOPMENT PURPOSES 
+// UNCOMMENT AND RUN TO CHECK THAT EVERYTHING WORKS
 /*
+//setup
 const fileStorage = new FileStorage();
-const cid = "bafybeiayhizcizphaxfhzmezvb3ncppjscqudglxzrq3wna2ew4o3iohty";
+const cid = "bafybeig2ni6bdohftpj62m4cqxf2tu2s5plza7enpi7ynyp3nqvmvd4n4u";
 const downloads_directory = "./tmp_test_download";
+const uploads_directory = "./tmp_test_upload";
 */
+
+//uploading to web3.storage
+//fileStorage.storeFiles(uploads_directory);
 
 // checking the urls
 /*
