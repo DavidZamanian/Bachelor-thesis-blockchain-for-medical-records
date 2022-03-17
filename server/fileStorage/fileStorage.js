@@ -18,8 +18,8 @@ export default class FileStorage {
     /**
      * Initialises a FileStorage object and sets the storage client to connect to. 
      */
-    constructor() {
-        this.client = this.makeStorageClient();
+    constructor(initClient) {
+        if (initClient) {this.client = this.makeStorageClient();}
     }
 
     /**
