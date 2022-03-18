@@ -26,7 +26,7 @@ export default class FileStorage {
      * Gets the web3.storage API token from the WEB3STORAGE_TOKEN enviroment variable.
      * Copied from https://docs.web3.storage/how-tos/store/. 
      * 
-     * @returns API token
+     * @returns API token 
      */
     getAccessToken() {
         /**  For this to work, you need to set the
