@@ -9,9 +9,12 @@ import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../theme.style";
 import { database, ref, onValue} from "../../../firebaseSetup";
+import { SubmitContext } from "../../../contexts/SubmitContext"
 
 export function EHROverviewScreen(props) {
-
+  const { updateEmail, updateAddress, updatePhoneNr } =
+    React.useContext(SubmitContext);
+  
   const route = useRoute();
   const navigation = useNavigation();
 

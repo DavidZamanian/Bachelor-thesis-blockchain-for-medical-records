@@ -5,12 +5,13 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { AuthStackNavigator } from "./src/Navigation/AuthStackNavigator";
 import { MainStackNavigator } from "./src/Navigation/MainStackNavigator";
+import { SubmitContext } from "./contexts/SubmitContext";
 
 const RootStack = createStackNavigator(); //Contains all of our application
 
 function App() {
   const [data, setData] = React.useState(null);
-  const { authentication, user } = apiService();
+  const { authentication, user, updateInfo } = apiService();
 
   //TODO This will be moved
   React.useEffect(() => {
@@ -38,7 +39,11 @@ function App() {
               }}
               name="MainStack"
             >
-              {() => <MainStackNavigator />}
+              {() => (
+                <SubmitContext.Provider value={updateInfo}>
+                  <MainStackNavigator />
+                </SubmitContext.Provider>
+              )}
             </RootStack.Screen>
           ) : (
             <RootStack.Screen
