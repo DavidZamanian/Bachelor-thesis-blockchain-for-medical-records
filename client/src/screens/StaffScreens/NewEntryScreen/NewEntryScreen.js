@@ -200,6 +200,7 @@ export function NewEntryScreen(props) {
 
     /* INSERT CHECK IF DATA SUBMISSION WAS SUCCESSFULL BEFORE THIS*/
     navigation.navigate("PatientSearchScreen");
+    setModalVisible(false);
   }
 
   const openPopup = () => {
@@ -210,7 +211,7 @@ export function NewEntryScreen(props) {
   }
 
   const cancelAndReturn = () => {
-    navigation.navigate("EHROverviewDoctorV",inputPatient);
+    navigation.navigate("EHROverview",inputPatient);
   }
 
 

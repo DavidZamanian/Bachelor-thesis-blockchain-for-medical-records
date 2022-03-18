@@ -14,10 +14,10 @@ const Header = () => {
 
   const navigation = useNavigation();
   const onPressContact = () => {
-    navigation.navigate("NewEntryScreen");
+    //navigation.navigate("NewEntryScreen");
   };
   const onPressAbout = () => {
-    navigation.navigate("PatientSearchScreen");
+    //navigation.navigate("PatientSearchScreen");
   };
 
   function logIn() {}

@@ -18,7 +18,7 @@ export function PatientSearchScreen() {
   // Navigation: redirect to the overview (staff version)
   const navigation = useNavigation();
   const redirectTo = () => {
-    navigation.navigate("EHROverviewDoctorV",patientID);
+    navigation.navigate("EHROverview",patientID);
   };
 
   /* 
