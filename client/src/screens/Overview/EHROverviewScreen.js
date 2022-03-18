@@ -28,29 +28,37 @@ export function EHROverviewScreen(props) {
   const placeholderDiagnoses = ["Birch Allergy"];
   const placeholderPatientRegions = ["Vastra Gotaland","Skane"];
   const placeholderRegions=["Stockholm","Uppsala","Sormland","Ostergotland","Jonkoping","Kronoberg","Kalmar","Gotland","Blekinge","Skane","Halland","Varmland","Orebro","Vastmanland","Dalarna","Gavleborg","Vasternorrland","Jamtland","Vasterbotten","Norrbotten","Vastra Gotaland"];
+  const placeholderPatient={
+    patientId:null,
+    email:"ErrorEmail",
+    firstName:"ErrorFirstName",
+    lastName:"ErrorLastName",
+    address:"ErrorAddress",
+    phoneNr:"ErrorPhoneNr",
+    prescriptions:[],
+    diagnoses:[],
+    permittedRegions:[],
+    journals:[],
+  };
 
   const [regions,setRegions] = useState([]);
 
   const [patientInfo,setPatientInfo] = useState(
-    {
-      patientId:null,
-      email:"ErrorEmail",
-      firstName:"ErrorFirstName",
-      lastName:"ErrorLastName",
-      address:"ErrorAddress",
-      phoneNr:"ErrorPhoneNr",
-      prescriptions:[],
-      diagnoses:[],
-      permittedRegions:[],
-      journals:[],
-    }
+    placeholderPatient
   );
+
+    
+
+    const wipePatientData = () => {
+      setPatientInfo(placeholderPatient);
+    }
 
   /* 
     Gather patient info from Firebase (runs automatically at the start) 
   */
     const fetchPatientData = () => {
-      if (patientInfo.patientId !== null){
+      alert("attempting fetch "+patientID)
+      if (patientID == patientInfo.patientId){
         return;
       }
       const patientRef = ref(database, 'Users/' + patientID);
@@ -204,7 +212,9 @@ export function EHROverviewScreen(props) {
     const requestAddEHR = () => {
       // CHECK PRIVILEGE?
       alert(patientInfo.patientId)
-      navigation.navigate("NewEntryScreen",patientInfo.patientId);
+      // Get rid of patient data
+      wipePatientData();
+      navigation.navigate("NewEntryScreen",patientID);
 
     }
 
