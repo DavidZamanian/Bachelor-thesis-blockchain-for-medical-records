@@ -57,7 +57,7 @@ export function EHROverviewScreen(props) {
     Gather patient info from Firebase (runs automatically at the start) 
   */
     const fetchPatientData = () => {
-      alert("attempting fetch "+patientID)
+      //alert("attempting fetch "+patientID)
       if (patientID == patientInfo.patientId){
         return;
       }
@@ -79,7 +79,7 @@ export function EHROverviewScreen(props) {
             
             setDoctorRole(userRole == "doctor")
 
-            alert("accessing patient:"+patientID)
+            //alert("accessing patient:"+patientID)
             setJournalExpanded((prevState) => {
               prevState = [];
               patientJournals.forEach(() => prevState.push(false))
