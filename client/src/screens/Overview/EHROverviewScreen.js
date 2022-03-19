@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Text, View, Modal } from "react-native";
+import { Text, View, Modal, TextInput } from "react-native";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header/Header";
 import styles from "./styles";
@@ -23,7 +23,7 @@ export function EHROverviewScreen(props) {
 
 
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "doctor";
+  const placeholderRole = "patient";
 
   const [doctorRole,setDoctorRole] = useState(false);
 
@@ -162,6 +162,14 @@ export function EHROverviewScreen(props) {
   const [journalExpanded, setJournalExpanded] = useState([]);
 
   
+  // To toggle editing of contact info
+  const [editingContactInfo, setEditingContactInfo] = useState(true);
+  const [inputFirstName, setFirstName] = useState();
+  const [inputLastName, setLastName] = useState("");
+  const [inputAddress, setAddress] = useState("");
+  const [inputPhoneNr, setPhoneNr] = useState("");
+  const [inputEmail, setEmail] = useState("");
+
 
   /* This is the popup window - whether it is visible or no */ 
   const [modalVisible, setModalVisible] = useState(false);
@@ -222,6 +230,20 @@ export function EHROverviewScreen(props) {
     }
 
 
+    const editContactInfo = () => {
+      setEditingContactInfo(true)
+    }
+
+    const discardContactInfo = () => {
+      setEditingContactInfo(false)
+    }
+
+    const saveContactInfo = () => {
+      setEditingContactInfo(false)
+    }
+
+
+
   // FETCH PATIENT DATA
   fetchPatientData();
   return (
@@ -274,20 +296,96 @@ export function EHROverviewScreen(props) {
               <View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Full name: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.lastName}, {patientInfo.firstName}</Text>
+                  {editingContactInfo ? 
+                  (<View style={[styles.contactValue,{flexDirection:"column"}]}>
+                  <TextInput
+                    style={styles.contactInput}
+                    onChangeText={setFirstName}
+                    value={inputFirstName}
+                    placeholder="First name"
+                  />
+                  
+                  <TextInput
+                    style={styles.contactInput}
+                    onChangeText={setLastName}
+                    value={inputLastName}
+                    placeholder="Last name"
+                  />
+                  </View>)
+                  :
+                  (<Text style={styles.contactValue}>{patientInfo.lastName}, {patientInfo.firstName}</Text>)
+                  }
+                  
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Address: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.address}</Text>
+                  { editingContactInfo ?
+                  (<View style={styles.contactValue}><TextInput
+                    style={styles.contactInput}
+                    onChangeText={setAddress}
+                    value={inputAddress}
+                    placeholder="Full address"
+                    multiline={true}
+                  /></View>)
+                  :
+                  (<Text style={styles.contactValue}>{patientInfo.address}</Text>)
+                  }
+                  
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Phone: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.phoneNr}</Text>
+                  { editingContactInfo ?
+                  (<View style={styles.contactValue}><TextInput
+                    style={styles.contactInput}
+                    onChangeText={setPhoneNr}
+                    value={inputPhoneNr}
+                    placeholder="Phone number"
+                  /></View>)
+                  :
+                  (<Text style={styles.contactValue}>{patientInfo.phoneNr}</Text>)
+                  }
+                  
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Email: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.email}</Text>
+                  { editingContactInfo ?
+                  (<View style={styles.contactValue}><TextInput
+                    style={styles.contactInput}
+                    onChangeText={setEmail}
+                    value={inputEmail}
+                    placeholder="Email address"
+                  /></View>)
+                  :
+                  (<Text style={styles.contactValue}>{patientInfo.email}</Text>)
+                  }
                 </View>
+                { !doctorRole &&
+                <View style={styles.contactItem}>
+                  { editingContactInfo ?
+                  <>
+                  <ThemeButton 
+                    labelText="Discard Changes" 
+                    labelSize={15} 
+                    extraStyle={[styles.detailButton,styles.journalItemText,{backgroundColor:"#DA1414"}]}
+                    onPress={() => discardContactInfo()}
+                    />
+                  <ThemeButton 
+                    labelText="Save Changes" 
+                    labelSize={15}
+                    extraStyle={[styles.detailButton,styles.journalItemText]}
+                    onPress={() => saveContactInfo()}
+                    />
+                  </>
+                  :
+                  <ThemeButton 
+                    labelText="Change contact info" 
+                    labelSize={15} 
+                    extraStyle={[styles.detailButton,styles.journalItemText]}
+                    onPress={() => editContactInfo()}
+                    />
+                  }
+                </View>
+                }
               </View>
             </View>
             { doctorRole ?
@@ -304,8 +402,8 @@ export function EHROverviewScreen(props) {
                 <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => setModalVisible(true)}/>
               </View>
             }
-          </View>
-          <View style={styles.rowContainer}>
+        </View>
+        <View style={styles.rowContainer}>
           <View style={styles.container}>
             <Text style={styles.header}>Prescriptions</Text>
             <FlatList
@@ -330,7 +428,7 @@ export function EHROverviewScreen(props) {
               )}
             />
           </View>
-          </View>
+        </View>
           <View style={styles.rowContainer}>
             <View style={[styles.container,styles.doubleContainer]}>
               <Text style={styles.header}>Past record entries</Text>
@@ -342,7 +440,6 @@ export function EHROverviewScreen(props) {
                 <View style={styles.journalListItem}>
                   <Text style={[styles.journalItemText,styles.journalListHeader]}>Date</Text>
                   <Text style={[styles.journalItemText,styles.journalListHeader,{flex:4}]}>Location</Text>
-                  <Text style={[styles.journalItemText,styles.journalListHeader]}>Details</Text>
                   <Text style={[styles.journalItemText,styles.journalListHeader,{flex:4}]}>Issued by</Text>
                   <Text style={[styles.journalItemText,styles.journalListHeader,{flex:1}]}></Text>
                 </View>
@@ -353,7 +450,6 @@ export function EHROverviewScreen(props) {
                   <TouchableOpacity style={[styles.journalListItem,{ backgroundColor: journalExpanded[index] ? theme.SECONDARY_COLOR :"#F3F3F3"}]} onPress={() => toggleExpandJournal(index)}>
                     <Text style={styles.journalItemText}>{item.date.toString().slice(0,10)}</Text>
                     <Text style={[styles.journalItemText,{flex:4}]}>{item.healthcareInstitution}</Text>
-                    <ThemeButton  labelText="See details" labelSize={15} iconSize={15} extraStyle={[styles.detailButton,styles.journalItemText]}/>
                     <Text style={[styles.journalItemText,{flex:4}]}>{item.medicalPersonnel}</Text>
                     <Icon name={journalExpanded[index] ? "chevron-up-outline" : "chevron-down-outline"} color={theme.PRIMARY_COLOR} style={[styles.journalItemText,{flex:1, fontSize:40}]}/>
                   </TouchableOpacity>

@@ -1,7 +1,7 @@
 import React, { useState, setState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Text, View, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
-import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
+import { Text, View, TextInput, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
 import Icon from "react-native-vector-icons/Ionicons";
 import ColouredIcon from "../../../components/colouredIcon";
