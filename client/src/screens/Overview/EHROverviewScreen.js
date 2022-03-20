@@ -23,7 +23,7 @@ export function EHROverviewScreen(props) {
 
 
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "patient";
+  const placeholderRole = "doctor";
 
   const [doctorRole,setDoctorRole] = useState(false);
 
@@ -163,7 +163,7 @@ export function EHROverviewScreen(props) {
 
   
   // To toggle editing of contact info
-  const [editingContactInfo, setEditingContactInfo] = useState(true);
+  const [editingContactInfo, setEditingContactInfo] = useState(false);
   const [inputFirstName, setFirstName] = useState();
   const [inputLastName, setLastName] = useState("");
   const [inputAddress, setAddress] = useState("");
