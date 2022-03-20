@@ -1,6 +1,7 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { LoginScreen } from "../screens/LoginScreen/LoginScreen";
+import { AboutScreen } from "../screens/MiscScreens/AboutScreen";
 
 const AuthStack = createStackNavigator();
 const LoginStack = createStackNavigator();
@@ -29,6 +30,13 @@ export function AuthStackNavigator() {
               }}
               name="Login"
               component={LoginScreen}
+            />
+            <LoginStack.Screen
+              options={{
+                headerShown: false,
+              }}
+              name="AboutScreen"
+              component={AboutScreen}
             />
           </LoginStack.Navigator>
         )}
