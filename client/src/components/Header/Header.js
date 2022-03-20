@@ -17,7 +17,7 @@ const Header = () => {
     //navigation.navigate("NewEntryScreen");
   };
   const onPressAbout = () => {
-    //navigation.navigate("PatientSearchScreen");
+    navigation.navigate("AboutScreen");
   };
 
   function logIn() {}
