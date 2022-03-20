@@ -170,6 +170,10 @@ export function EHROverviewScreen(props) {
 
     const editContactInfo = () => {
       setEditingContactInfo(true)
+      // populate input forms before editing
+      setAddress(patientInfo.address)
+      setEmail(patientInfo.email)
+      setPhoneNr(patientInfo.phoneNr)
     }
 
     const discardContactInfo = () => {
@@ -178,9 +182,15 @@ export function EHROverviewScreen(props) {
 
     const saveContactInfo = () => {
       // Check inputs
-      updateEmail(patientInfo.id,inputEmail)
-
-
+      if (inputAddress !== patientInfo.address){
+        updateAddress(patientInfo.patientId,inputAddress)
+      }
+      if (inputEmail !== patientInfo.email){
+        updateEmail(patientInfo.patientId,inputEmail)
+      }
+      if (inputEmail !== patientInfo.email){
+        updatePhoneNr(patientInfo.patientId,inputPhoneNr)
+      }
       setEditingContactInfo(false)
     }
 
