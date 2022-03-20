@@ -4,7 +4,6 @@ import { EHROverviewScreen } from "../screens/Overview/EHROverviewScreen";
 import { NewEntryScreen } from "../screens/StaffScreens/NewEntryScreen/NewEntryScreen";
 import { PatientSearchScreen } from "../screens/StaffScreens/PatientSearchScreen/PatientSearchScreen";
 import { AboutScreen } from "../screens/MiscScreens/AboutScreen";
-import Header from "../components/Header/Header";
 import { ContactScreen } from "../screens/MiscScreens/ContactScreen";
 
 const Stack = createStackNavigator();
