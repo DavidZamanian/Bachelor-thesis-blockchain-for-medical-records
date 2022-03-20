@@ -10,6 +10,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../theme.style";
 import { database, ref, onValue} from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext"
+import { PlaceholderValues } from "../../placeholders/placeholderValues";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
@@ -23,38 +24,16 @@ export function EHROverviewScreen(props) {
 
 
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "doctor";
+  const placeholderRole = "patient";
 
   const [doctorRole,setDoctorRole] = useState(false);
-
-  const placeholderPrescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
-  const placeholderDiagnoses = ["Birch Allergy"];
-  const placeholderPatientRegions = ["Vastra Gotaland","Skane"];
-  const placeholderRegions=["Stockholm","Uppsala","Sormland","Ostergotland","Jonkoping","Kronoberg","Kalmar","Gotland","Blekinge","Skane","Halland","Varmland","Orebro","Vastmanland","Dalarna","Gavleborg","Vasternorrland","Jamtland","Vasterbotten","Norrbotten","Vastra Gotaland"];
-  const placeholderPatient={
-    patientId:null,
-    email:"ErrorEmail",
-    firstName:"ErrorFirstName",
-    lastName:"ErrorLastName",
-    address:"ErrorAddress",
-    phoneNr:"ErrorPhoneNr",
-    prescriptions:[],
-    diagnoses:[],
-    permittedRegions:[],
-    journals:[],
-  };
-
   const [regions,setRegions] = useState([]);
 
-  const [patientInfo,setPatientInfo] = useState(
-    placeholderPatient
-  );
+  const [patientInfo,setPatientInfo] = useState(PlaceholderValues.patient);
 
-    
-
-    const wipePatientData = () => {
-      setPatientInfo(placeholderPatient);
-    }
+  const wipePatientData = () => {
+    setPatientInfo(PlaceholderValues.patient);
+  }
 
   /* 
     Gather patient info from Firebase (runs automatically at the start) 
@@ -74,11 +53,11 @@ export function EHROverviewScreen(props) {
             
             // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
             const userRole                = placeholderRole; //snapshot.val().role 
-            const allRegions              = placeholderRegions;
-            const patientJournals         = placeholderJournals;
-            const patientPermittedRegions = placeholderPatientRegions;
-            const patientPrescriptions    = placeholderPrescriptions;
-            const patientDiagnoses        = placeholderDiagnoses;
+            const allRegions              = PlaceholderValues.allRegions;
+            const patientJournals         = PlaceholderValues.journals;
+            const patientPermittedRegions = PlaceholderValues.permittedRegions;
+            const patientPrescriptions    = PlaceholderValues.prescriptions;
+            const patientDiagnoses        = PlaceholderValues.diagnoses;
             
             setDoctorRole(userRole == "doctor")
 
@@ -99,6 +78,7 @@ export function EHROverviewScreen(props) {
               // getPrescriptions
               // getDiagnoses
               // getPermittedRegions
+              // getJournals
               prescriptions:patientPrescriptions,
               diagnoses:patientDiagnoses,
               permittedRegions:patientPermittedRegions,
@@ -114,46 +94,6 @@ export function EHROverviewScreen(props) {
         }
       );
     }
-
-  const placeholderJournals = [
-    {
-      date: "2022-03-04T08:44:44.118Z",
-      patientID: "fdjsajkfvhkcjasjcas",
-      healthcareInstitution: "Ostra sjukhuset",
-      medicalPersonnel: "Lolly Pop",
-      details: "thick throat",
-      diagnoses: ["allergy against birch"],
-      prescriptions: [
-        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
-        "pollenStopperSpray 2 pills 2 times / day"
-      ]
-    },
-    {
-      date: "2022-03-04T08:44:44.118Z",
-      patientID: "fdjsajkfvhkcjasjcas",
-      healthcareInstitution: "Ostra sjukhuset",
-      medicalPersonnel: "Lolly Pop",
-      details: "thick throat",
-      diagnoses: ["allergy against birch"],
-      prescriptions: [
-        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
-        "pollenStopperSpray 2 pills 2 times / day"
-      ]
-    },
-    {
-      date: "2022-03-04T08:44:44.118Z",
-      patientID: "fdjsajkfvhkcjasjcas",
-      healthcareInstitution: "Ostra sjukhuset",
-      medicalPersonnel: "Lolly Pop",
-      details: "thick throat",
-      diagnoses: ["allergy against birch"],
-      prescriptions: [
-        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
-        "pollenStopperSpray 2 pills 2 times / day"
-      ]
-    },
-  ]
-
   
   
 
@@ -164,8 +104,6 @@ export function EHROverviewScreen(props) {
   
   // To toggle editing of contact info
   const [editingContactInfo, setEditingContactInfo] = useState(false);
-  const [inputFirstName, setFirstName] = useState();
-  const [inputLastName, setLastName] = useState("");
   const [inputAddress, setAddress] = useState("");
   const [inputPhoneNr, setPhoneNr] = useState("");
   const [inputEmail, setEmail] = useState("");
@@ -239,6 +177,10 @@ export function EHROverviewScreen(props) {
     }
 
     const saveContactInfo = () => {
+      // Check inputs
+      updateEmail(patientInfo.id,inputEmail)
+
+
       setEditingContactInfo(false)
     }
 
@@ -296,26 +238,7 @@ export function EHROverviewScreen(props) {
               <View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Full name: </Text>
-                  {editingContactInfo ? 
-                  (<View style={[styles.contactValue,{flexDirection:"column"}]}>
-                  <TextInput
-                    style={styles.contactInput}
-                    onChangeText={setFirstName}
-                    value={inputFirstName}
-                    placeholder="First name"
-                  />
-                  
-                  <TextInput
-                    style={styles.contactInput}
-                    onChangeText={setLastName}
-                    value={inputLastName}
-                    placeholder="Last name"
-                  />
-                  </View>)
-                  :
-                  (<Text style={styles.contactValue}>{patientInfo.lastName}, {patientInfo.firstName}</Text>)
-                  }
-                  
+                  <Text style={styles.contactValue}>{patientInfo.lastName}, {patientInfo.firstName}</Text>                                  
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Address: </Text>
