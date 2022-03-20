@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, View, TextInput, StyleSheet} from "react-native";
+import { Text, View, TextInput } from "react-native";
 import { AuthContext } from "../../../contexts/AuthContext";
 import Header from "../../components/Header/Header";
 import { apiService } from "../../../hooks/apiService";
