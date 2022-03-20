@@ -21,7 +21,9 @@ const Header = () => {
     navigation.navigate("AboutScreen");
   };
 
-  function logIn() {}
+  function logIn() {
+    navigation.navigate("Login");
+  }
 
   return (
     <View style={styles.navbar}>
