@@ -7,6 +7,7 @@ import styles from "../../styles";
 import ColouredIcon from "../colouredIcon";
 import ContrastText from "../contrastText";
 import { useNavigation } from "@react-navigation/native";
+import NavbarButton from "../navbarButton";
 
 const Header = () => {
   const { authentication, user } = apiService();
@@ -31,32 +32,15 @@ const Header = () => {
         />
         <ContrastText>Bachelor Project</ContrastText>
       </View>
-
       <View style={styles.navbar_buttons_container}>
-        <TouchableOpacity style={styles.navbar_button} onPress={onPressAbout}>
-          <ColouredIcon
-            size={45}
-            name="information-circle-outline"
-            color="white"
-          />
-          <Text style={styles.navbar_button_text}>About</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navbar_button} onPress={onPressContact}>
-          <ColouredIcon size={45} name="mail-outline" color="white" />
-          <Text style={styles.navbar_button_text}>Contact</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navbar_button}
-          onPress={user ? logOut : logIn}
-        >
-          <ColouredIcon
-            size={45}
-            name={user ? "log-out-outline" : "log-in-outline"}
-          />
-          <Text style={styles.navbar_button_text}>
-            {user ? "Sign Out" : "Sign In"}
-          </Text>
-        </TouchableOpacity>
+        <NavbarButton labelText="About" iconName="information-circle-outline" onPress={onPressAbout}/>
+        <NavbarButton labelText="Contact" iconName="mail-outline" onPress={onPressContact}/>
+        {
+          user ?
+          <NavbarButton labelText="Sign Out" iconName="log-out-outline" onPress={logOut}/>
+          :
+          <NavbarButton labelText="Sign In" iconName="log-in-outline" onPress={logIn}/>
+        }
       </View>
     </View>
   );
