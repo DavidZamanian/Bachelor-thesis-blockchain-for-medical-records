@@ -5,6 +5,7 @@ import { NewEntryScreen } from "../screens/StaffScreens/NewEntryScreen/NewEntryS
 import { PatientSearchScreen } from "../screens/StaffScreens/PatientSearchScreen/PatientSearchScreen";
 import { AboutScreen } from "../screens/MiscScreens/AboutScreen";
 import Header from "../components/Header/Header";
+import { ContactScreen } from "../screens/MiscScreens/ContactScreen";
 
 const Stack = createStackNavigator();
 
@@ -47,6 +48,13 @@ const StackNavigators = () => {
         }}
         name="AboutScreen"
         component={AboutScreen}
+      />
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="ContactScreen"
+        component={ContactScreen}
       />
     </Stack.Navigator>
   );

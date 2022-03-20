@@ -21,7 +21,7 @@ export function AboutScreen() {
           <Text style={styles.contentHeader}>About Us</Text>
           <Text style={styles.mainText}>who cares</Text>
           <Text style={styles.contentHeader}>Acknowledgements</Text>
-          <Text style={[styles.mainText,styles.describeText]}>This web application, and it's behind-the-curtains functionality, was made possible thanks to the following frameworks and services...</Text>
+          <Text style={[styles.mainText,styles.describeText]}>This web application, and it's behind-the-scenes functionality, was made possible thanks to the following frameworks and services...</Text>
           <Text style={[styles.mainText,{textAlign:"center"}]}>
             JavaScript{'\n'}
             npm{'\n'}

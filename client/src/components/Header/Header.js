@@ -15,7 +15,7 @@ const Header = () => {
 
   const navigation = useNavigation();
   const onPressContact = () => {
-    //navigation.navigate("NewEntryScreen");
+    navigation.navigate("ContactScreen");
   };
   const onPressAbout = () => {
     navigation.navigate("AboutScreen");
