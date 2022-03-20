@@ -21,11 +21,13 @@ const Header = () => {
 
   function logIn() {
     navigation.navigate("Login");
+    // Danger, this is not the screen to show for doctors!
+    navigation.navigate("EHROverview");
   }
 
   return (
     <View style={styles.navbarContainer}>
-      <TouchableOpacity style={styles.navbarHomeContainer}>
+      <TouchableOpacity style={styles.navbarHomeContainer} onPress={logIn}>
         <Image
           source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
           style={styles.navbarLogo}
