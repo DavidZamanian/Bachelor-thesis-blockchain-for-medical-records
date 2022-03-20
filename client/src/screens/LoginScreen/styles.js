@@ -1,0 +1,87 @@
+import { StyleSheet } from "react-native";
+import theme from "../../theme.style";
+
+const styles = StyleSheet.create({
+    main : {
+      width: '100%',
+      height: '100%',
+      backgroundColor: "white",
+    },
+    content: {
+      width: '100%',
+      height: theme.CONTENT_HEIGHT,
+    },
+    splitContainer: {
+      flexDirection:'row',
+      height: '100%',
+      width: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    loginContainer: {
+      backgroundColor: 'white',
+      borderRadius: 25,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+      paddingHorizontal: 25,
+      paddingVertical: 35,
+      justifyContent: 'space-between',
+      marginHorizontal: 15,
+    },
+    genericHeader: {
+      fontSize: 32,
+      color: theme.PRIMARY_COLOR,
+      textAlign:'center',
+      fontWeight:'bold',
+    },
+    inputHeader: {
+      color: 'darkgray',
+    },
+    largeTextInputForm: {
+      textAlign: 'center',
+      fontSize: 22,
+      margin: 12,
+      borderWidth: 1,
+      borderRadius: 10,
+      padding: 10,
+      alignSelf: 'center',
+      width:"100%",
+    },
+    largeButton: {
+      height: 50,
+      width:"100%",
+      flexDirection:'row',
+      backgroundColor: theme.PRIMARY_COLOR,
+      color: theme.SECONDARY_COLOR,
+      borderRadius: 25,
+      borderWidth: 2,
+      borderColor: theme.SECONDARY_COLOR,
+      alignItems: 'center',
+      textAlignVertical: 'center',
+      textAlign: 'center',
+      justifyContent: 'center',
+      alignSelf:'center',
+      padding:5,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.5,
+      shadowRadius: 3.84,
+    },
+    bulletpointContainer:{
+      marginLeft:25, 
+      marginVertical:25, 
+      flexDirection:'row', 
+      alignItems:'center'
+    },
+  });
+
+  export default styles;
