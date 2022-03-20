@@ -112,6 +112,9 @@ export function EHROverviewScreen(props) {
   /* This is the popup window - whether it is visible or no */ 
   const [modalVisible, setModalVisible] = useState(false);
 
+  /* This is the popup window - whether it is visible or no */ 
+  const [showWarning, setShowWarning] = useState(false);
+
   /* 
     Method for toggle the collapsing of a journal entry.
     Takes index as parameter to identify which one to toggle.
@@ -169,6 +172,7 @@ export function EHROverviewScreen(props) {
 
 
     const editContactInfo = () => {
+      setShowWarning(false)
       setEditingContactInfo(true)
       // populate input forms before editing
       setAddress(patientInfo.address)
@@ -181,19 +185,32 @@ export function EHROverviewScreen(props) {
     }
 
     const saveContactInfo = () => {
-      // Check inputs
-      if (inputAddress !== patientInfo.address){
-        updateAddress(patientInfo.patientId,inputAddress)
+      if (validEmail(inputEmail) && validAddress(inputAddress) && validPhoneNr(inputPhoneNr)){
+        if (inputAddress !== patientInfo.address){
+          updateAddress(patientInfo.patientId,inputAddress)
+        }
+        if (inputEmail !== patientInfo.email){
+          updateEmail(patientInfo.patientId,inputEmail)
+        }
+        if (inputEmail !== patientInfo.email){
+          updatePhoneNr(patientInfo.patientId,inputPhoneNr)
+        }
+        setEditingContactInfo(false)
       }
-      if (inputEmail !== patientInfo.email){
-        updateEmail(patientInfo.patientId,inputEmail)
+      else{
+        setShowWarning(true);
       }
-      if (inputEmail !== patientInfo.email){
-        updatePhoneNr(patientInfo.patientId,inputPhoneNr)
-      }
-      setEditingContactInfo(false)
     }
 
+    const validEmail = (email) => {
+      return email !== ""
+    }
+    const validAddress = (address) => {
+      return address !== ""
+    }
+    const validPhoneNr= (phoneNr) => {
+      return phoneNr !== ""
+    }
 
 
   // FETCH PATIENT DATA
@@ -287,11 +304,19 @@ export function EHROverviewScreen(props) {
                     onChangeText={setEmail}
                     value={inputEmail}
                     placeholder="Email address"
+                    keyboardType="email-address"
                   /></View>)
                   :
                   (<Text style={styles.contactValue}>{patientInfo.email}</Text>)
                   }
                 </View>
+                {
+                  editingContactInfo && showWarning &&
+                  <View style={styles.contactItem}>
+                    <Text style={styles.warningLabel}>Error: Input fields cannot be empty</Text>
+                  </View>
+                }
+                
                 { !doctorRole &&
                 <View style={styles.contactItem}>
                   { editingContactInfo ?

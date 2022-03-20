@@ -181,7 +181,16 @@ const styles = StyleSheet.create({
     regionLabel:{
         margin:10,
     },
-
+    warningLabel:{
+        borderColor:"#ce0018",
+        borderWidth:1,
+        borderRadius:5,
+        backgroundColor:"#ffdcd5",
+        color:"#ce0018",
+        paddingVertical:5,
+        paddingHorizontal:10,
+        textAlign:"center"
+    }
 });
 
 export default styles;
