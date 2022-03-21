@@ -26,6 +26,26 @@ export function EHROverviewScreen(props) {
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
   const placeholderRole = "patient";
 
+  const [state, setState] = useState({
+    doctorRole: false,
+    regions: [],
+    patientInfo: PlaceholderValues.patient,
+    patientID: props.route.params == null ? 8701104455 : props.route.params,
+    journalExpanded: [],
+    editingContactInfo: false,
+    inputAddress: "",
+    inputAddress: "",
+    inputPhoneNr: "",
+    inputEmail: "",
+    modalVisible: false,
+    showWarning: false,
+  }) 
+
+
+
+
+
+
   const [doctorRole,setDoctorRole] = useState(false);
   const [regions,setRegions] = useState([]);
 
@@ -110,9 +130,6 @@ export function EHROverviewScreen(props) {
 
 
   /* This is the popup window - whether it is visible or no */ 
-  const [modalVisible, setModalVisible] = useState(false);
-
-  /* This is the popup window - whether it is visible or no */ 
   const [showWarning, setShowWarning] = useState(false);
 
   /* 
@@ -139,7 +156,8 @@ export function EHROverviewScreen(props) {
       return item['name']+" "+item['enabled']+"\n";
     });
     alert(regStrings.toString())
-    setModalVisible(false);
+
+    togglePopup(false)
   }
 
   /* 
@@ -212,6 +230,12 @@ export function EHROverviewScreen(props) {
       return phoneNr !== ""
     }
 
+    const togglePopup = (enabled) => {
+      setState(prevState => ({
+        ...prevState,
+        modalVisible: enabled
+      }))
+    }
 
   // FETCH PATIENT DATA
   fetchPatientData();
@@ -222,12 +246,12 @@ export function EHROverviewScreen(props) {
         <Modal
           animationType="none"
           transparent={true}
-          visible={modalVisible}
+          visible={state.modalVisible}
           horizontal={false}
           numColumns={3}
           onRequestClose={() => {
             alert("The submission was cancelled.");
-            setModalVisible(!modalVisible);
+            togglePopup(false);
           }}
         >
           <View style={{width:"100%", height:"100%", backgroundColor:'rgba(0,0,0,0.80)', justifyContent:"center", alignItems:"center",}}>
@@ -252,7 +276,7 @@ export function EHROverviewScreen(props) {
                 }/>
               </View>
               <View style={{flex:1,flexDirection:"row",borderTopColor:"grey",borderTopWidth:1,alignItems:"center",justifyContent:"space-evenly"}}>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.popupButton,styles.greyButton]}><Text>Discard changes</Text></TouchableOpacity>
+                <TouchableOpacity onPress={() => togglePopup(false)} style={[styles.popupButton,styles.greyButton]}><Text>Discard changes</Text></TouchableOpacity>
                 <TouchableOpacity onPress={() => submitData()} style={[styles.popupButton,styles.primaryButton]}><Text style={{color:"white"}}>Submit changes</Text></TouchableOpacity>
               </View>
             </View>
@@ -357,7 +381,7 @@ export function EHROverviewScreen(props) {
               <View style={styles.container}>
                 <Text style={styles.header}>Data Privacy</Text>
                 <Text style={styles.description}>Configure what regions can access and view your medical record. You can change this at any time.</Text>
-                <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => setModalVisible(true)}/>
+                <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => togglePopup(true)}/>
               </View>
             }
         </View>
