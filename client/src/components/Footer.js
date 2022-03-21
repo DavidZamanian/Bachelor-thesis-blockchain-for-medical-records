@@ -1,6 +1,7 @@
 import React from "react";
-import styles from "../styles";
-import { View, Text, Image, SafeAreaView, useWindowDimensions, Switch, Button, Pressable, StyleSheet } from "react-native";
+
+import { View, Text, StyleSheet } from "react-native";
+import theme from "../theme.style";
 import Icon from "react-native-vector-icons/Ionicons";
 
 export default class Footer extends React.Component{
@@ -19,3 +20,30 @@ export default class Footer extends React.Component{
         );
     }
 };
+const styles = StyleSheet.create({
+    footer : {
+        position: 'fixed',
+        bottom: 0,
+        height: 40,
+        width: '100%',
+        backgroundColor: theme.SECONDARY_COLOR,
+        textAlign: 'center',
+        flexDirection:"row",
+        alignItems:"center",
+        justifyContent:"space-evenly",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: -2,
+        },
+        shadowOpacity: 0.35,
+        shadowRadius: 3.84,
+      },
+      footerIcon:{
+        color:theme.PRIMARY_COLOR,
+        marginHorizontal:5,
+      },
+      footerText:{
+        color:theme.PRIMARY_COLOR,
+      },
+});

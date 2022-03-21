@@ -1,12 +1,11 @@
 import React from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { apiService } from "../../../hooks/apiService";
-import styles from "../../styles";
-import ColouredIcon from "../colouredIcon";
-import ContrastText from "../contrastText";
 import { useNavigation } from "@react-navigation/native";
+import NavbarButton from "../navbarButton";
+import theme from "../../theme.style";
 
 const Header = () => {
   const { authentication, user } = apiService();
@@ -14,52 +13,87 @@ const Header = () => {
 
   const navigation = useNavigation();
   const onPressContact = () => {
-    //navigation.navigate("NewEntryScreen");
+    navigation.navigate("ContactScreen");
   };
   const onPressAbout = () => {
-    //navigation.navigate("PatientSearchScreen");
+    navigation.navigate("AboutScreen");
   };
 
-  function logIn() {}
+  function logIn() {
+    navigation.navigate("Login");
+    // Danger, this is not the screen to show for doctors!
+    navigation.navigate("EHROverview");
+  }
 
   return (
-    <View style={styles.navbar}>
-      <View style={styles.navbar_logo_container}>
+    <View style={styles.navbarContainer}>
+      <TouchableOpacity style={styles.navbarHomeContainer} onPress={logIn}>
         <Image
           source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
-          style={{ width: 70, height: 70 }}
+          style={styles.navbarLogo}
         />
-        <ContrastText>Bachelor Project</ContrastText>
-      </View>
-
-      <View style={styles.navbar_buttons_container}>
-        <TouchableOpacity style={styles.navbar_button} onPress={onPressAbout}>
-          <ColouredIcon
-            size={45}
-            name="information-circle-outline"
-            color="white"
-          />
-          <Text style={styles.navbar_button_text}>About</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navbar_button} onPress={onPressContact}>
-          <ColouredIcon size={45} name="mail-outline" color="white" />
-          <Text style={styles.navbar_button_text}>Contact</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navbar_button}
-          onPress={user ? logOut : logIn}
-        >
-          <ColouredIcon
-            size={45}
-            name={user ? "log-out-outline" : "log-in-outline"}
-          />
-          <Text style={styles.navbar_button_text}>
-            {user ? "Sign Out" : "Sign In"}
-          </Text>
-        </TouchableOpacity>
+        <Text style={styles.navbarLogoName}>Bachelor Project</Text>
+      </TouchableOpacity>
+      <View style={styles.navbarButtonContainer}>
+        <NavbarButton labelText="About" iconName="information-circle-outline" onPress={onPressAbout}/>
+        <NavbarButton labelText="Contact" iconName="mail-outline" onPress={onPressContact}/>
+        {
+          user ?
+          <NavbarButton labelText="Sign Out" iconName="log-out-outline" onPress={logOut}/>
+          :
+          <NavbarButton labelText="Sign In" iconName="log-in-outline" onPress={logIn}/>
+        }
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  navbarContainer:{
+    width: '100%',
+    height: theme.NAVBAR_HEIGHT,
+    backgroundColor: theme.SECONDARY_COLOR,
+    color: "white",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  navbarHomeContainer:{
+    backgroundColor: theme.PRIMARY_COLOR,
+    minWidth:325,
+    width:"50%",
+    height:"100%",
+    borderBottomRightRadius:500,
+    flexDirection:"row",
+    alignItems:"center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 2,
+      height: 0,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 3.84,
+  },
+  navbarLogo:{ 
+    width: 70, 
+    height: 70, 
+    margin:10
+  },
+  navbarLogoName:{
+    color:theme.SECONDARY_COLOR, 
+    fontSize:20
+  },
+  navbarButtonContainer:{
+    flexDirection: 'row',
+    margin:10,
+  },
+})
 
 export default Header;
