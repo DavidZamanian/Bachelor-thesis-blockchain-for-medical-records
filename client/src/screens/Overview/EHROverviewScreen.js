@@ -191,9 +191,16 @@ export function EHROverviewScreen(props) {
       }))
     }
 
+    const toggleEditingContactInfo = (enabled) => {
+      setState(prevState => ({
+        ...prevState,
+        editingContactInfo: enabled
+      }))
+    }
+
     const editContactInfo = () => {
       toggleWarning(false)
-      setEditingContactInfo(true)
+      toggleEditingContactInfo(true)
       // populate input forms before editing
       setAddress(patientInfo.address)
       setEmail(patientInfo.email)
@@ -201,7 +208,7 @@ export function EHROverviewScreen(props) {
     }
 
     const discardContactInfo = () => {
-      setEditingContactInfo(false)
+      toggleEditingContactInfo(false)
     }
 
     const saveContactInfo = () => {
@@ -215,7 +222,7 @@ export function EHROverviewScreen(props) {
         if (inputEmail !== patientInfo.email){
           updatePhoneNr(patientInfo.patientId,inputPhoneNr)
         }
-        setEditingContactInfo(false)
+        toggleEditingContactInfo(false)
       }
       else{
         toggleWarning(true);
@@ -295,7 +302,7 @@ export function EHROverviewScreen(props) {
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Address: </Text>
-                  { editingContactInfo ?
+                  { state.editingContactInfo ?
                   (<View style={styles.contactValue}><TextInput
                     style={styles.contactInput}
                     onChangeText={setAddress}
@@ -310,7 +317,7 @@ export function EHROverviewScreen(props) {
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Phone: </Text>
-                  { editingContactInfo ?
+                  { state.editingContactInfo ?
                   (<View style={styles.contactValue}><TextInput
                     style={styles.contactInput}
                     onChangeText={setPhoneNr}
@@ -324,7 +331,7 @@ export function EHROverviewScreen(props) {
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Email: </Text>
-                  { editingContactInfo ?
+                  { state.editingContactInfo ?
                   (<View style={styles.contactValue}><TextInput
                     style={styles.contactInput}
                     onChangeText={setEmail}
@@ -337,7 +344,7 @@ export function EHROverviewScreen(props) {
                   }
                 </View>
                 {
-                  editingContactInfo && state.showWarning &&
+                  state.editingContactInfo && state.showWarning &&
                   <View style={styles.contactItem}>
                     <Text style={styles.warningLabel}>Error: Input fields cannot be empty</Text>
                   </View>
@@ -345,7 +352,7 @@ export function EHROverviewScreen(props) {
                 
                 { !doctorRole &&
                 <View style={styles.contactItem}>
-                  { editingContactInfo ?
+                  { state.editingContactInfo ?
                   <>
                   <ThemeButton 
                     labelText="Discard Changes" 
