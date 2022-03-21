@@ -24,7 +24,7 @@ export function EHROverviewScreen(props) {
 
 
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "patient";
+  const placeholderRole = "doctor";
 
   const [state, setState] = useState({
     doctorRole: false,
@@ -64,8 +64,11 @@ export function EHROverviewScreen(props) {
         return;
       }
       const patientRef = ref(database, 'Users/' + patientID);
+      
+
+      try{
       onValue(patientRef, (snapshot) => 
-        {
+      {
           if(snapshot.val() === null){
             alert("ERROR: This patient does not exist:"+patientID)
           }
@@ -81,12 +84,39 @@ export function EHROverviewScreen(props) {
             
             setDoctorRole(userRole == "doctor")
 
-            //alert("accessing patient:"+patientID)
-            setJournalExpanded((prevState) => {
-              prevState = [];
-              patientJournals.forEach(() => prevState.push(false))
-              return[...prevState]
-            })
+            let journalIndexes = [];
+            patientJournals.forEach(() => journalIndexes.push(false))
+
+            let regionIndexes = [];
+            allRegions.forEach((reg) => regionIndexes.push({name:reg,enabled:false}))
+            patientPermittedRegions.forEach((reg) => regionIndexes.find(r => r.name === reg).enabled = true)
+
+            setState(prevState => ({
+              ...prevState,
+              journalExpanded:journalIndexes,
+              doctorRole:userRole=="doctor",
+              patientInfo:{
+                patientId:patientID,
+                firstName:snapshot.val().firstName,
+                lastName:snapshot.val().lastName,
+                email:snapshot.val().email,
+                address:snapshot.val().address,
+                phoneNr:snapshot.val().phoneNr,
+                // getPrescriptions
+                // getDiagnoses
+                // getPermittedRegions
+                // getJournals
+                prescriptions:patientPrescriptions,
+                diagnoses:patientDiagnoses,
+                permittedRegions:patientPermittedRegions,
+                journals:patientJournals
+              },
+              regions:regionIndexes
+            }))
+
+            
+
+
             // getPatientContactInfo
             setPatientInfo(() => ({
               patientId:patientID,
@@ -111,19 +141,15 @@ export function EHROverviewScreen(props) {
               return[...prevState]
             })
           }
-        }
-      );
+        })
+      }catch(e){}
+
+      
     }
   
-  
-
-  // This causes a bug where the first journal expand will show a "0" from the start
-  // Workaround: added ">0" to journalExpanded[index] of the show-condition - no issues!
-  const [journalExpanded, setJournalExpanded] = useState([]);
 
   
   // To toggle editing of contact info
-  const [editingContactInfo, setEditingContactInfo] = useState(false);
   const [inputAddress, setAddress] = useState("");
   const [inputPhoneNr, setPhoneNr] = useState("");
   const [inputEmail, setEmail] = useState("");
@@ -135,10 +161,16 @@ export function EHROverviewScreen(props) {
     @Chrimle
   */
   const toggleExpandJournal = (index) => {
-    setJournalExpanded((prevState) => {
-      prevState.splice(index,1,!prevState.at(index))
-      return[...prevState]
-    })
+    
+    let enabled = state.journalExpanded[index]
+    let updated = state.journalExpanded
+    updated.splice(index,1,!enabled)
+
+    setState(prevState => ({
+      ...prevState,
+      journalExpanded:updated,
+    }))
+
   }
 
   /* 
@@ -276,7 +308,7 @@ export function EHROverviewScreen(props) {
                 numColumns={3}
                 keyExtractor={({item, index}) => index}
                 renderItem={({item, index}) => 
-                  <View style={styles.regionContainer}>
+                  <View style={styles.regionContainer} key={item.toString()}>
                     <TouchableOpacity style={[styles.checkbox,{backgroundColor:item.enabled ? theme.PRIMARY_COLOR:"white"}]} onPress={() => toggleCheckbox(index)}>
                       {item.enabled && <Icon name="checkmark-outline" size={20} color="white"/>}
                     </TouchableOpacity>
@@ -401,7 +433,7 @@ export function EHROverviewScreen(props) {
               data={patientInfo.prescriptions}
               keyExtractor={({item, index}) => index}
               renderItem={({item, index}) => (
-                <View>
+                <View key={index}>
                   <Text style={styles.bulletpointList}>{'\u2022'} {item}</Text>
                 </View>
               )}
@@ -413,7 +445,7 @@ export function EHROverviewScreen(props) {
               data={patientInfo.diagnoses}
               keyExtractor={({item, index}) => index}
               renderItem={({item, index}) => (
-                <View>
+                <View key={index}>
                   <Text style={styles.bulletpointList}>{'\u2022'} {item}</Text>
                 </View>
               )}
@@ -437,14 +469,14 @@ export function EHROverviewScreen(props) {
               }
               renderItem={({item, index}) => 
 
-                <View style={styles.journalContainer}>
-                  <TouchableOpacity style={[styles.journalListItem,{ backgroundColor: journalExpanded[index] ? theme.SECONDARY_COLOR :"#F3F3F3"}]} onPress={() => toggleExpandJournal(index)}>
+                <View style={styles.journalContainer} key={index}>
+                  <TouchableOpacity style={[styles.journalListItem,{ backgroundColor: state.journalExpanded[index] ? theme.SECONDARY_COLOR :"#F3F3F3"}]} onPress={() => toggleExpandJournal(index)}>
                     <Text style={styles.journalItemText}>{item.date.toString().slice(0,10)}</Text>
                     <Text style={[styles.journalItemText,{flex:4}]}>{item.healthcareInstitution}</Text>
                     <Text style={[styles.journalItemText,{flex:4}]}>{item.medicalPersonnel}</Text>
-                    <Icon name={journalExpanded[index] ? "chevron-up-outline" : "chevron-down-outline"} color={theme.PRIMARY_COLOR} style={[styles.journalItemText,{flex:1, fontSize:40}]}/>
+                    <Icon name={state.journalExpanded[index] ? "chevron-up-outline" : "chevron-down-outline"} color={theme.PRIMARY_COLOR} style={[styles.journalItemText,{flex:1, fontSize:40}]}/>
                   </TouchableOpacity>
-                  {journalExpanded[index]>0 && 
+                  {state.journalExpanded[index]>0 && 
                     <View style={styles.journalExpandedContainer}>
                       <View style={styles.journalExpandedRow}>
                         <View style={styles.journalDataBlock}>
@@ -455,11 +487,11 @@ export function EHROverviewScreen(props) {
                       <View style={styles.journalExpandedRow}>
                         <View style={styles.journalDataBlock}>
                           <Text style={styles.journalDetailsHeader}>Prescriptions</Text>
-                          {item.prescriptions.map(txt => {return (<Text>{txt}</Text>)})}
+                          {item.prescriptions.map(txt => {return (<Text key={txt}>{txt}</Text>)})}
                         </View>
                         <View style={styles.journalDataBlock}>
                           <Text style={styles.journalDetailsHeader}>Diagnoses</Text>
-                          {item.diagnoses.map(txt => {return (<Text>{txt}</Text>)})}
+                          {item.diagnoses.map(txt => {return (<Text key={txt}>{txt}</Text>)})}
                         </View>
                         <View style={styles.journalDataBlock}>
                           <Text style={styles.journalDetailsHeader}>Written by</Text>
