@@ -24,7 +24,7 @@ export function EHROverviewScreen(props) {
 
 
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "doctor";
+  const placeholderRole = "patient";
 
   const [state, setState] = useState({
     doctorRole: false,
@@ -39,6 +39,7 @@ export function EHROverviewScreen(props) {
     inputEmail: "",
     modalVisible: false,
     showWarning: false,
+    regionSnapshot: []
   }) 
 
 
@@ -47,7 +48,6 @@ export function EHROverviewScreen(props) {
 
 
 
-  const [regions,setRegions] = useState([]);
 
   const [patientInfo,setPatientInfo] = useState(PlaceholderValues.patient);
 
@@ -109,7 +109,8 @@ export function EHROverviewScreen(props) {
                 permittedRegions:patientPermittedRegions,
                 journals:patientJournals
               },
-              regions:regionIndexes
+              regions:[...regionIndexes],
+              regionSnapshot: [...regionIndexes],
             }))
 
             
@@ -132,12 +133,6 @@ export function EHROverviewScreen(props) {
               permittedRegions:patientPermittedRegions,
               journals:patientJournals
             }))
-            setRegions((prevState) => {
-              prevState = [];
-              allRegions.forEach((reg) => prevState.push({name:reg,enabled:false}))
-              patientPermittedRegions.forEach((reg) => prevState.find(r => r.name === reg).enabled = true)
-              return[...prevState]
-            })
           }
         })
       }catch(e){}
@@ -178,7 +173,7 @@ export function EHROverviewScreen(props) {
   */
   const submitData = () => {
     alert("Submitting settings...");
-    const regStrings = regions.map(function(item) {
+    const regStrings = state.regions.map(function(item) {
       return item['name']+" "+item['enabled']+"\n";
     });
     alert(regStrings.toString())
@@ -192,10 +187,18 @@ export function EHROverviewScreen(props) {
     @Chrimle
   */
   const toggleCheckbox = (index) => {
-    setRegions((prevState) => {
-      prevState[index].enabled = !prevState[index].enabled; 
-      return[...prevState]
-    })
+    
+    let enabled = state.regions[index].enabled
+    let name = state.regions[index].name
+    let updated = state.regions
+
+    updated.splice(index,1,{name:name, enabled:!enabled})
+
+    setState(prevState => ({
+      ...prevState,
+      regions: updated
+    }))
+
   } 
 
 
@@ -272,7 +275,8 @@ export function EHROverviewScreen(props) {
     const togglePopup = (enabled) => {
       setState(prevState => ({
         ...prevState,
-        modalVisible: enabled
+        modalVisible: enabled,
+        regions: [...state.regionSnapshot],
       }))
     }
 
@@ -302,7 +306,7 @@ export function EHROverviewScreen(props) {
                 <Text style={[styles.description,{padding:10}]}>Select which regions you allow to read your medical record, by checking the corresponding box. Regions you currently have given permission to are pre-filled.</Text>
                 <FlatList
                 style={styles.regionList}
-                data={regions}
+                data={state.regions}
                 numColumns={3}
                 keyExtractor={({item, index}) => index}
                 renderItem={({item, index}) => 
