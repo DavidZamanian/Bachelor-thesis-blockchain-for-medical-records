@@ -253,7 +253,6 @@ export function EHROverviewScreen(props) {
   // FETCH PATIENT DATA
   fetchPatientData();
 
-  alert("rerender!")
   return (
     <View>
       <Header />
