@@ -128,10 +128,6 @@ export function EHROverviewScreen(props) {
   const [inputPhoneNr, setPhoneNr] = useState("");
   const [inputEmail, setEmail] = useState("");
 
-
-  /* This is the popup window - whether it is visible or no */ 
-  const [showWarning, setShowWarning] = useState(false);
-
   /* 
     Method for toggle the collapsing of a journal entry.
     Takes index as parameter to identify which one to toggle.
@@ -188,9 +184,15 @@ export function EHROverviewScreen(props) {
 
     }
 
+    const toggleWarning = (enabled) => {
+      setState(prevState => ({
+        ...prevState,
+        showWarning: enabled
+      }))
+    }
 
     const editContactInfo = () => {
-      setShowWarning(false)
+      toggleWarning(false)
       setEditingContactInfo(true)
       // populate input forms before editing
       setAddress(patientInfo.address)
@@ -216,7 +218,7 @@ export function EHROverviewScreen(props) {
         setEditingContactInfo(false)
       }
       else{
-        setShowWarning(true);
+        toggleWarning(true);
       }
     }
 
@@ -335,7 +337,7 @@ export function EHROverviewScreen(props) {
                   }
                 </View>
                 {
-                  editingContactInfo && showWarning &&
+                  editingContactInfo && state.showWarning &&
                   <View style={styles.contactItem}>
                     <Text style={styles.warningLabel}>Error: Input fields cannot be empty</Text>
                   </View>
