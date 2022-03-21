@@ -19,9 +19,6 @@ export function EHROverviewScreen(props) {
   const route = useRoute();
   const navigation = useNavigation();
 
-  /* TODO: Replace this in some way, need to cross-reference with Firebase with User UID */
-  const patientID = props.route.params == null ? 8701104455 : props.route.params;
-
 
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
   const placeholderRole = "patient";
@@ -42,17 +39,11 @@ export function EHROverviewScreen(props) {
     regionSnapshot: []
   }) 
 
-
-
-
-
-
-
-
-  const [patientInfo,setPatientInfo] = useState(PlaceholderValues.patient);
-
   const wipePatientData = () => {
-    setPatientInfo(PlaceholderValues.patient);
+    setState(prevState => ({
+      ...prevState,
+      patientInfo:PlaceholderValues.patient
+    }))
   }
 
   /* 
@@ -60,17 +51,17 @@ export function EHROverviewScreen(props) {
   */
     const fetchPatientData = () => {
       //alert("attempting fetch "+patientID)
-      if (patientID == patientInfo.patientId){
+      if (state.patientID == state.patientInfo.patientId){
         return;
       }
-      const patientRef = ref(database, 'Users/' + patientID);
+      const patientRef = ref(database, 'Users/' + state.patientID);
       
 
       try{
       onValue(patientRef, (snapshot) => 
       {
           if(snapshot.val() === null){
-            alert("ERROR: This patient does not exist:"+patientID)
+            alert("ERROR: This patient does not exist:"+state.patientID)
           }
           else{
             
@@ -94,7 +85,7 @@ export function EHROverviewScreen(props) {
               journalExpanded:journalIndexes,
               doctorRole:userRole=="doctor",
               patientInfo:{
-                patientId:patientID,
+                patientId:state.patientID,
                 firstName:snapshot.val().firstName,
                 lastName:snapshot.val().lastName,
                 email:snapshot.val().email,
@@ -111,27 +102,6 @@ export function EHROverviewScreen(props) {
               },
               regions:[...regionIndexes],
               regionSnapshot: [...regionIndexes],
-            }))
-
-            
-
-
-            // getPatientContactInfo
-            setPatientInfo(() => ({
-              patientId:patientID,
-              firstName:snapshot.val().firstName,
-              lastName:snapshot.val().lastName,
-              email:snapshot.val().email,
-              address:snapshot.val().address,
-              phoneNr:snapshot.val().phoneNr,
-              // getPrescriptions
-              // getDiagnoses
-              // getPermittedRegions
-              // getJournals
-              prescriptions:patientPrescriptions,
-              diagnoses:patientDiagnoses,
-              permittedRegions:patientPermittedRegions,
-              journals:patientJournals
             }))
           }
         })
@@ -210,10 +180,10 @@ export function EHROverviewScreen(props) {
   */
     const requestAddEHR = () => {
       // CHECK PRIVILEGE?
-      alert(patientInfo.patientId)
+      alert(state.patientInfo.patientId)
       // Get rid of patient data
       wipePatientData();
-      navigation.navigate("NewEntryScreen",patientID);
+      navigation.navigate("NewEntryScreen",state.patientID);
 
     }
 
@@ -235,9 +205,9 @@ export function EHROverviewScreen(props) {
       toggleWarning(false)
       toggleEditingContactInfo(true)
       // populate input forms before editing
-      setAddress(patientInfo.address)
-      setEmail(patientInfo.email)
-      setPhoneNr(patientInfo.phoneNr)
+      setAddress(state.patientInfo.address)
+      setEmail(state.patientInfo.email)
+      setPhoneNr(state.patientInfo.phoneNr)
     }
 
     const discardContactInfo = () => {
@@ -246,14 +216,14 @@ export function EHROverviewScreen(props) {
 
     const saveContactInfo = () => {
       if (validEmail(inputEmail) && validAddress(inputAddress) && validPhoneNr(inputPhoneNr)){
-        if (inputAddress !== patientInfo.address){
-          updateAddress(patientInfo.patientId,inputAddress)
+        if (inputAddress !== state.patientInfo.address){
+          updateAddress(state.patientInfo.patientId,inputAddress)
         }
-        if (inputEmail !== patientInfo.email){
-          updateEmail(patientInfo.patientId,inputEmail)
+        if (inputEmail !== state.patientInfo.email){
+          updateEmail(state.patientInfo.patientId,inputEmail)
         }
-        if (inputEmail !== patientInfo.email){
-          updatePhoneNr(patientInfo.patientId,inputPhoneNr)
+        if (inputEmail !== state.patientInfo.email){
+          updatePhoneNr(state.patientInfo.patientId,inputPhoneNr)
         }
         toggleEditingContactInfo(false)
       }
@@ -282,6 +252,8 @@ export function EHROverviewScreen(props) {
 
   // FETCH PATIENT DATA
   fetchPatientData();
+
+  alert("rerender!")
   return (
     <View>
       <Header />
@@ -332,7 +304,7 @@ export function EHROverviewScreen(props) {
               <View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Full name: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.lastName}, {patientInfo.firstName}</Text>                                  
+                  <Text style={styles.contactValue}>{state.patientInfo.lastName}, {state.patientInfo.firstName}</Text>                                  
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Address: </Text>
@@ -345,7 +317,7 @@ export function EHROverviewScreen(props) {
                     multiline={true}
                   /></View>)
                   :
-                  (<Text style={styles.contactValue}>{patientInfo.address}</Text>)
+                  (<Text style={styles.contactValue}>{state.patientInfo.address}</Text>)
                   }
                   
                 </View>
@@ -359,7 +331,7 @@ export function EHROverviewScreen(props) {
                     placeholder="Phone number"
                   /></View>)
                   :
-                  (<Text style={styles.contactValue}>{patientInfo.phoneNr}</Text>)
+                  (<Text style={styles.contactValue}>{state.patientInfo.phoneNr}</Text>)
                   }
                   
                 </View>
@@ -374,7 +346,7 @@ export function EHROverviewScreen(props) {
                     keyboardType="email-address"
                   /></View>)
                   :
-                  (<Text style={styles.contactValue}>{patientInfo.email}</Text>)
+                  (<Text style={styles.contactValue}>{state.patientInfo.email}</Text>)
                   }
                 </View>
                 {
@@ -432,7 +404,7 @@ export function EHROverviewScreen(props) {
           <View style={styles.container}>
             <Text style={styles.header}>Prescriptions</Text>
             <FlatList
-              data={patientInfo.prescriptions}
+              data={state.patientInfo.prescriptions}
               keyExtractor={({item, index}) => index}
               renderItem={({item, index}) => (
                 <View key={index}>
@@ -444,7 +416,7 @@ export function EHROverviewScreen(props) {
           <View style={styles.container}>
             <Text style={styles.header}>Diagnoses</Text>
             <FlatList
-              data={patientInfo.diagnoses}
+              data={state.patientInfo.diagnoses}
               keyExtractor={({item, index}) => index}
               renderItem={({item, index}) => (
                 <View key={index}>
@@ -459,7 +431,7 @@ export function EHROverviewScreen(props) {
               <Text style={styles.header}>Past record entries</Text>
               <FlatList
               style={{width:"100%"}}
-              data={patientInfo.journals}
+              data={state.patientInfo.journals}
               keyExtractor={({item, index}) => index}
               ListHeaderComponent={
                 <View style={styles.journalListItem}>
