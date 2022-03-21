@@ -46,7 +46,7 @@ export function EHROverviewScreen(props) {
 
 
 
-  const [doctorRole,setDoctorRole] = useState(false);
+
   const [regions,setRegions] = useState([]);
 
   const [patientInfo,setPatientInfo] = useState(PlaceholderValues.patient);
@@ -81,8 +81,6 @@ export function EHROverviewScreen(props) {
             const patientPermittedRegions = PlaceholderValues.permittedRegions;
             const patientPrescriptions    = PlaceholderValues.prescriptions;
             const patientDiagnoses        = PlaceholderValues.diagnoses;
-            
-            setDoctorRole(userRole == "doctor")
 
             let journalIndexes = [];
             patientJournals.forEach(() => journalIndexes.push(false))
@@ -382,7 +380,7 @@ export function EHROverviewScreen(props) {
                   </View>
                 }
                 
-                { !doctorRole &&
+                { !state.doctorRole &&
                 <View style={styles.contactItem}>
                   { state.editingContactInfo ?
                   <>
@@ -411,7 +409,7 @@ export function EHROverviewScreen(props) {
                 }
               </View>
             </View>
-            { doctorRole ?
+            { state.doctorRole ?
               // Doctor Version
               <View style={styles.container}>
                 <Text style={styles.header}>Add EHR entry</Text>
