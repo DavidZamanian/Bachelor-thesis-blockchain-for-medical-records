@@ -1,7 +1,7 @@
 import React, { useState, setState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Text, View, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
-import { ScrollView, TextInput, TouchableOpacity } from "react-native-gesture-handler";
+import { Text, View, TextInput, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
 import Icon from "react-native-vector-icons/Ionicons";
 import ColouredIcon from "../../../components/colouredIcon";
@@ -12,7 +12,7 @@ import ContrastText from "../../../components/contrastText";
 import styles from "../../../styles";
 import EhrEntry from "../../../../../server/jsonHandling/ehrEntry";
 import Footer from "../../../components/Footer";
-  
+import ThemeButton from "../../../components/themeButton";
 
   
 
@@ -23,39 +23,8 @@ export function NewEntryScreen(props) {
   const navigation = useNavigation();
 
   // These are for testing purposes only
-  const prescriptions = [
-    /*
-    {
-      name:'PollenStopper 2000',
-      dosage:'1 pill twice a day when neede'
-    },
-    {
-      name:'StomachAcheCleanser',
-      dosage:'no more than 4 dosage per day'
-    },
-    {
-      name:'OuchHinderer',
-      dosage:'1 pill every other day'
-    },
-    {
-      name:'EyeDropper',
-      dosage:'1 pill every other day'
-    },
-    {
-      name:'TummyHelper',
-      dosage:'1 pill every other day'
-    }*/
-
-  ];
-  const diagnoses = [
-    /*
-    {
-      diagnosis:'Birch allergy'
-    },
-    {
-      diagnosis:'Tummy ache'
-    }*/
-  ];
+  const prescriptions = [];
+  const diagnoses = [];
 
   // Storing the states of inputs
   const [inputPrescription, setInputPrescription] = useState("");
@@ -329,12 +298,15 @@ export function NewEntryScreen(props) {
                   value={inputDosage}
                 />
               </View>
-              <View style={{flex:1, margin:15, justifyContent:"center"}}>
-                <TouchableOpacity style={styles.largeButton} onPress={() => addPrescription()}>
-                  <ContrastIcon name="add-outline" size={20}/>
-                  <ContrastText>Add</ContrastText>
-                </TouchableOpacity>
-              </View>
+              <ThemeButton 
+                onPress={() => addPrescription()}
+                labelSize={18}
+                labelText={"Add"}
+                iconSize={30}
+                iconName={"add-outline"}
+                bWidth={100}
+                extraStyle={{margin:5, justifyContent:"center", borderWidth:2}}
+              />
             </View>
             <Text style={styles.genericListItemHeader}>Diagnoses:</Text>
             <ScrollView style={{borderWidth:1, borderRadius:5, maxHeight:175, maxWidth:500,}}>
@@ -363,17 +335,25 @@ export function NewEntryScreen(props) {
                   value={inputDiagnosis}
                 />
               </View>
-              <View style={{flex:1, margin:15, justifyContent:"center"}}>
-                <ColouredButton onPress={() => addDiagnosis()}>
-                  <ContrastIcon name="add-outline" size={20}/>
-                  <ContrastText>Add</ContrastText>
-                </ColouredButton>
-              </View>
+                <ThemeButton 
+                  onPress={() => addDiagnosis()}
+                  labelSize={18}
+                  labelText={"Add"}
+                  iconSize={30}
+                  iconName={"add-outline"}
+                  bWidth={100}
+                  extraStyle={{margin:5, justifyContent:"center", borderWidth:2}}
+                />
+              
             </View>
-            <ColouredButton onPress={() => openPopup()}>
-              <ContrastIcon name="checkmark-circle-outline" size={40}/>
-              <ContrastText>Complete</ContrastText>
-            </ColouredButton>
+            <ThemeButton 
+              onPress={() => openPopup()}
+              labelSize={30}
+              labelText={"Complete"}
+              iconSize={40}
+              iconName={"checkmark-circle-outline"}
+              extraStyle={{marginTop:20}}
+            />
           </View>
         </View>
       </View>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Text, View, Modal } from "react-native";
+import { Text, View, Modal, TextInput } from "react-native";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header/Header";
 import styles from "./styles";
@@ -10,6 +10,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../theme.style";
 import { database, ref, onValue} from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext"
+import { PlaceholderValues } from "../../placeholders/placeholderValues";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
@@ -23,38 +24,16 @@ export function EHROverviewScreen(props) {
 
 
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "doctor";
+  const placeholderRole = "patient";
 
   const [doctorRole,setDoctorRole] = useState(false);
-
-  const placeholderPrescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
-  const placeholderDiagnoses = ["Birch Allergy"];
-  const placeholderPatientRegions = ["Vastra Gotaland","Skane"];
-  const placeholderRegions=["Stockholm","Uppsala","Sormland","Ostergotland","Jonkoping","Kronoberg","Kalmar","Gotland","Blekinge","Skane","Halland","Varmland","Orebro","Vastmanland","Dalarna","Gavleborg","Vasternorrland","Jamtland","Vasterbotten","Norrbotten","Vastra Gotaland"];
-  const placeholderPatient={
-    patientId:null,
-    email:"ErrorEmail",
-    firstName:"ErrorFirstName",
-    lastName:"ErrorLastName",
-    address:"ErrorAddress",
-    phoneNr:"ErrorPhoneNr",
-    prescriptions:[],
-    diagnoses:[],
-    permittedRegions:[],
-    journals:[],
-  };
-
   const [regions,setRegions] = useState([]);
 
-  const [patientInfo,setPatientInfo] = useState(
-    placeholderPatient
-  );
+  const [patientInfo,setPatientInfo] = useState(PlaceholderValues.patient);
 
-    
-
-    const wipePatientData = () => {
-      setPatientInfo(placeholderPatient);
-    }
+  const wipePatientData = () => {
+    setPatientInfo(PlaceholderValues.patient);
+  }
 
   /* 
     Gather patient info from Firebase (runs automatically at the start) 
@@ -74,11 +53,11 @@ export function EHROverviewScreen(props) {
             
             // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
             const userRole                = placeholderRole; //snapshot.val().role 
-            const allRegions              = placeholderRegions;
-            const patientJournals         = placeholderJournals;
-            const patientPermittedRegions = placeholderPatientRegions;
-            const patientPrescriptions    = placeholderPrescriptions;
-            const patientDiagnoses        = placeholderDiagnoses;
+            const allRegions              = PlaceholderValues.allRegions;
+            const patientJournals         = PlaceholderValues.journals;
+            const patientPermittedRegions = PlaceholderValues.permittedRegions;
+            const patientPrescriptions    = PlaceholderValues.prescriptions;
+            const patientDiagnoses        = PlaceholderValues.diagnoses;
             
             setDoctorRole(userRole == "doctor")
 
@@ -99,6 +78,7 @@ export function EHROverviewScreen(props) {
               // getPrescriptions
               // getDiagnoses
               // getPermittedRegions
+              // getJournals
               prescriptions:patientPrescriptions,
               diagnoses:patientDiagnoses,
               permittedRegions:patientPermittedRegions,
@@ -114,46 +94,6 @@ export function EHROverviewScreen(props) {
         }
       );
     }
-
-  const placeholderJournals = [
-    {
-      date: "2022-03-04T08:44:44.118Z",
-      patientID: "fdjsajkfvhkcjasjcas",
-      healthcareInstitution: "Ostra sjukhuset",
-      medicalPersonnel: "Lolly Pop",
-      details: "thick throat",
-      diagnoses: ["allergy against birch"],
-      prescriptions: [
-        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
-        "pollenStopperSpray 2 pills 2 times / day"
-      ]
-    },
-    {
-      date: "2022-03-04T08:44:44.118Z",
-      patientID: "fdjsajkfvhkcjasjcas",
-      healthcareInstitution: "Ostra sjukhuset",
-      medicalPersonnel: "Lolly Pop",
-      details: "thick throat",
-      diagnoses: ["allergy against birch"],
-      prescriptions: [
-        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
-        "pollenStopperSpray 2 pills 2 times / day"
-      ]
-    },
-    {
-      date: "2022-03-04T08:44:44.118Z",
-      patientID: "fdjsajkfvhkcjasjcas",
-      healthcareInstitution: "Ostra sjukhuset",
-      medicalPersonnel: "Lolly Pop",
-      details: "thick throat",
-      diagnoses: ["allergy against birch"],
-      prescriptions: [
-        "pollenStopperPill, 2 mg 3 times / day, 4 hrs in between",
-        "pollenStopperSpray 2 pills 2 times / day"
-      ]
-    },
-  ]
-
   
   
 
@@ -162,9 +102,18 @@ export function EHROverviewScreen(props) {
   const [journalExpanded, setJournalExpanded] = useState([]);
 
   
+  // To toggle editing of contact info
+  const [editingContactInfo, setEditingContactInfo] = useState(false);
+  const [inputAddress, setAddress] = useState("");
+  const [inputPhoneNr, setPhoneNr] = useState("");
+  const [inputEmail, setEmail] = useState("");
+
 
   /* This is the popup window - whether it is visible or no */ 
   const [modalVisible, setModalVisible] = useState(false);
+
+  /* This is the popup window - whether it is visible or no */ 
+  const [showWarning, setShowWarning] = useState(false);
 
   /* 
     Method for toggle the collapsing of a journal entry.
@@ -222,6 +171,48 @@ export function EHROverviewScreen(props) {
     }
 
 
+    const editContactInfo = () => {
+      setShowWarning(false)
+      setEditingContactInfo(true)
+      // populate input forms before editing
+      setAddress(patientInfo.address)
+      setEmail(patientInfo.email)
+      setPhoneNr(patientInfo.phoneNr)
+    }
+
+    const discardContactInfo = () => {
+      setEditingContactInfo(false)
+    }
+
+    const saveContactInfo = () => {
+      if (validEmail(inputEmail) && validAddress(inputAddress) && validPhoneNr(inputPhoneNr)){
+        if (inputAddress !== patientInfo.address){
+          updateAddress(patientInfo.patientId,inputAddress)
+        }
+        if (inputEmail !== patientInfo.email){
+          updateEmail(patientInfo.patientId,inputEmail)
+        }
+        if (inputEmail !== patientInfo.email){
+          updatePhoneNr(patientInfo.patientId,inputPhoneNr)
+        }
+        setEditingContactInfo(false)
+      }
+      else{
+        setShowWarning(true);
+      }
+    }
+
+    const validEmail = (email) => {
+      return email !== ""
+    }
+    const validAddress = (address) => {
+      return address !== ""
+    }
+    const validPhoneNr= (phoneNr) => {
+      return phoneNr !== ""
+    }
+
+
   // FETCH PATIENT DATA
   fetchPatientData();
   return (
@@ -274,20 +265,85 @@ export function EHROverviewScreen(props) {
               <View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Full name: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.lastName}, {patientInfo.firstName}</Text>
+                  <Text style={styles.contactValue}>{patientInfo.lastName}, {patientInfo.firstName}</Text>                                  
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Address: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.address}</Text>
+                  { editingContactInfo ?
+                  (<View style={styles.contactValue}><TextInput
+                    style={styles.contactInput}
+                    onChangeText={setAddress}
+                    value={inputAddress}
+                    placeholder="Full address"
+                    multiline={true}
+                  /></View>)
+                  :
+                  (<Text style={styles.contactValue}>{patientInfo.address}</Text>)
+                  }
+                  
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Phone: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.phoneNr}</Text>
+                  { editingContactInfo ?
+                  (<View style={styles.contactValue}><TextInput
+                    style={styles.contactInput}
+                    onChangeText={setPhoneNr}
+                    value={inputPhoneNr}
+                    placeholder="Phone number"
+                  /></View>)
+                  :
+                  (<Text style={styles.contactValue}>{patientInfo.phoneNr}</Text>)
+                  }
+                  
                 </View>
                 <View style={styles.contactItem}>
                   <Text style={styles.contactKey}>Email: </Text>
-                  <Text style={styles.contactValue}>{patientInfo.email}</Text>
+                  { editingContactInfo ?
+                  (<View style={styles.contactValue}><TextInput
+                    style={styles.contactInput}
+                    onChangeText={setEmail}
+                    value={inputEmail}
+                    placeholder="Email address"
+                    keyboardType="email-address"
+                  /></View>)
+                  :
+                  (<Text style={styles.contactValue}>{patientInfo.email}</Text>)
+                  }
                 </View>
+                {
+                  editingContactInfo && showWarning &&
+                  <View style={styles.contactItem}>
+                    <Text style={styles.warningLabel}>Error: Input fields cannot be empty</Text>
+                  </View>
+                }
+                
+                { !doctorRole &&
+                <View style={styles.contactItem}>
+                  { editingContactInfo ?
+                  <>
+                  <ThemeButton 
+                    labelText="Discard Changes" 
+                    labelSize={15} 
+                    extraStyle={[styles.detailButton,styles.journalItemText,{backgroundColor:"#DA1414"}]}
+                    onPress={() => discardContactInfo()}
+                    />
+                  <ThemeButton 
+                    labelText="Save Changes" 
+                    labelSize={15}
+                    extraStyle={[styles.detailButton,styles.journalItemText]}
+                    onPress={() => saveContactInfo()}
+                    />
+                  </>
+                  :
+                  <ThemeButton 
+                    labelText="Change contact info" 
+                    labelSize={15} 
+                    extraStyle={[styles.detailButton,styles.journalItemText]}
+                    onPress={() => editContactInfo()}
+                    />
+                  }
+                </View>
+                }
               </View>
             </View>
             { doctorRole ?
@@ -304,8 +360,8 @@ export function EHROverviewScreen(props) {
                 <ThemeButton labelText="Configure" labelSize={25} iconName="eye-outline" iconSize={30} bWidth={200} bHeight={60} onPress={() => setModalVisible(true)}/>
               </View>
             }
-          </View>
-          <View style={styles.rowContainer}>
+        </View>
+        <View style={styles.rowContainer}>
           <View style={styles.container}>
             <Text style={styles.header}>Prescriptions</Text>
             <FlatList
@@ -330,7 +386,7 @@ export function EHROverviewScreen(props) {
               )}
             />
           </View>
-          </View>
+        </View>
           <View style={styles.rowContainer}>
             <View style={[styles.container,styles.doubleContainer]}>
               <Text style={styles.header}>Past record entries</Text>
@@ -342,7 +398,6 @@ export function EHROverviewScreen(props) {
                 <View style={styles.journalListItem}>
                   <Text style={[styles.journalItemText,styles.journalListHeader]}>Date</Text>
                   <Text style={[styles.journalItemText,styles.journalListHeader,{flex:4}]}>Location</Text>
-                  <Text style={[styles.journalItemText,styles.journalListHeader]}>Details</Text>
                   <Text style={[styles.journalItemText,styles.journalListHeader,{flex:4}]}>Issued by</Text>
                   <Text style={[styles.journalItemText,styles.journalListHeader,{flex:1}]}></Text>
                 </View>
@@ -353,7 +408,6 @@ export function EHROverviewScreen(props) {
                   <TouchableOpacity style={[styles.journalListItem,{ backgroundColor: journalExpanded[index] ? theme.SECONDARY_COLOR :"#F3F3F3"}]} onPress={() => toggleExpandJournal(index)}>
                     <Text style={styles.journalItemText}>{item.date.toString().slice(0,10)}</Text>
                     <Text style={[styles.journalItemText,{flex:4}]}>{item.healthcareInstitution}</Text>
-                    <ThemeButton  labelText="See details" labelSize={15} iconSize={15} extraStyle={[styles.detailButton,styles.journalItemText]}/>
                     <Text style={[styles.journalItemText,{flex:4}]}>{item.medicalPersonnel}</Text>
                     <Icon name={journalExpanded[index] ? "chevron-up-outline" : "chevron-down-outline"} color={theme.PRIMARY_COLOR} style={[styles.journalItemText,{flex:1, fontSize:40}]}/>
                   </TouchableOpacity>

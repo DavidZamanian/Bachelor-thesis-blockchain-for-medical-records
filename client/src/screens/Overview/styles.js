@@ -16,7 +16,8 @@ const styles = StyleSheet.create({
     rowContainer:{
         flexDirection:"row",
         justifyContent:"center",
-        marginVertical:15,
+        flexWrap:"wrap",
+        alignItems:"stretch",
     },
     container:{
         backgroundColor:"white",
@@ -24,7 +25,7 @@ const styles = StyleSheet.create({
         minHeight:100,
         maxWidth:400,
         flex:1,
-        marginHorizontal:15,
+        margin:15,
         borderRadius:25,
         elevation:5,
         shadowColor: "#000",
@@ -63,12 +64,22 @@ const styles = StyleSheet.create({
         flex:1,
         color:theme.PRIMARY_COLOR,
         fontSize:16,
+        alignSelf:"center",
     },
     contactValue:{
         textAlign:"left",
         fontWeight:"normal",
         flex:2,
         fontSize:16,
+    },
+    contactInput:{
+        borderColor:"black",
+        borderWidth:1,
+        borderRadius:5,
+        margin:5,
+        padding:5,
+        fontSize:16,
+        width:"100%",
     },
     description:{
         fontSize:16,
@@ -170,7 +181,16 @@ const styles = StyleSheet.create({
     regionLabel:{
         margin:10,
     },
-
+    warningLabel:{
+        borderColor:"#ce0018",
+        borderWidth:1,
+        borderRadius:5,
+        backgroundColor:"#ffdcd5",
+        color:"#ce0018",
+        paddingVertical:5,
+        paddingHorizontal:10,
+        textAlign:"center"
+    }
 });
 
 export default styles;
