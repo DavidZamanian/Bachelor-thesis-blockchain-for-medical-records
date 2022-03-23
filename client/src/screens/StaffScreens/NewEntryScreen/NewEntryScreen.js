@@ -1,6 +1,6 @@
 import React, { useState, setState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Text, View, TextInput, Pressable , Image, SafeAreaView, FlatList, Alert, Modal, ActivityIndicator} from "react-native";
+import { Text, View, TextInput, SafeAreaView, FlatList, Modal, ActivityIndicator} from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -11,8 +11,6 @@ import EhrEntry from "../../../../../server/jsonHandling/ehrEntry";
 import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
 import { Web3Storage, File } from 'web3.storage/dist/bundle.esm.min.js'
-import { ValueScopeName } from "ajv/dist/compile/codegen";
-import { async } from "@firebase/util";
 
 
 export function NewEntryScreen(props) {
