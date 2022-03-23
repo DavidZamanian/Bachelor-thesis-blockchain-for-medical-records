@@ -177,7 +177,6 @@ export function NewEntryScreen(props) {
     let apiToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGJhYThjNjAzREI2OTcwNDY0ODNDYjNhMzQ2M2Q3ZmIwNjM2NjBCYTMiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NDc2MTE1MDkyODIsIm5hbWUiOiJCYWNoZWxvclRoZXNpcyJ9.Z_2Aeq19TLcDyi8Ak1k1u0TAiszKnw7eteqtahHvy18";
     
     let client = new Web3Storage({ token: apiToken});
-    
 
     const file = new File([rawEHR], inputPatient+'.json', { type: 'text/json' });
 
@@ -186,30 +185,21 @@ export function NewEntryScreen(props) {
       Don't worry, it may take a couple of seconds. Also, we would like to 
       handle any errors that may arise before proceeding - hence, no async!
     */
-    
     updateSubmitStatus("Loading")
-    
-
-    
-      client.put([file])
-      .then((value) => {
-        alert("Success: "+value)
-        updateSubmitStatus("Success")
-      })
-      .catch((e) =>{
-        alert("NOPE "+e)
-        updateSubmitStatus("Error")
-      })
-    
-    
-
-    
-
-    
-
-    /* INSERT CHECK IF DATA SUBMISSION WAS SUCCESSFULL BEFORE THIS*/
-    //navigation.navigate("PatientSearchScreen");
-    //setModalVisible(false);
+    client.put([file])
+    .then((value) => {
+      //alert("Success: "+value)
+      updateSubmitStatus("Success")
+      setTimeout(()=>{
+        navigation.navigate("PatientSearchScreen");
+        setModalVisible(false);
+      },3000)
+      
+    })
+    .catch((e) =>{
+      //alert("Error "+e)
+      updateSubmitStatus("Error")
+    })
   }
 
   const openPopup = () => {
@@ -227,6 +217,7 @@ export function NewEntryScreen(props) {
     let newStyle;
     let newMessage;
     let newVisible = true;
+    
     switch(newStatus){
       case "Loading":
         newStyle = styles.submitLoading;
@@ -234,7 +225,8 @@ export function NewEntryScreen(props) {
         break;
       case "Success":
         newStyle = styles.submitSuccess;
-        newMessage = "Success, the data has successfully been submitted!";
+        newMessage = "Success, the data has successfully been submitted!"+
+        "\nRedirecting in 3 seconds...";
         break;
       case "Error":
         newStyle = styles.submitError;
@@ -253,8 +245,6 @@ export function NewEntryScreen(props) {
       message: newMessage,
       visible: newVisible
     })
-
-
   }
 
   return (
