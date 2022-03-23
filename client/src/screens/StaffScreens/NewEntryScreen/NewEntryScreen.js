@@ -145,73 +145,35 @@ export function NewEntryScreen(props) {
     let diagnoseList = [];
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
 
-    let ehr = createEHR(prescriptList,diagnoseList)
-
     try{
-    let apiToken = getWeb3StorageToken(); // throws
+      let apiToken = getWeb3StorageToken(); // can throw. Must be here because of Firebase (I think?)
+      let fs = new FileService(apiToken);
 
-    let rawEHR = JSON.stringify(ehr);
-    let rawDiagnoses = JSON.stringify(diagnoseList);
-    let rawPrescriptions = JSON.stringify(prescriptList);
-    
-    //let client = new Web3Storage({ token: apiToken});
+      let rawEHR = EHRService.stringify(createEHR(prescriptList,diagnoseList))
+      let rawDiagnoses = EHRService.stringify(diagnoseList);
+      let rawPrescriptions = EHRService.stringify(prescriptList);
 
-    let fs = new FileService(apiToken);
-    
+      let ehrFile = FileService.createJSONFile(rawEHR,"ehr");
+      let diagnosesFile = FileService.createJSONFile(rawDiagnoses,"diagnoses");
+      let prescriptionsFile = FileService.createJSONFile(rawPrescriptions,"prescriptions");
 
-    //let ehrFile = new File([rawEHR], inputPatient+'.json', { type: 'text/json' });
-    //let diagnosesFile = new File([rawDiagnoses], 'diagnoses.json', { type: 'text/json' });
-    //let prescriptionsFile = new File([rawPrescriptions], 'prescriptions.json', { type: 'text/json' });
-    
-    let ehrFile = FileService.createJSONFile(rawEHR,"ehr");
-    let diagnosesFile = FileService.createJSONFile(rawDiagnoses,"diagnoses");
-    let prescriptionsFile = FileService.createJSONFile(rawPrescriptions,"prescriptions");
-
-
-
-    let cid = null;
-    cid = fs.uploadFiles([ehrFile, diagnosesFile, prescriptionsFile])
-    let waitingTime = 0;
-    do{
-      setTimeout(()=> {waitingTime++},1000)
-    } while (cid === null && waitingTime <= 15)
-    if (cid !== null){
-      updateSubmitStatus("Success")
-      setTimeout(()=>{
-        navigation.navigate("PatientSearchScreen");
-        setModalVisible(false);
-      },3000)
-    }
-    else if(waitingTime >= 15){
-      updateSubmitStatus("TimedOut")
-    }
-    else{
-      updateSubmitStatus("Error")
-    }
-    
-    
-    
-    
-    /* 
-      Because there is no async here, it will "freeze" here. 
-      Don't worry, it may take a couple of seconds. Also, we would like to 
-      handle any errors that may arise before proceeding - hence, no async!
-    */
-    /*
-    client.put([ehrFile, diagnosesFile, prescriptionsFile])
-    .then((value) => {
-      cid = value;
-      // Do something with cid?
-      updateSubmitStatus("Success")
-      setTimeout(()=>{
-        navigation.navigate("PatientSearchScreen");
-        setModalVisible(false);
-      },3000)
-    })
-    .catch((e) =>{
-      updateSubmitStatus("Error")
-    })
-    */
+      let cid = null;
+      cid = fs.uploadFiles([ehrFile, diagnosesFile, prescriptionsFile])
+      let timeWaiting = 0;
+      do{
+        setTimeout(()=>{},1000)
+        timeWaiting = timeWaiting + 1
+      }while(timeWaiting < 10 && cid !== null)
+      if (cid !== null){
+        updateSubmitStatus("Success")
+        setTimeout(()=>{
+          navigation.navigate("PatientSearchScreen");
+          setModalVisible(false);
+        },3000)
+      }
+      else{
+        updateSubmitStatus("TimedOut")
+      }
     }
     catch(err){
       alert(err)
