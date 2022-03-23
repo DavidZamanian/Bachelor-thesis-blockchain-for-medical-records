@@ -11,6 +11,7 @@ import EhrEntry from "../../../../../server/jsonHandling/ehrEntry";
 import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
 import { Web3Storage, File } from 'web3.storage/dist/bundle.esm.min.js'
+import { database, ref, onValue} from "../../../../firebaseSetup";
 
 
 export function NewEntryScreen(props) {
@@ -129,6 +130,20 @@ export function NewEntryScreen(props) {
   }
 
 
+
+  const getWeb3StorageToken = () => {
+    let tokenRef = ref(database, 'Web3Storage-Token')
+    let apiToken = null;
+    onValue(tokenRef, (snapshot) =>  {
+      apiToken = snapshot.val()
+    })
+    
+    if (apiToken == null){
+      throw "Web3Storage token was not found!"
+    }
+    return apiToken;
+  }
+
   /* 
     Method for submitting data.
     Create an EHR entry object, and populate it with data.
@@ -171,8 +186,12 @@ export function NewEntryScreen(props) {
     "\nDiagnoses:"+ehr.diagnoses+
     "\nDetails:"+ehr.details);
     */
+
+    try{
     let rawEHR = JSON.stringify(ehr);
-    let apiToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweGJhYThjNjAzREI2OTcwNDY0ODNDYjNhMzQ2M2Q3ZmIwNjM2NjBCYTMiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2NDc2MTE1MDkyODIsIm5hbWUiOiJCYWNoZWxvclRoZXNpcyJ9.Z_2Aeq19TLcDyi8Ak1k1u0TAiszKnw7eteqtahHvy18";
+    
+    let apiToken = getWeb3StorageToken();
+    
     
     let client = new Web3Storage({ token: apiToken});
 
@@ -198,6 +217,10 @@ export function NewEntryScreen(props) {
       //alert("Error "+e)
       updateSubmitStatus("Error")
     })
+    }
+    catch(err){
+      alert(err)
+    }
   }
 
   const openPopup = () => {
