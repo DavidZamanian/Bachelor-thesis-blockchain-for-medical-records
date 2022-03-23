@@ -7,11 +7,12 @@ import Icon from "react-native-vector-icons/Ionicons";
 import ColouredIcon from "../../../components/colouredIcon";
 import RemoveButton from "../../../components/removeButton";
 import styles from "../../../styles";
-import EhrEntry from "../../../../../server/jsonHandling/ehrEntry";
 import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
 import { Web3Storage, File } from 'web3.storage/dist/bundle.esm.min.js'
 import { database, ref, onValue} from "../../../../firebaseSetup";
+import EHRService from "../../../Helpers/ehrService";
+import FileService from "../../../Helpers/fileService";
 
 
 export function NewEntryScreen(props) {
@@ -144,7 +145,7 @@ export function NewEntryScreen(props) {
     let diagnoseList = [];
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
 
-    let ehr = constructEHR(prescriptList,diagnoseList)
+    let ehr = createEHR(prescriptList,diagnoseList)
 
     try{
     let apiToken = getWeb3StorageToken(); // throws
@@ -153,20 +154,50 @@ export function NewEntryScreen(props) {
     let rawDiagnoses = JSON.stringify(diagnoseList);
     let rawPrescriptions = JSON.stringify(prescriptList);
     
-    let client = new Web3Storage({ token: apiToken});
+    //let client = new Web3Storage({ token: apiToken});
 
-    let ehrFile = new File([rawEHR], inputPatient+'.json', { type: 'text/json' });
-    let diagnosesFile = new File([rawDiagnoses], 'diagnoses.json', { type: 'text/json' });
-    let prescriptionsFile = new File([rawPrescriptions], 'prescriptions.json', { type: 'text/json' });
+    let fs = new FileService(apiToken);
+    
+
+    //let ehrFile = new File([rawEHR], inputPatient+'.json', { type: 'text/json' });
+    //let diagnosesFile = new File([rawDiagnoses], 'diagnoses.json', { type: 'text/json' });
+    //let prescriptionsFile = new File([rawPrescriptions], 'prescriptions.json', { type: 'text/json' });
+    
+    let ehrFile = FileService.createJSONFile(rawEHR,"ehr");
+    let diagnosesFile = FileService.createJSONFile(rawDiagnoses,"diagnoses");
+    let prescriptionsFile = FileService.createJSONFile(rawPrescriptions,"prescriptions");
+
+
 
     let cid = null;
-
+    cid = fs.uploadFiles([ehrFile, diagnosesFile, prescriptionsFile])
+    let waitingTime = 0;
+    do{
+      setTimeout(()=> {waitingTime++},1000)
+    } while (cid === null && waitingTime <= 15)
+    if (cid !== null){
+      updateSubmitStatus("Success")
+      setTimeout(()=>{
+        navigation.navigate("PatientSearchScreen");
+        setModalVisible(false);
+      },3000)
+    }
+    else if(waitingTime >= 15){
+      updateSubmitStatus("TimedOut")
+    }
+    else{
+      updateSubmitStatus("Error")
+    }
+    
+    
+    
+    
     /* 
       Because there is no async here, it will "freeze" here. 
       Don't worry, it may take a couple of seconds. Also, we would like to 
       handle any errors that may arise before proceeding - hence, no async!
     */
-    
+    /*
     client.put([ehrFile, diagnosesFile, prescriptionsFile])
     .then((value) => {
       cid = value;
@@ -180,6 +211,7 @@ export function NewEntryScreen(props) {
     .catch((e) =>{
       updateSubmitStatus("Error")
     })
+    */
     }
     catch(err){
       alert(err)
@@ -193,21 +225,16 @@ export function NewEntryScreen(props) {
    * @returns {Object} - EHR object
    * @author @Chrimle
    */
-  const constructEHR = (prescriptList,diagnoseList) => {
+  const createEHR = (prescriptList,diagnoseList) => {
 
-    let dateNow = new Date().toJSON();
-
-    let ehr = new EhrEntry();
-
-    ehr.setPatientID(inputPatient);
-    ehr.setMedicalPersonnel(medicalPerson);
-    ehr.setHealthcareInstitution(healthcareInst);
-    ehr.setDetails(inputDetails.toString());
-    ehr.setPrescriptions(prescriptList);
-    ehr.setDiagnoses(diagnoseList);
-    ehr.setDate(dateNow);
-
-    return ehr;
+    return EHRService.constructEHR(
+      inputPatient,
+      medicalPerson,
+      healthcareInst,
+      inputDetails,
+      prescriptList,
+      diagnoseList
+    )
   }
 
 
@@ -244,6 +271,10 @@ export function NewEntryScreen(props) {
       case "Error":
         newStyle = styles.submitError;
         newMessage = "Error, something went wrong";
+        break;
+      case "TimedOut":
+        newStyle = styles.submitError;
+        newMessage = "Error: Operation timed out";
         break;
       default:
         newStyle = {};
