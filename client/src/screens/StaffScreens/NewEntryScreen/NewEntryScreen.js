@@ -9,10 +9,8 @@ import RemoveButton from "../../../components/removeButton";
 import styles from "../../../styles";
 import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
-import { Web3Storage, File } from 'web3.storage/dist/bundle.esm.min.js'
 import { database, ref, onValue} from "../../../../firebaseSetup";
 import EHRService from "../../../Helpers/ehrService";
-import FileService from "../../../Helpers/fileService";
 
 
 export function NewEntryScreen(props) {
@@ -137,28 +135,9 @@ export function NewEntryScreen(props) {
 
     updateSubmitStatus("Loading")
 
-    // Merge prescription name and dosage into single string
-    let prescriptList = [];
-    prescriptionsList.forEach(element => prescriptList.push(element.name.toString()+" "+element.dosage.toString()));
-    
-    // Create list of diagnoses
-    let diagnoseList = [];
-    diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
-
     try{
-      let apiToken = getWeb3StorageToken(); // can throw. Must be here because of Firebase (I think?)
-      let fs = new FileService(apiToken);
-
-      let rawEHR = EHRService.stringify(createEHR(prescriptList,diagnoseList))
-      let rawDiagnoses = EHRService.stringify(diagnoseList);
-      let rawPrescriptions = EHRService.stringify(prescriptList);
-
-      let ehrFile = FileService.createJSONFile(rawEHR,"ehr");
-      let diagnosesFile = FileService.createJSONFile(rawDiagnoses,"diagnoses");
-      let prescriptionsFile = FileService.createJSONFile(rawPrescriptions,"prescriptions");
-
       let cid = null;
-      cid = fs.uploadFiles([ehrFile, diagnosesFile, prescriptionsFile])
+      cid = submitEHR()
       let timeWaiting = 0;
       do{
         setTimeout(()=>{},1000)
@@ -181,15 +160,24 @@ export function NewEntryScreen(props) {
   }
 
   /**
-   * Constructs an EHR object
-   * @param  {Array} prescriptList - can be empty
-   * @param  {Array} diagnoseList - can be empty
-   * @returns {Object} - EHR object
+   * Sends input data to be made into files and uploaded
+   * @returns {String} cid -- Successful if not 'null'
    * @author @Chrimle
    */
-  const createEHR = (prescriptList,diagnoseList) => {
+  const submitEHR = () => {
 
-    return EHRService.constructEHR(
+    let apiToken = getWeb3StorageToken();
+
+    // Merge prescription name and dosage into single string
+    let prescriptList = [];
+    prescriptionsList.forEach(element => prescriptList.push(element.name.toString()+" "+element.dosage.toString()));
+    
+    // Create list of diagnoses
+    let diagnoseList = [];
+    diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
+
+    return EHRService.packageAndUploadEHR(
+      apiToken,
       inputPatient,
       medicalPerson,
       healthcareInst,

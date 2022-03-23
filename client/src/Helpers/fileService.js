@@ -32,6 +32,7 @@ export default class FileService{
      * Uploads file(s) to Web3Storage and returns the CID for the root folder
      * @param  {Array<File>} files
      * @returns {String} cid -- The Web3Storage CID to the root folder
+     * @author @Chrimle
      */
     uploadFiles(files){
 

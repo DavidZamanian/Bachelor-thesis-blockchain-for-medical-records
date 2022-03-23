@@ -1,4 +1,5 @@
 import EhrEntry from "./ehrEntry";
+import FileService from "./fileService";
 
 
 
@@ -51,6 +52,45 @@ export default class EHRService{
         return JSON.stringify(item);
     }
 
+    static packageAndUploadEHR(
+        apiToken,
+        id,
+        staff,
+        institution,
+        details,
+        prescriptions,
+        diagnoses,
+    ){
+        let fs = new FileService(apiToken);
+
+        // Create EHR object + (pre/dia lists)
+        let objectEHR = EHRService.constructEHR(
+            id,
+            staff,
+            institution,
+            details,
+            prescriptions,
+            diagnoses
+          )
+
+        // Make into JSON objects
+        let stringEHR = EHRService.stringify(objectEHR);
+        let stringPrescriptions = EHRService.stringify(prescriptions);
+        let stringDiagnoses = EHRService.stringify(diagnoses);
+
+        // Create JSON file from EHR 
+        let ehrFile = FileService.createJSONFile(stringEHR,"ehr");
+
+        // Create JSON files from prescriptions & diagnoses
+        let prescriptionsFile = FileService.createJSONFile(stringPrescriptions,"prescriptions");
+        let diagnosesFile = FileService.createJSONFile(stringDiagnoses,"diagnoses");
+
+        // Put JSON files into list and upload
+        let files = [ehrFile,prescriptionsFile,diagnosesFile]
+
+        // Retrieve CID and return it
+        return fs.uploadFiles(files)
+    }
 
 
 }
