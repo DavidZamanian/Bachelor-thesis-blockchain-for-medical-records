@@ -157,7 +157,9 @@ const styles = StyleSheet.create({
     fontWeight:"500",
     borderColor:"black",
     backgroundColor:"white",
-    textAlign:"center"
+    textAlign:"center",
+    flexDirection:"row",
+    justifyContent:"center"
   },
   submitLoading:{
     

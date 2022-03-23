@@ -1,6 +1,6 @@
 import React, { useState, setState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Text, View, TextInput, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
+import { Text, View, TextInput, Pressable , Image, SafeAreaView, FlatList, Alert, Modal, ActivityIndicator} from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -272,7 +272,11 @@ export function NewEntryScreen(props) {
                 <Text style={{fontSize:25, textAlign:"center"}}>Patient ID: {inputPatient}</Text>
                 <Text style={{fontSize:20, fontStyle:"italic", textAlign:"center"}}>By submitting, you ensure this record is meant for the individual listed above.</Text>
                 {
-                submitStatus.visible && <Text style={[styles.submitMessage,submitStatus.style]}>{submitStatus.message}</Text>
+                submitStatus.visible && 
+                <View style={[styles.submitMessage,submitStatus.style]}>
+                  <Text>{submitStatus.message}</Text>
+                  {submitStatus.status=="Loading" && <ActivityIndicator size="small" color="grey"/>} 
+                </View>
                 }
               </View>
               <View style={{flex:1, padding:10, borderTopColor:"grey", borderTopWidth:2, flexDirection:"row", justifyContent:"flex-end"}}>
