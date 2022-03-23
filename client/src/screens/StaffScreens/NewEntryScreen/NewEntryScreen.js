@@ -12,6 +12,7 @@ import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
 import { Web3Storage, File } from 'web3.storage/dist/bundle.esm.min.js'
 import { ValueScopeName } from "ajv/dist/compile/codegen";
+import { async } from "@firebase/util";
 
 
 export function NewEntryScreen(props) {
@@ -39,6 +40,14 @@ export function NewEntryScreen(props) {
   /* These can have useState(prescriptions) for testing purposes*/
   const [prescriptionsList, setPrescriptionsList] = useState(prescriptions);
   const [diagnosesList, setDiagnosesList] = useState(diagnoses);
+
+  const [submitStatus, setSubmitStatus] = useState({
+    message: "Placeholder",
+    style: {},
+    status: "hide",
+    visible: false
+  });
+
 
   /*
     Method is given an index of a prescription to be deleted.
@@ -178,13 +187,21 @@ export function NewEntryScreen(props) {
       handle any errors that may arise before proceeding - hence, no async!
     */
     
-    client.put([file])
+    updateSubmitStatus("Loading")
+    
+
+    
+      client.put([file])
       .then((value) => {
         alert("Success: "+value)
+        updateSubmitStatus("Success")
       })
       .catch((e) =>{
         alert("NOPE "+e)
+        updateSubmitStatus("Error")
       })
+    
+    
 
     
 
@@ -206,7 +223,39 @@ export function NewEntryScreen(props) {
     navigation.navigate("EHROverview",inputPatient);
   }
 
+  const updateSubmitStatus = (newStatus) => {
+    let newStyle;
+    let newMessage;
+    let newVisible = true;
+    switch(newStatus){
+      case "Loading":
+        newStyle = styles.submitLoading;
+        newMessage = "Submitting data, please wait...";
+        break;
+      case "Success":
+        newStyle = styles.submitSuccess;
+        newMessage = "Success, the data has successfully been submitted!";
+        break;
+      case "Error":
+        newStyle = styles.submitError;
+        newMessage = "Error, something went wrong";
+        break;
+      default:
+        newStyle = {};
+        newMessage = "";
+        newVisible != newVisible
+        break;
+    }
 
+    setSubmitStatus({
+      style: newStyle,
+      status: newStatus,
+      message: newMessage,
+      visible: newVisible
+    })
+
+
+  }
 
   return (
     <View style={styles.main}>
@@ -232,6 +281,9 @@ export function NewEntryScreen(props) {
                 <Text style={{fontSize:20,fontWeight:"bold", textAlign:"center"}}>You are about to submit a record entry for:</Text>
                 <Text style={{fontSize:25, textAlign:"center"}}>Patient ID: {inputPatient}</Text>
                 <Text style={{fontSize:20, fontStyle:"italic", textAlign:"center"}}>By submitting, you ensure this record is meant for the individual listed above.</Text>
+                {
+                submitStatus.visible && <Text style={[styles.submitMessage,submitStatus.style]}>{submitStatus.message}</Text>
+                }
               </View>
               <View style={{flex:1, padding:10, borderTopColor:"grey", borderTopWidth:2, flexDirection:"row", justifyContent:"flex-end"}}>
                 <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.greyButton,{height:"100%"}]} onPress={()=>{setModalVisible(false)}}>
