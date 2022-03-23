@@ -52,6 +52,20 @@ export default class EHRService{
         return JSON.stringify(item);
     }
 
+    
+    /**
+     * Takes the raw input and creates JSON files of these and uploads to Web3Storage.
+     * Returns the CID when done.
+     * @param  {String} apiToken
+     * @param  {String} id
+     * @param  {String} staff
+     * @param  {String} institution
+     * @param  {String} details
+     * @param  {Array<String>} prescriptions 
+     * @param  {Array<String>} diagnoses
+     * @returns {String} cid -- The Web3Storage CID of the root folder
+     * @author @Chrimle
+     */
     static packageAndUploadEHR(
         apiToken,
         id,
