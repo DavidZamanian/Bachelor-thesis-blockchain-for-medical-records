@@ -24,7 +24,7 @@ export function EHROverviewScreen(props) {
 
 
   // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "patient";
+  const placeholderRole = "doctor";
 
   const [doctorRole,setDoctorRole] = useState(false);
   const [regions,setRegions] = useState([]);
