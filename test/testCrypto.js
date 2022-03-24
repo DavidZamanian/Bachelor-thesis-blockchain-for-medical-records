@@ -1,10 +1,6 @@
-//import crypto from "../client/Crypto/crypto";
+import crypto from "crypto";
+import crypt from "../client/Crypto/crypt.js";
 import * as assert from "assert";
-//import crypto from "crypto";
-import generateKeyPair from "crypto";
-import generateKey from "crypto";
-import encryptRecordKey from "../client/Crypto/crypto";
-import decryptRecordKey from "../client/Crypto/crypto";
 
 describe("Test crypto", function () {
   it("Should return encrypted record_key", function () {
@@ -12,7 +8,7 @@ describe("Test crypto", function () {
     var record_key;
     let plaintext = "Hej Wendy";
 
-    generateKeyPair(
+    crypto.generateKeyPair(
       "ec",
       {
         namedCurve: "secp256k1", // Options
@@ -44,14 +40,14 @@ describe("Test crypto", function () {
       }
     );
 
-    generateKey("aes", { length: 128 }, (err, key) => {
+    crypto.generateKey("aes", { length: 128 }, (err, key) => {
       if (err) throw err;
       record_key = key.export().toString("hex");
     });
 
-    var output = encryptRecordKey(keyPair.puKey, plaintext);
+    var output = crypt.encryptRecordKey(keyPair.puKey, plaintext);
     console.log(output);
-
+    
     //assert.equal(ehrEntry.date, date);
   });
 });

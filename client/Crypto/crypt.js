@@ -1,4 +1,4 @@
-import crypto from "crypto";
+const crypto = require('crypto');
 
 const algorithm = "aes-128-ctr";
 
@@ -32,7 +32,7 @@ function decryptRecordKey(privateKey, text) {
   return decrypted.toString();
 }
 
-export { encryptRecordKey, decryptRecordKey };
+module.exports = { encryptRecordKey, decryptRecordKey };
 
 /* Method for encryptEHR (symmetric with record_key)
 
