@@ -36,14 +36,18 @@ export default class FileService{
      */
     uploadFiles(files){
 
-        let cid;
+        let cid = null;
+        let err = null;
         this.client.put(files)
             .then((value) => {
                 cid = value;
             })
             .catch((e) =>{
-                // throw e?
+                err = e;
             })
+        if (err !== null){
+            throw err
+        }
         return cid;
     }
     

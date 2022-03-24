@@ -135,27 +135,16 @@ export function NewEntryScreen(props) {
 
     updateSubmitStatus("Loading")
 
-    try{
-      let cid = null;
-      cid = submitEHR()
-      let timeWaiting = 0;
-      do{
-        setTimeout(()=>{},1000)
-        timeWaiting = timeWaiting + 1
-      }while(timeWaiting < 10 && cid !== null)
-      if (cid !== null){
-        updateSubmitStatus("Success")
-        setTimeout(()=>{
-          navigation.navigate("PatientSearchScreen");
-          setModalVisible(false);
-        },3000)
-      }
-      else{
-        updateSubmitStatus("TimedOut")
-      }
+    let success = submitEHR()
+    if (success){
+      updateSubmitStatus("Success")
+      setTimeout(()=>{
+        navigation.navigate("PatientSearchScreen");
+        setModalVisible(false);
+      },3000)
     }
-    catch(err){
-      alert(err)
+    else{
+      updateSubmitStatus("Error")
     }
   }
 
@@ -176,7 +165,7 @@ export function NewEntryScreen(props) {
     let diagnoseList = [];
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
 
-    return EHRService.packageAndUploadEHR(
+    let success =  EHRService.packageAndUploadEHR(
       apiToken,
       inputPatient,
       medicalPerson,
@@ -185,7 +174,9 @@ export function NewEntryScreen(props) {
       prescriptList,
       diagnoseList
     )
+    return success;
   }
+
 
 
   const openPopup = () => {

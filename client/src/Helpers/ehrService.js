@@ -103,7 +103,14 @@ export default class EHRService{
         let files = [ehrFile,prescriptionsFile,diagnosesFile]
 
         // Retrieve CID and return it
-        return fs.uploadFiles(files)
+        try{
+            let cid = fs.uploadFiles(files)
+            return (cid !== null)
+        }
+        catch (e){
+            return false
+        }
+        
     }
 
 
