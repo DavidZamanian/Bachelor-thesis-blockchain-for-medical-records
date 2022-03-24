@@ -165,8 +165,6 @@ export function NewEntryScreen(props) {
    */
   const submitEHR = async () => {
 
-    let apiToken = getWeb3StorageToken();
-
     // Merge prescription name and dosage into single string
     let prescriptList = [];
     prescriptionsList.forEach(element => prescriptList.push(element.name.toString()+" "+element.dosage.toString()));
@@ -177,7 +175,6 @@ export function NewEntryScreen(props) {
 
     try{
       let success =  await EHRService.packageAndUploadEHR(
-      apiToken,
       inputPatient,
       medicalPerson,
       healthcareInst,
@@ -197,8 +194,7 @@ export function NewEntryScreen(props) {
 
 
   const openPopup = () => {
-    // this has to be called twice, no clue why.
-    getWeb3StorageToken();
+
     setModalVisible(true);
   }
 

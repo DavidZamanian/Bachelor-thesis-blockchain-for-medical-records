@@ -3,11 +3,50 @@ import CreateFileObjectError from "./Errors/createFileObjectError";
 import fetchFileContentError from "./Errors/FetchFileContentError";
 import UploadFileError from "./Errors/uploadFileError";
 import FileService from "./fileService";
-
+import { database, ref, get, child } from "../../firebaseSetup";
 
 
 
 export default class EHRService{
+
+    /**
+     * 
+     * @returns {Promise<String>}
+     */
+    static async getWeb3StorageToken() {
+   
+        let dbRef = ref(database);
+        let apiToken = null;
+        await get(child(dbRef, 'Web3Storage-Token')).then((snapshot) => {
+        if (snapshot.exists()) {
+            apiToken =  snapshot.val()
+        } else {
+            throw ("No data available");
+        }
+        }).catch((error) => {
+            throw (error);
+        });
+        return apiToken;
+
+
+
+        /*
+        let tokenRef = ref(database, 'Web3Storage-Token')
+        
+        let apiToken = null;
+        await onValue(tokenRef, (snapshot) =>  {
+          apiToken = snapshot.val()
+        })
+
+        tokenRef.
+
+        if (apiToken == null){
+          //throw "Web3Storage token was not found!"
+        }
+        return apiToken;
+        */
+      }
+
 
 
     /**
@@ -59,7 +98,6 @@ export default class EHRService{
     /**
      * Takes the raw input and creates JSON files of these and uploads to Web3Storage.
      * Returns the CID when done.
-     * @param  {String} apiToken
      * @param  {String} id
      * @param  {String} staff
      * @param  {String} institution
@@ -71,7 +109,6 @@ export default class EHRService{
      * @author Chrimle
      */
     static async packageAndUploadEHR(
-        apiToken,
         id,
         staff,
         institution,
@@ -79,24 +116,26 @@ export default class EHRService{
         prescriptions,
         diagnoses,
     ){
-        let fs = new FileService(apiToken);
-
-        // Create EHR object + (pre/dia lists)
-        let objectEHR = EHRService.constructEHR(
-            id,
-            staff,
-            institution,
-            details,
-            prescriptions,
-            diagnoses
-          )
-
-        // Make into JSON objects
-        let stringEHR = EHRService.stringify(objectEHR);
-        let stringPrescriptions = EHRService.stringify(prescriptions);
-        let stringDiagnoses = EHRService.stringify(diagnoses);
-
+ 
         try{
+            let apiToken = await EHRService.getWeb3StorageToken()
+            console.log(apiToken)
+            let fs = new FileService(apiToken);
+        
+            // Create EHR object + (pre/dia lists)
+            let objectEHR = EHRService.constructEHR(
+                id,
+                staff,
+                institution,
+                details,
+                prescriptions,
+                diagnoses
+            )
+            // Make into JSON objects
+            let stringEHR = EHRService.stringify(objectEHR);
+            let stringPrescriptions = EHRService.stringify(prescriptions);
+            let stringDiagnoses = EHRService.stringify(diagnoses);
+
             // Create JSON file from EHR 
             let ehrFile = FileService.createJSONFile(stringEHR,"ehr");
 
@@ -109,8 +148,9 @@ export default class EHRService{
 
             // Retrieve CID and return it
             
-            return await fs.uploadFiles(files)
+            let cid = await fs.uploadFiles(files)
             
+            return cid
         }
         catch (e){
             if(e instanceof CreateFileObjectError){
