@@ -10,8 +10,10 @@ import { database, ref, get, child } from "../../firebaseSetup";
 export default class EHRService{
 
     /**
-     * 
-     * @returns {Promise<String>}
+     * Fetches API-token to Web3Storage from Firebase
+     * @returns {Promise<String>} apiToken to Web3Storage
+     * @throws 
+     * @author @Chrimle
      */
     static async getWeb3StorageToken() {
    
@@ -19,7 +21,7 @@ export default class EHRService{
         let apiToken = null;
         await get(child(dbRef, 'Web3Storage-Token')).then((snapshot) => {
         if (snapshot.exists()) {
-            apiToken =  snapshot.val()
+            apiToken = snapshot.val()
         } else {
             throw ("No data available");
         }
@@ -27,24 +29,6 @@ export default class EHRService{
             throw (error);
         });
         return apiToken;
-
-
-
-        /*
-        let tokenRef = ref(database, 'Web3Storage-Token')
-        
-        let apiToken = null;
-        await onValue(tokenRef, (snapshot) =>  {
-          apiToken = snapshot.val()
-        })
-
-        tokenRef.
-
-        if (apiToken == null){
-          //throw "Web3Storage token was not found!"
-        }
-        return apiToken;
-        */
       }
 
 
@@ -104,8 +88,7 @@ export default class EHRService{
      * @param  {String} details
      * @param  {Array<String>} prescriptions 
      * @param  {Array<String>} diagnoses
-     * @returns {Promise<String>}
-     * {String} cid -- The Web3Storage CID of the root folder
+     * @returns {Promise<String>} cid -- The Web3Storage CID of the root folder
      * @author Chrimle
      */
     static async packageAndUploadEHR(
@@ -119,7 +102,7 @@ export default class EHRService{
  
         try{
             let apiToken = await EHRService.getWeb3StorageToken()
-            console.log(apiToken)
+
             let fs = new FileService(apiToken);
         
             // Create EHR object + (pre/dia lists)
@@ -147,7 +130,6 @@ export default class EHRService{
             let files = [ehrFile,prescriptionsFile,diagnosesFile]
 
             // Retrieve CID and return it
-            
             let cid = await fs.uploadFiles(files)
             
             return cid
@@ -159,10 +141,5 @@ export default class EHRService{
                 throw e
             }
         }
-        
-        
-        
     }
-
-
 }
