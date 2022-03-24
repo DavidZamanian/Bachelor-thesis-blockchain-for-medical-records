@@ -107,27 +107,6 @@ export function NewEntryScreen(props) {
     })
   }
 
-
-  /**
-   * Fetches API-token to Web3Storage from Firebase
-   * @returns {String} - The API-Token to Web3Storage
-   * @throws "Web3Storage token was not found!"
-   * @author @Chrimle
-   */
-  const getWeb3StorageToken = () => {
-   
-    let tokenRef = ref(database, 'Web3Storage-Token')
-    let apiToken = null;
-    onValue(tokenRef, (snapshot) =>  {
-      apiToken = snapshot.val()
-    })
-    if (apiToken == null){
-      //throw "Web3Storage token was not found!"
-    }
-    return apiToken;
-
-  }
-
   /**
    * Constructs and submits an EHR file to Web3Storage
    * @author @Chrimle
@@ -144,18 +123,14 @@ export function NewEntryScreen(props) {
 
     updateSubmitStatus("Loading")
     
-    let success = await submitEHR()
-
-    if (success){
-      updateSubmitStatus("Success")
+    let status = await submitEHR()
+    updateSubmitStatus(status)
+    if (status == "Success"){
       setTimeout(()=>{
         navigation.navigate("PatientSearchScreen");
         setModalVisible(false);
        },3000)
-     }
-     else{
-      updateSubmitStatus("TimedOut")
-    }     
+     }   
   }
 
   /**
@@ -174,7 +149,7 @@ export function NewEntryScreen(props) {
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
 
     try{
-      let success =  await EHRService.packageAndUploadEHR(
+      let status =  await EHRService.packageAndUploadEHR(
       inputPatient,
       medicalPerson,
       healthcareInst,
@@ -182,7 +157,7 @@ export function NewEntryScreen(props) {
       prescriptList,
       diagnoseList)
 
-      return success;
+      return status;
     }
     catch(e){
       updateSubmitStatus("Error")
@@ -225,6 +200,10 @@ export function NewEntryScreen(props) {
       case "Error":
         newStyle = styles.submitError;
         newMessage = "Error, something went wrong";
+        break;
+      case "NoResponse":
+        newStyle = styles.submitError;
+        newMessage = "Error, no response from database";
         break;
       case "TimedOut":
         newStyle = styles.submitError;

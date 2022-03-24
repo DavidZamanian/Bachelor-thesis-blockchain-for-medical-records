@@ -88,7 +88,8 @@ export default class EHRService{
      * @param  {String} details
      * @param  {Array<String>} prescriptions 
      * @param  {Array<String>} diagnoses
-     * @returns {Promise<String>} cid -- The Web3Storage CID of the root folder
+     * @returns {Promise<String>} result -- A string to notify the frontend if it succeeded,
+     * or why it failed 
      * @author Chrimle
      */
     static async packageAndUploadEHR(
@@ -132,13 +133,13 @@ export default class EHRService{
             // Retrieve CID and return it
             let cid = await fs.uploadFiles(files)
             
-            return cid
+            return "Success"
         }
         catch (e){
             if(e instanceof CreateFileObjectError){
-                throw e
+                return "Error"
             } else if (e instanceof UploadFileError){
-                throw e
+                return "NoResponse"
             }
         }
     }
