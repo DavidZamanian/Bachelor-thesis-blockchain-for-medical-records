@@ -1,53 +1,51 @@
 import crypto from "crypto";
 import crypt from "../client/Crypto/crypt.js";
 import * as assert from "assert";
+import fs from "fs";
 
 describe("Test crypto", function () {
   it("Should return encrypted record_key", function () {
-    var keyPair = {};
     var record_key;
     let plaintext = "Hej Wendy";
 
-    crypto.generateKeyPair(
-      "ec",
-      {
-        namedCurve: "secp256k1", // Options
+    function generateKeyFiles() {
+      const keyPair = crypto.generateKeyPairSync("rsa", {
+        modulusLength: 1024,
         publicKeyEncoding: {
           type: "spki",
-          format: "der",
+          format: "pem",
         },
         privateKeyEncoding: {
           type: "pkcs8",
-          format: "der",
+          format: "pem",
+          cipher: "aes-256-cbc",
+          passphrase: "",
         },
-      },
-      (err, publicKey, privateKey) => {
-        // Callback function
-        if (!err) {
-          // Prints new asymmetric key
-          // pair after encoding
-          keyPair = {
-            prKey: privateKey.toString("hex"),
-            puKey: publicKey.toString("hex"),
-          };
+      });
 
-          //console.log("Public Key is: ", publicKey.toString("hex"));
-          //console.log("Private Key is: ", privateKey.toString("hex"));
-        } else {
-          // Prints error
-          console.log("Errr is: ", err);
-        }
-      }
-    );
+      // Creating public and private key file
+      fs.writeFileSync("public_key", keyPair.publicKey);
+      fs.writeFileSync("private_key", keyPair.privateKey);
+    }
+
+    // Generate keys
+    generateKeyFiles();
+
+    var encrypted = crypt.encryptRecordKey(plaintext, "./public_key");
+    var decrypted = crypt.decryptRecordKey(encrypted, "private_key");
+    console.log("Encrypted: " + encrypted + "Decrypted: " + decrypted);
+
+    assert.equal(plaintext, decrypted);
+    assert.doesNotThrow(() => {
+      crypt.encryptRecordKey(plaintext, "./public_key");
+    });
+    assert.doesNotThrow(() => {
+      crypt.decryptRecordKey(encrypted, "private_key");
+    });
 
     crypto.generateKey("aes", { length: 128 }, (err, key) => {
       if (err) throw err;
       record_key = key.export().toString("hex");
     });
-
-    var output = crypt.encryptRecordKey(keyPair.puKey, plaintext);
-    console.log(output);
-    
-    //assert.equal(ehrEntry.date, date);
   });
 });
