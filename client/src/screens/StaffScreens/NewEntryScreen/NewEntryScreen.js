@@ -154,7 +154,7 @@ export function NewEntryScreen(props) {
        },3000)
      }
      else{
-      updateSubmitStatus("Error")
+      updateSubmitStatus("TimedOut")
     }     
   }
 
@@ -188,6 +188,7 @@ export function NewEntryScreen(props) {
       return success;
     }
     catch(e){
+      updateSubmitStatus("Error")
       return false;
     }
     
