@@ -133,24 +133,29 @@ export function NewEntryScreen(props) {
    * @author @Chrimle
    */
   const submitData = async () => {
+    /*
+    For testing fetching a Web3Storage EHR file
+
     let cid = "bafybeifxi2lwmni6gnqanpposc74jugdxe6g6wfpl5saxfsq3t552mrl34"
     let fileName = "ehr"
-    //let x = ( await FileService.fetchFile(cid,fileName))
-    //alert("outside"+x)
+    let x = ( await FileService.fetchFileContent(cid,fileName))
+    alert("outside"+x)
+    */
 
     updateSubmitStatus("Loading")
-
+    
     let success = await submitEHR()
+
     if (success){
       updateSubmitStatus("Success")
       setTimeout(()=>{
         navigation.navigate("PatientSearchScreen");
         setModalVisible(false);
-      },3000)
-    }
-    else{
+       },3000)
+     }
+     else{
       updateSubmitStatus("Error")
-    }
+    }     
   }
 
   /**
@@ -170,16 +175,22 @@ export function NewEntryScreen(props) {
     let diagnoseList = [];
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
 
-    let success =  await EHRService.packageAndUploadEHR(
+    try{
+      let success =  await EHRService.packageAndUploadEHR(
       apiToken,
       inputPatient,
       medicalPerson,
       healthcareInst,
       inputDetails,
       prescriptList,
-      diagnoseList
-    )
-    return success;
+      diagnoseList)
+
+      return success;
+    }
+    catch(e){
+      return false;
+    }
+    
   }
 
 

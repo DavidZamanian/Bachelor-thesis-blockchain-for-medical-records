@@ -1,4 +1,7 @@
 import EhrEntry from "./ehrEntry";
+import CreateFileObjectError from "./Errors/createFileObjectError";
+import fetchFileContentError from "./Errors/FetchFileContentError";
+import UploadFileError from "./Errors/uploadFileError";
 import FileService from "./fileService";
 
 
@@ -93,23 +96,31 @@ export default class EHRService{
         let stringPrescriptions = EHRService.stringify(prescriptions);
         let stringDiagnoses = EHRService.stringify(diagnoses);
 
-        // Create JSON file from EHR 
-        let ehrFile = FileService.createJSONFile(stringEHR,"ehr");
-
-        // Create JSON files from prescriptions & diagnoses
-        let prescriptionsFile = FileService.createJSONFile(stringPrescriptions,"prescriptions");
-        let diagnosesFile = FileService.createJSONFile(stringDiagnoses,"diagnoses");
-
-        // Put JSON files into list and upload
-        let files = [ehrFile,prescriptionsFile,diagnosesFile]
-
-        // Retrieve CID and return it
         try{
+            // Create JSON file from EHR 
+            let ehrFile = FileService.createJSONFile(stringEHR,"ehr");
+
+            // Create JSON files from prescriptions & diagnoses
+            let prescriptionsFile = FileService.createJSONFile(stringPrescriptions,"prescriptions");
+            let diagnosesFile = FileService.createJSONFile(stringDiagnoses,"diagnoses");
+
+            // Put JSON files into list and upload
+            let files = [ehrFile,prescriptionsFile,diagnosesFile]
+
+            // Retrieve CID and return it
+            
             return await fs.uploadFiles(files)
+            
         }
         catch (e){
-            return false
+            if(e instanceof CreateFileObjectError){
+                throw e
+            } else if (e instanceof UploadFileError){
+                throw e
+            }
         }
+        
+        
         
     }
 
