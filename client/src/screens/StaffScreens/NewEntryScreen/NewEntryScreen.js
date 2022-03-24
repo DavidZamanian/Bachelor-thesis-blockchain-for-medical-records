@@ -11,6 +11,7 @@ import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
 import { database, ref, onValue} from "../../../../firebaseSetup";
 import EHRService from "../../../Helpers/ehrService";
+import FileService from "../../../Helpers/fileService";
 
 
 export function NewEntryScreen(props) {
@@ -131,11 +132,15 @@ export function NewEntryScreen(props) {
    * Constructs and submits an EHR file to Web3Storage
    * @author @Chrimle
    */
-  const submitData = () => {
+  const submitData = async () => {
+    let cid = "bafybeifxi2lwmni6gnqanpposc74jugdxe6g6wfpl5saxfsq3t552mrl34"
+    let fileName = "ehr"
+    //let x = ( await FileService.fetchFile(cid,fileName))
+    //alert("outside"+x)
 
     updateSubmitStatus("Loading")
 
-    let success = submitEHR()
+    let success = await submitEHR()
     if (success){
       updateSubmitStatus("Success")
       setTimeout(()=>{
@@ -150,10 +155,10 @@ export function NewEntryScreen(props) {
 
   /**
    * Sends input data to be made into files and uploaded
-   * @returns {String} cid -- Successful if not 'null'
+   * @returns {Promise<String>} cid -- Successful if not 'null'
    * @author @Chrimle
    */
-  const submitEHR = () => {
+  const submitEHR = async () => {
 
     let apiToken = getWeb3StorageToken();
 
@@ -165,7 +170,7 @@ export function NewEntryScreen(props) {
     let diagnoseList = [];
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
 
-    let success =  EHRService.packageAndUploadEHR(
+    let success =  await EHRService.packageAndUploadEHR(
       apiToken,
       inputPatient,
       medicalPerson,
