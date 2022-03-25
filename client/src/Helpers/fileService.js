@@ -132,6 +132,8 @@ export default class FileService{
      * @param {String} path - Path to file 
      * @param {String} cid - content indentifier to the content archive where the files resides. 
      * @returns the path with the prefix cid removed.
+     *
+     * @author Hampus Jernkrook
      */
      removeCidPrefix(path, cid) {
         path = path.replace(cid, "");
