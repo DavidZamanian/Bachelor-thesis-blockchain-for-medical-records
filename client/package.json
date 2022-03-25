@@ -15,12 +15,12 @@
     "expo": "^44.0.0",
     "expo-status-bar": "~1.2.0",
     "firebase": "^9.6.7",
-    "ipfs-car": "^0.6.2",
     "react": "17.0.1",
     "react-dom": "^17.0.2",
     "react-native": "https://github.com/expo/react-native/archive/sdk-44.0.0.tar.gz",
     "react-native-vector-icons": "^9.1.0",
-    "react-native-web": "^0.17.6"
+    "react-native-web": "^0.17.6",
+    "web3.storage": "^4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

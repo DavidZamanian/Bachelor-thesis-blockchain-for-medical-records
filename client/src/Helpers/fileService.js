@@ -1,4 +1,4 @@
-import { Web3Storage, File} from 'web3.storage'
+import { Web3Storage } from 'web3.storage'
 import CreateFileObjectError from './Errors/createFileObjectError';
 import FetchFileContentError from './Errors/FetchFileContentError';
 import UploadFileError from './Errors/uploadFileError';

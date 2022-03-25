@@ -8,9 +8,10 @@ import ThemeButton from "../../components/themeButton";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../theme.style";
-import { database, ref, onValue} from "../../../firebaseSetup";
+import { database, ref, get, child } from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext"
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
+import EHRService from "../../Helpers/ehrService";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
@@ -38,25 +39,24 @@ export function EHROverviewScreen(props) {
   /* 
     Gather patient info from Firebase (runs automatically at the start) 
   */
-    const fetchPatientData = () => {
+    const fetchPatientData = async () => {
       //alert("attempting fetch "+patientID)
       if (patientID == patientInfo.patientId){
         return;
       }
-      const patientRef = ref(database, 'Users/' + patientID);
-      onValue(patientRef, (snapshot) => 
-        {
-          if(snapshot.val() === null){
-            alert("ERROR: This patient does not exist:"+patientID)
-          }
-          else{
-            
+
+      let dbRef = ref(database);
+      await get(child(dbRef, 'Users/' + patientID)).then((snapshot) => {
+        if (snapshot.exists()) {
+
+            let cid = ""
+
             // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
             const userRole                = placeholderRole; //snapshot.val().role 
             const allRegions              = PlaceholderValues.allRegions;
             const patientJournals         = PlaceholderValues.journals;
             const patientPermittedRegions = PlaceholderValues.permittedRegions;
-            const patientPrescriptions    = PlaceholderValues.prescriptions;
+            const patientPrescriptions    = PlaceholderValues.prescriptions; //EHRService.getPrescriptions() ? 
             const patientDiagnoses        = PlaceholderValues.diagnoses;
             
             setDoctorRole(userRole == "doctor")
@@ -90,9 +90,16 @@ export function EHROverviewScreen(props) {
               patientPermittedRegions.forEach((reg) => prevState.find(r => r.name === reg).enabled = true)
               return[...prevState]
             })
-          }
+        } else {
+            //throw ("No data available");
         }
-      );
+        }).catch((error) => {
+            //throw (error);
+        });
+
+
+
+      
     }
   
   
