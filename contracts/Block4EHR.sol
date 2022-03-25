@@ -48,18 +48,18 @@ contract Block4EHR {
     mapping(address => MedicalPersonnel) public medicalPersonnels;
 
     // ===== HEALTHCARE INST. MAPPINGS ======
-    mapping(string => HealthcareInst) public healtcareInstitutions;
+    mapping(string => HealthcareInst) public healthcareInstitutions;
     //===============================================
 
     //================= FUNCTIONS ===================
 
     //======= ADDING OBJECTS ========
-    function addHealtCareInst(string memory _id, string memory _name, string memory _region) public {
-        healtcareInstitutions[_id] = HealthcareInst(_id, _name, _region);
+    function addHealthcareInst(string memory _id, string memory _name, string memory _region) public {
+        healthcareInstitutions[_id] = HealthcareInst(_id, _name, _region);
     }
 
     function addMedicalPersonnel(address _addr, string memory _id, string memory _healthcareInstId) public {
-        HealthcareInst memory inst = healtcareInstitutions[_healthcareInstId];
+        HealthcareInst memory inst = healthcareInstitutions[_healthcareInstId]; //TODO: might not be needed it we want inst to be the id....
         medicalPersonnels[_addr] = MedicalPersonnel(_addr, _id, inst);
     }
 
