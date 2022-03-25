@@ -190,7 +190,7 @@ contract Block4EHR {
         _;
     }
 
-    // TODO: REMOVE if updatePermissions is removed. 
+    // TODO: REMOVE if addPermissions is removed. 
     /** Checks that the region is not already in the patient's list of permissioned regions */
     modifier notAlreadyPresent(string memory _patientId, string memory _region) {
         // if the region is not currently permissioned, then it is not in the list.
