@@ -118,7 +118,7 @@ export function NewEntryScreen(props) {
     //let cid = "bafybeifxi2lwmni6gnqanpposc74jugdxe6g6wfpl5saxfsq3t552mrl34"
     //let fileName = "ehr"
     
-    let x = ( await EHRService.getPatientData())
+    //let x = ( await EHRService.getPatientData())
     //let x = ( await FileService.fetchFileContent(cid,fileName))
     
     

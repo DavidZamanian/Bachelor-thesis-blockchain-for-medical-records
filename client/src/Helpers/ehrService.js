@@ -133,6 +133,10 @@ export default class EHRService{
             // Retrieve CID and return it
             let cid = await fs.uploadFiles(files)
             
+            // TESTING ONLY
+            // Testing if the cid and the files were uploaded
+            let newFiles = await EHRService.getPatientData(cid)
+            
             return "Success"
         }
         catch (e){
@@ -146,17 +150,13 @@ export default class EHRService{
 
 
 
-    static async getPatientData(){
+    static async getPatientData(cid){
 
         let apiToken = await EHRService.getWeb3StorageToken()
 
         let fs = new FileService(apiToken);
 
-        let cid = "bafybeifuc66dhazcxtpo2zlrjc3y7scrpgpmxueazr5ikluu723psmvhcu"
-
         let files = await fs.fetchEHRContents(cid)
-        
-        console.log(files.length)
 
         for (const file of files){
             console.log(file.name+": "+ await file.text())
