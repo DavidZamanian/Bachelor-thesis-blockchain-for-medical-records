@@ -4,7 +4,7 @@
  * 
  * @author @Chrimle
  */
- export default class fetchFileContentError extends Error {
+ export default class FetchFileContentError extends Error {
     /**
      * 
      * @param {String} msg - error message thrown by fetch()

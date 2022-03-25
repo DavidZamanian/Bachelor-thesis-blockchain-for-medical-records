@@ -4,6 +4,7 @@ import fetchFileContentError from "./Errors/FetchFileContentError";
 import UploadFileError from "./Errors/uploadFileError";
 import FileService from "./fileService";
 import { database, ref, get, child } from "../../firebaseSetup";
+import FetchFileContentError from "./Errors/FetchFileContentError";
 
 
 
@@ -21,7 +22,7 @@ export default class EHRService{
         let apiToken = null;
         await get(child(dbRef, 'Web3Storage-Token')).then((snapshot) => {
         if (snapshot.exists()) {
-            apiToken = snapshot.val()
+            apiToken = snapshot.val();
         } else {
             throw ("No data available");
         }
@@ -128,40 +129,42 @@ export default class EHRService{
             let diagnosesFile = FileService.createJSONFile(stringDiagnoses,"diagnoses");
 
             // Put JSON files into list and upload
-            let files = [ehrFile,prescriptionsFile,diagnosesFile]
+            let files = [ehrFile,prescriptionsFile,diagnosesFile];
 
             // Retrieve CID and return it
-            let cid = await fs.uploadFiles(files)
+            let cid = await fs.uploadFiles(files);
             
             // TESTING ONLY
             // Testing if the cid and the files were uploaded
-            let newFiles = await EHRService.getPatientData(cid)
+            let newFiles = await EHRService.getEHR(cid);
             
-            return "Success"
+            return "Success";
         }
         catch (e){
             if(e instanceof CreateFileObjectError){
-                return "Error"
+                return "Error";
             } else if (e instanceof UploadFileError){
-                return "NoResponse"
+                return "NoResponse";
+            } else if (e instanceof FetchFileContentError){
+                return "Error";
             }
         }
     }
 
 
 
-    static async getPatientData(cid){
+    static async getEHR(cid){
 
-        let apiToken = await EHRService.getWeb3StorageToken()
+        let apiToken = await EHRService.getWeb3StorageToken();
 
         let fs = new FileService(apiToken);
 
-        let files = await fs.fetchEHRContents(cid)
+        let files = await fs.fetchEHRContents(cid);
 
         for (const file of files){
-            console.log(file.name+": "+ await file.text())
+            console.log(file.name+": "+ await file.text());
         }
         
-        return files
+        return files;
     }
 }

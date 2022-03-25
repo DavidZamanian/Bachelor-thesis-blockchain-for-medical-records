@@ -1,6 +1,6 @@
 import { Web3Storage, File} from 'web3.storage'
 import CreateFileObjectError from './Errors/createFileObjectError';
-import fetchFileContentError from './Errors/FetchFileContentError';
+import FetchFileContentError from './Errors/FetchFileContentError';
 import UploadFileError from './Errors/uploadFileError';
 import CouldNotResolveCidError from './Errors/couldNotResolveCidError';
 import DownloadError from './Errors/downloadError';
@@ -30,7 +30,7 @@ export default class FileService{
             return new File([content], fileName+'.json', { type: 'text/json' });
         }
         catch(e){
-            throw CreateFileObjectError(e)
+            throw CreateFileObjectError(e);
         }
         
     }
@@ -69,11 +69,11 @@ export default class FileService{
         
         try{
             let result = await fetch(url);
-            let content = await result.text()
-            return content
+            let content = await result.text();
+            return content;
         }
         catch(e){
-            throw fetchFileContentError(e);
+            throw FetchFileContentError(e);
         }
         
     }
@@ -81,13 +81,14 @@ export default class FileService{
     /**
      * Fetches all EHR files
      * @param  {String} cid
-     * @returns {Promise<Array<File>>} results -- Array with EHR objects (name, content)
+     * @returns {Promise<Array<File>>} results -- Array with all File objects in CID-directory
+     * @author @Chrimle
      */
     async fetchEHRContents(cid){
 
-        let results = []
+        let results = [];
 
-        let fileNames = await this.retrieveFileNames(cid)
+        let fileNames = await this.retrieveFileNames(cid);
 
         for (const fileName of fileNames) {
 
@@ -95,7 +96,7 @@ export default class FileService{
 
             let file = new File([content], fileName, { type: 'text/json' });
 
-            results.push(file)
+            results.push(file);
         }
 
         return results;
@@ -112,12 +113,12 @@ export default class FileService{
      * @returns {Promise<Array<String>>} Array of urls of the files to be retrieved 
      */
       async retrieveFileNames(cid) { 
-        const res = await this.client.get(cid)
-        const files = await res.files() // Web3File[]
+        const res = await this.client.get(cid);
+        const files = await res.files(); // Web3File[]
  
         let fileNames = [];
         for (const file of files) {
-            fileNames.push(file.name)
+            fileNames.push(file.name);
             //console.log(`${file.cid} ${file.name} ${file.size}`)
         }
 
