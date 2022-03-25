@@ -112,14 +112,16 @@ export function NewEntryScreen(props) {
    * @author @Chrimle
    */
   const submitData = async () => {
-    /*
-    For testing fetching a Web3Storage EHR file
+    
+    //For testing fetching a Web3Storage EHR file
 
-    let cid = "bafybeifxi2lwmni6gnqanpposc74jugdxe6g6wfpl5saxfsq3t552mrl34"
-    let fileName = "ehr"
-    let x = ( await FileService.fetchFileContent(cid,fileName))
-    alert("outside"+x)
-    */
+    //let cid = "bafybeifxi2lwmni6gnqanpposc74jugdxe6g6wfpl5saxfsq3t552mrl34"
+    //let fileName = "ehr"
+    
+    let x = ( await EHRService.getPatientData())
+    //let x = ( await FileService.fetchFileContent(cid,fileName))
+    
+    
 
     updateSubmitStatus("Loading")
     

@@ -143,4 +143,25 @@ export default class EHRService{
             }
         }
     }
+
+
+
+    static async getPatientData(){
+
+        let apiToken = await EHRService.getWeb3StorageToken()
+
+        let fs = new FileService(apiToken);
+
+        let cid = "bafybeifuc66dhazcxtpo2zlrjc3y7scrpgpmxueazr5ikluu723psmvhcu"
+
+        let files = await fs.fetchEHRContents(cid)
+        
+        console.log(files.length)
+
+        for (const file of files){
+            console.log(file.name+": "+ await file.text())
+        }
+        
+        return files
+    }
 }
