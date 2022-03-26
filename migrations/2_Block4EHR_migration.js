@@ -1,5 +1,13 @@
 const Block4EHR = artifacts.require("Block4EHR");
 
+/**
+ * Script for deploying the smart contract Block4EHR to the blockchain. 
+ * @param {*} deployer 
+ * @param {*} network 
+ * @param {*} accounts 
+ * 
+ * @author Hampus Jernkrook
+ */
 module.exports = function (deployer, network, accounts) {
   deployer.deploy(Block4EHR).then( async () => {
     let instance = await Block4EHR.deployed();
