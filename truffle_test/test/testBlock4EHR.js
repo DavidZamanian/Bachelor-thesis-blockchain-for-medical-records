@@ -1,4 +1,5 @@
 const Block4EHR = artifacts.require("Block4EHR");
+//import {Block4EHR} from "../contracts/Block4EHR.sol";
 
 const inst_gbg = "i_gbg";
 const inst_boras = "i_boras";
@@ -30,12 +31,12 @@ contract("Block4EHR", accounts => {
         await instance.addPatient(accounts[7], "p_kungalv", ["kungalv"]);
     });
 
-    describe("hasPermission returns the correct value", function() {
+    //describe("hasPermission returns the correct value", function() {
         it("hasPermission return true for the patient itself", async function() {
             let res = await instance.hasPermission("p_boras", {from: accounts[8]});
             assert.ok(res);
         });
-    });
+    //});
 })
 /*
 contract("Block4EHR", accounts => {
