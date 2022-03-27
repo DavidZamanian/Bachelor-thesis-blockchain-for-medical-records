@@ -217,7 +217,7 @@ export function EHROverviewScreen(props) {
       if (inputEmail !== state.patientInfo.email) {
         updateEmail(state.patientInfo.patientId, inputEmail);
       }
-      if (inputEmail !== state.patientInfo.email) {
+      if (inputPhoneNr !== state.patientInfo.phoneNr) {
         updatePhoneNr(state.patientInfo.patientId, inputPhoneNr);
       }
       toggleEditingContactInfo(false);
