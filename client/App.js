@@ -39,7 +39,7 @@ function App() {
       <RoleContext.Provider value={value}>
         <NavigationContainer>
           <RootStack.Navigator>
-            {user ? (
+            {user && role != ""? (
               <RootStack.Screen
                 options={{
                   headerShown: false,

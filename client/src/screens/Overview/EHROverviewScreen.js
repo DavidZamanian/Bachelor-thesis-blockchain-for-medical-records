@@ -14,6 +14,9 @@ import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { RoleContext } from "../../../contexts/RoleContext";
 
 export function EHROverviewScreen(props) {
+
+  //alert(patientSSN)
+
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
@@ -28,7 +31,7 @@ export function EHROverviewScreen(props) {
     doctorRole: (role == "doctor"),
     regions: [],
     patientInfo: PlaceholderValues.patient,
-    patientID: (role == "doctor") ? (props.route.params == null ? 9801011111 : props.route.params) : patientSSN,
+    patientID: null,
     journalExpanded: [],
     editingContactInfo: false,
     inputAddress: "",
@@ -43,6 +46,7 @@ export function EHROverviewScreen(props) {
   const wipePatientData = () => {
     setState((prevState) => ({
       ...prevState,
+      patientID: null,
       patientInfo: PlaceholderValues.patient,
     }));
   };
@@ -51,17 +55,19 @@ export function EHROverviewScreen(props) {
     Gather patient info from Firebase (runs automatically at the start) 
   */
   const fetchPatientData = () => {
-    if ( state.patientID == null || state.patientID == state.patientInfo.patientId) {
+
+    //alert("patientSSN: "+patientSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id)
+    if ( state.patientID != null && state.patientID == state.patientInfo.id) {
       return;
     }
-    const patientRef = ref(database, "Patients/" + state.patientID);
+    const patientRef = ref(database, "Patients/" + (patientSSN == null ? props.route.params : patientSSN ));
 
     try {
       onValue(patientRef, (snapshot) => {
         if (snapshot.val() === null) {
           alert("ERROR: This patient does not exist:" + state.patientID);
         } else {
-          alert("attempting fetch "+patientSSN)
+          //alert("attempting fetch "+patientSSN)
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
           const userRole = placeholderRole; //snapshot.val().role
           const allRegions = PlaceholderValues.allRegions;
@@ -83,10 +89,11 @@ export function EHROverviewScreen(props) {
 
           setState((prevState) => ({
             ...prevState,
+            patientID: (role == "doctor") ? (props.route.params == null ? 9801011111 : props.route.params) : patientSSN,
             journalExpanded: journalIndexes,
             doctorRole: userRole == "doctor",
             patientInfo: {
-              patientId: state.patientID,
+              id: state.patientID,
               firstName: snapshot.val().firstName,
               lastName: snapshot.val().lastName,
               email: snapshot.val().email,
@@ -172,7 +179,7 @@ export function EHROverviewScreen(props) {
   */
   const requestAddEHR = () => {
     // CHECK PRIVILEGE?
-    alert(state.patientInfo.patientId);
+    alert(state.patientInfo.id);
     // Get rid of patient data
     wipePatientData();
     navigation.navigate("NewEntryScreen", state.patientID);
@@ -212,13 +219,13 @@ export function EHROverviewScreen(props) {
       validPhoneNr(inputPhoneNr)
     ) {
       if (inputAddress !== state.patientInfo.address) {
-        updateAddress(state.patientInfo.patientId, inputAddress);
+        updateAddress(state.patientInfo.id, inputAddress);
       }
       if (inputEmail !== state.patientInfo.email) {
-        updateEmail(state.patientInfo.patientId, inputEmail);
+        updateEmail(state.patientInfo.id, inputEmail);
       }
       if (inputPhoneNr !== state.patientInfo.phoneNr) {
-        updatePhoneNr(state.patientInfo.patientId, inputPhoneNr);
+        updatePhoneNr(state.patientInfo.id, inputPhoneNr);
       }
       toggleEditingContactInfo(false);
     } else {
@@ -245,6 +252,9 @@ export function EHROverviewScreen(props) {
   };
 
   // FETCH PATIENT DATA
+  
+  
+
   fetchPatientData();
 
   return (

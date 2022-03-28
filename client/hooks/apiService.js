@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { database } from "../firebaseSetup";
+import { database, get, child } from "../firebaseSetup";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -25,20 +25,17 @@ export function apiService() {
 
   //Keeps track if user is logged in or not
   React.useEffect(() => {
-    const subscriber = onAuthStateChanged(auth, (user) => {
+    const subscriber = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
-        const mapRef = ref(database, "mapUser/" + auth.currentUser.uid);
-        onValue(mapRef, (snapshot) => {
-          if (snapshot.exists) {
-            setRole(snapshot.val().role);
-            setPatientSSN(snapshot.val().SSN);
-          } else {
-            alert("Database error");
-          }
-        });
+        let dbRef = ref(database);
+        const snapshot = await get(child(dbRef, 'mapUser/' + auth.currentUser.uid))
+        setPatientSSN(snapshot.val().SSN);
+        setRole(snapshot.val().role);
       } else {
         setUser();
+        setRole("");
+        setPatientSSN("");
       }
     });
     return subscriber;
