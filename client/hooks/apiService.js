@@ -21,7 +21,7 @@ import { RoleContext } from "../contexts/RoleContext";
 export function apiService() {
   const [user, setUser] = useState();
   const auth = getAuth();
-  const { setRole, setPatientSSN } = React.useContext(RoleContext);
+  const { setRole, setUserSSN } = React.useContext(RoleContext);
 
   //Keeps track if user is logged in or not
   React.useEffect(() => {
@@ -30,12 +30,12 @@ export function apiService() {
         setUser(user);
         let dbRef = ref(database);
         const snapshot = await get(child(dbRef, 'mapUser/' + auth.currentUser.uid))
-        setPatientSSN(snapshot.val().SSN);
+        setUserSSN(snapshot.val().SSN);
         setRole(snapshot.val().role);
       } else {
         setUser();
         setRole("");
-        setPatientSSN("");
+        setUserSSN("");
       }
     });
     return subscriber;

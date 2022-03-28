@@ -20,7 +20,7 @@ export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
-  const { role, patientSSN } = React.useContext(RoleContext);
+  const { role, userSSN } = React.useContext(RoleContext);
   const route = useRoute();
   const navigation = useNavigation();
 
@@ -56,16 +56,16 @@ export function EHROverviewScreen(props) {
   */
   const fetchPatientData = () => {
 
-    //alert("patientSSN: "+patientSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id)
-    if ( state.patientID != null && state.patientID == state.patientInfo.id) {
+    //alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
+    if ( (state.patientID != null && state.patientID == state.patientInfo.id) || props.route.params == state.patientInfo.id) {
       return;
     }
-    const patientRef = ref(database, "Patients/" + (patientSSN == null ? props.route.params : patientSSN ));
+    const patientRef = ref(database, "Patients/" + ((role == "doctor") ? props.route.params : userSSN ));
 
     try {
       onValue(patientRef, (snapshot) => {
         if (snapshot.val() === null) {
-          alert("ERROR: This patient does not exist:" + state.patientID);
+          alert("ERROR: This patient does not exist:" + state.patientID+"\n"+patientRef);
         } else {
           //alert("attempting fetch "+patientSSN)
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
@@ -89,7 +89,7 @@ export function EHROverviewScreen(props) {
 
           setState((prevState) => ({
             ...prevState,
-            patientID: (role == "doctor") ? (props.route.params == null ? 9801011111 : props.route.params) : patientSSN,
+            patientID: (role == "doctor") ? (props.route.params == null ? 9801011111 : props.route.params) : userSSN,
             journalExpanded: journalIndexes,
             doctorRole: userRole == "doctor",
             patientInfo: {
@@ -182,7 +182,10 @@ export function EHROverviewScreen(props) {
     alert(state.patientInfo.id);
     // Get rid of patient data
     wipePatientData();
-    navigation.navigate("NewEntryScreen", state.patientID);
+
+    // THE REAL THING!
+    //navigation.navigate("NewEntryScreen", state.patientID);
+    navigation.navigate("NewEntryScreen", "9801011111");
   };
 
   const toggleWarning = (enabled) => {

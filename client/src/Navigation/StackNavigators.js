@@ -5,8 +5,12 @@ import { NewEntryScreen } from "../screens/StaffScreens/NewEntryScreen/NewEntryS
 import { PatientSearchScreen } from "../screens/StaffScreens/PatientSearchScreen/PatientSearchScreen";
 import { AboutScreen } from "../screens/MiscScreens/AboutScreen";
 import { ContactScreen } from "../screens/MiscScreens/ContactScreen";
+import { RoleContext } from "../../contexts/RoleContext";
+import { useContext } from "react";
 
 const Stack = createStackNavigator();
+
+
 
 /**
  * Here we will put all the screens(pages) we have
@@ -18,22 +22,13 @@ const Stack = createStackNavigator();
 //pop up after signing in (hopefully..) Also need to place <Header><Header/> on top of
 //every screen right now. Might come up with a better solution in the future.
 const StackNavigators = () => {
+
+  const { role } = React.useContext(RoleContext);
+
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-        name="EHROverview"
-        component={EHROverviewScreen}
-      />
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-        name="NewEntryScreen"
-        component={NewEntryScreen}
-      />
+      { role == "doctor" &&
+      <>
       <Stack.Screen
         options={{
           headerShown: false,
@@ -41,6 +36,27 @@ const StackNavigators = () => {
         name="PatientSearchScreen"
         component={PatientSearchScreen}
       />
+      
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="NewEntryScreen"
+        component={NewEntryScreen}
+      />
+      </>
+      }
+        <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="EHROverview"
+        component={EHROverviewScreen}
+        />
+      
+      
+      
+      
       <Stack.Screen
         options={{
           headerShown: false,

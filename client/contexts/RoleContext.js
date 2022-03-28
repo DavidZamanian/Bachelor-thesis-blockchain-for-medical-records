@@ -1,3 +1,3 @@
 import { createContext } from "react";
 
-export const RoleContext = createContext({ role: "", setRole: () => {}, patientSSN: "", setPatientSSN: () => {} });
+export const RoleContext = createContext({ role: "", setRole: () => {}, userSSN: "", setUserSSN: () => {} });

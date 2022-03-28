@@ -14,8 +14,8 @@ function App() {
   const [data, setData] = React.useState(null);
   const { authentication, user, updateInfo } = apiService();
   const [role, setRole] = useState("");
-  const [patientSSN, setPatientSSN] = useState("");
-  const value = { role, setRole, patientSSN, setPatientSSN };
+  const [userSSN, setUserSSN] = useState("");
+  const value = { role, setRole, userSSN, setUserSSN };
 
   //For testing only
   /*
