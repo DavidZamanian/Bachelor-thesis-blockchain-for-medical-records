@@ -56,8 +56,8 @@ export function EHROverviewScreen(props) {
   */
   const fetchPatientData = () => {
 
-    //alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
-    if ( (state.patientID != null && state.patientID == state.patientInfo.id) || props.route.params == state.patientInfo.id) {
+    alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
+    if ( (state.patientID != null && state.patientID == state.patientInfo.id) || (role == "doctor" && props.route.params == state.patientInfo.id)) {
       return;
     }
     const patientRef = ref(database, "Patients/" + ((role == "doctor") ? props.route.params : userSSN ));

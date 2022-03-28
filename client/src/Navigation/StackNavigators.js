@@ -26,9 +26,9 @@ const StackNavigators = () => {
   const { role } = React.useContext(RoleContext);
 
   return (
-    <Stack.Navigator>
-      { role == "doctor" &&
-      <>
+    <Stack.Navigator initialRouteName={role == "doctor" ? "PatientSearchScreen" : "EHROverview"}>
+      
+      
       <Stack.Screen
         options={{
           headerShown: false,
@@ -44,8 +44,8 @@ const StackNavigators = () => {
         name="NewEntryScreen"
         component={NewEntryScreen}
       />
-      </>
-      }
+      
+      
         <Stack.Screen
         options={{
           headerShown: false,
