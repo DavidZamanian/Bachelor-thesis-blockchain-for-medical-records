@@ -18,8 +18,6 @@ describe("Test crypto", function () {
         privateKeyEncoding: {
           type: "pkcs8",
           format: "pem",
-          cipher: "aes-256-cbc",
-          passphrase: "",
         },
       });
 
@@ -40,7 +38,7 @@ describe("Test crypto", function () {
       crypt.encryptRecordKey(plaintext, "./public_key");
     });
     assert.doesNotThrow(() => {
-      crypt.decryptRecordKey(encrypted, "private_key");
+      crypt.decryptRecordKeyTEST(encrypted, "private_key");
     });
 
     crypto.generateKey("aes", { length: 128 }, (err, key) => {
