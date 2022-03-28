@@ -21,7 +21,7 @@ import { RoleContext } from "../contexts/RoleContext";
 export function apiService() {
   const [user, setUser] = useState();
   const auth = getAuth();
-  const { setRole } = React.useContext(RoleContext);
+  const { setRole, setPatientSSN } = React.useContext(RoleContext);
 
   //Keeps track if user is logged in or not
   React.useEffect(() => {
@@ -32,6 +32,7 @@ export function apiService() {
         onValue(mapRef, (snapshot) => {
           if (snapshot.exists) {
             setRole(snapshot.val().role);
+            setPatientSSN(snapshot.val().SSN);
           } else {
             alert("Database error");
           }

@@ -17,7 +17,7 @@ export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
-  const { role } = React.useContext(RoleContext);
+  const { role, patientSSN } = React.useContext(RoleContext);
   const route = useRoute();
   const navigation = useNavigation();
 
@@ -25,10 +25,10 @@ export function EHROverviewScreen(props) {
   const placeholderRole = "patient";
 
   const [state, setState] = useState({
-    doctorRole: false,
+    doctorRole: (role == "doctor"),
     regions: [],
     patientInfo: PlaceholderValues.patient,
-    patientID: props.route.params == null ? 8701104455 : props.route.params,
+    patientID: (role == "doctor") ? (props.route.params == null ? 9801011111 : props.route.params) : patientSSN,
     journalExpanded: [],
     editingContactInfo: false,
     inputAddress: "",
@@ -51,17 +51,17 @@ export function EHROverviewScreen(props) {
     Gather patient info from Firebase (runs automatically at the start) 
   */
   const fetchPatientData = () => {
-    //alert("attempting fetch "+patientID)
-    if (state.patientID == state.patientInfo.patientId) {
+    if ( state.patientID == null || state.patientID == state.patientInfo.patientId) {
       return;
     }
-    const patientRef = ref(database, "Users/" + state.patientID);
+    const patientRef = ref(database, "Patients/" + state.patientID);
 
     try {
       onValue(patientRef, (snapshot) => {
         if (snapshot.val() === null) {
           alert("ERROR: This patient does not exist:" + state.patientID);
         } else {
+          alert("attempting fetch "+patientSSN)
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
           const userRole = placeholderRole; //snapshot.val().role
           const allRegions = PlaceholderValues.allRegions;
