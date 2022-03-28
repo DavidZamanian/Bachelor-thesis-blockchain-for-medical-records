@@ -15,17 +15,12 @@ import { RoleContext } from "../../../contexts/RoleContext";
 
 export function EHROverviewScreen(props) {
 
-  //alert(patientSSN)
-
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
   const { role, userSSN } = React.useContext(RoleContext);
   const route = useRoute();
   const navigation = useNavigation();
-
-  // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "patient";
 
   const [state, setState] = useState({
     doctorRole: (role == "doctor"),
@@ -56,20 +51,19 @@ export function EHROverviewScreen(props) {
   */
   const fetchPatientData = () => {
 
-    alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
-    if ( (state.patientID != null && state.patientID == state.patientInfo.id) || (role == "doctor" && props.route.params == state.patientInfo.id)) {
+    //alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
+    if ( (state.patientID != null && state.patientID == state.patientInfo.id) || (state.doctorRole && props.route.params == state.patientInfo.id)) {
       return;
     }
-    const patientRef = ref(database, "Patients/" + ((role == "doctor") ? props.route.params : userSSN ));
+    const patientRef = ref(database, "Patients/" + (state.doctorRole ? props.route.params : userSSN ));
 
     try {
       onValue(patientRef, (snapshot) => {
         if (snapshot.val() === null) {
           alert("ERROR: This patient does not exist:" + state.patientID+"\n"+patientRef);
         } else {
-          //alert("attempting fetch "+patientSSN)
+          
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
-          const userRole = placeholderRole; //snapshot.val().role
           const allRegions = PlaceholderValues.allRegions;
           const patientJournals = PlaceholderValues.journals;
           const patientPermittedRegions = PlaceholderValues.permittedRegions;
@@ -89,11 +83,10 @@ export function EHROverviewScreen(props) {
 
           setState((prevState) => ({
             ...prevState,
-            patientID: (role == "doctor") ? (props.route.params == null ? 9801011111 : props.route.params) : userSSN,
+            patientID: state.doctorRole ? props.route.params : userSSN,
             journalExpanded: journalIndexes,
-            doctorRole: userRole == "doctor",
             patientInfo: {
-              id: state.patientID,
+              id: state.doctorRole ? props.route.params : userSSN,
               firstName: snapshot.val().firstName,
               lastName: snapshot.val().lastName,
               email: snapshot.val().email,
@@ -178,14 +171,12 @@ export function EHROverviewScreen(props) {
     @Chrimle
   */
   const requestAddEHR = () => {
+
     // CHECK PRIVILEGE?
-    alert(state.patientInfo.id);
-    // Get rid of patient data
+
     wipePatientData();
 
-    // THE REAL THING!
-    //navigation.navigate("NewEntryScreen", state.patientID);
-    navigation.navigate("NewEntryScreen", "9801011111");
+    navigation.navigate("NewEntryScreen", state.patientID);
   };
 
   const toggleWarning = (enabled) => {
@@ -205,7 +196,7 @@ export function EHROverviewScreen(props) {
   const editContactInfo = () => {
     toggleWarning(false);
     toggleEditingContactInfo(true);
-    // populate input forms before editing
+    // populating input forms before editing
     setAddress(state.patientInfo.address);
     setEmail(state.patientInfo.email);
     setPhoneNr(state.patientInfo.phoneNr);
@@ -253,10 +244,6 @@ export function EHROverviewScreen(props) {
       regions: [...state.regionSnapshot],
     }));
   };
-
-  // FETCH PATIENT DATA
-  
-  
 
   fetchPatientData();
 
@@ -468,7 +455,7 @@ export function EHROverviewScreen(props) {
               )}
             </View>
           </View>
-          {role == "doctor" ? (
+          { state.doctorRole ? (
             // Doctor Version
             <View style={styles.container}>
               <Text style={styles.header}>Add EHR entry</Text>

@@ -6,7 +6,6 @@ import { PatientSearchScreen } from "../screens/StaffScreens/PatientSearchScreen
 import { AboutScreen } from "../screens/MiscScreens/AboutScreen";
 import { ContactScreen } from "../screens/MiscScreens/ContactScreen";
 import { RoleContext } from "../../contexts/RoleContext";
-import { useContext } from "react";
 
 const Stack = createStackNavigator();
 
@@ -27,8 +26,6 @@ const StackNavigators = () => {
 
   return (
     <Stack.Navigator initialRouteName={role == "doctor" ? "PatientSearchScreen" : "EHROverview"}>
-      
-      
       <Stack.Screen
         options={{
           headerShown: false,
@@ -36,7 +33,6 @@ const StackNavigators = () => {
         name="PatientSearchScreen"
         component={PatientSearchScreen}
       />
-      
       <Stack.Screen
         options={{
           headerShown: false,
@@ -44,19 +40,13 @@ const StackNavigators = () => {
         name="NewEntryScreen"
         component={NewEntryScreen}
       />
-      
-      
-        <Stack.Screen
+      <Stack.Screen
         options={{
           headerShown: false,
         }}
         name="EHROverview"
         component={EHROverviewScreen}
-        />
-      
-      
-      
-      
+      />
       <Stack.Screen
         options={{
           headerShown: false,
