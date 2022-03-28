@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import { auth, database } from "../firebaseSetup";
+import { database } from "../firebaseSetup";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
+  getAuth,
+  onAuthStateChanged,
 } from "@firebase/auth";
-import { ref, set, update } from "firebase/database";
+import { ref, update, onValue } from "firebase/database";
+import { RoleContext } from "../contexts/RoleContext";
 
 /**
  * All the methods contacting firebase. Maybe add methods to contact backend aswell,
@@ -17,14 +20,26 @@ import { ref, set, update } from "firebase/database";
 
 export function apiService() {
   const [user, setUser] = useState();
+  const auth = getAuth();
+  const { setRole } = React.useContext(RoleContext);
 
   //Keeps track if user is logged in or not
-  const onAuthStateChanged = (user) => {
-    setUser(user);
-  };
-
   React.useEffect(() => {
-    const subscriber = auth.onAuthStateChanged(onAuthStateChanged);
+    const subscriber = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        const mapRef = ref(database, "mapUser/" + auth.currentUser.uid);
+        onValue(mapRef, (snapshot) => {
+          if (snapshot.exists) {
+            setRole(snapshot.val().role);
+          } else {
+            alert("Database error");
+          }
+        });
+      } else {
+        setUser();
+      }
+    });
     return subscriber;
   }, []);
 
@@ -72,7 +87,6 @@ export function apiService() {
     }),
     []
   );
-
   const authentication = React.useMemo(
     () => ({
       login: async (email, password) => {
@@ -88,11 +102,9 @@ export function apiService() {
       },
       logOut: async () => {
         return new Promise(function (resolve, reject) {
-          alert("Sign out");
           signOut(auth)
             .then(() => {
               resolve("Sign Out Success");
-              console.log("sign out");
             })
             .catch((error) => {
               reject(error);

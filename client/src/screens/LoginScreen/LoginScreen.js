@@ -6,31 +6,42 @@ import { apiService } from "../../../hooks/apiService";
 import Icon from "react-native-vector-icons/Ionicons";
 import Footer from "../../components/Footer";
 import theme from "../../theme.style";
-import ThemeButton from "../../components/themeButton"
+import ThemeButton from "../../components/themeButton";
 import styles from "./styles";
+import { getAuth } from "@firebase/auth";
 
 export function LoginScreen() {
   const { login } = React.useContext(AuthContext);
-  const { user } = apiService();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const auth = getAuth();
+  const userUID = auth.currentUser;
 
   const BulletPoint = (props) => {
-    const {iconName, labelText} = props;
-    return(
+    const { iconName, labelText } = props;
+    return (
       <View style={styles.bulletpointContainer}>
-        <Icon size={50} name={iconName} color={theme.PRIMARY_COLOR}/>
-        <Text style={{color:theme.PRIMARY_COLOR, fontSize:20}}>{labelText}</Text>
+        <Icon size={50} name={iconName} color={theme.PRIMARY_COLOR} />
+        <Text style={{ color: theme.PRIMARY_COLOR, fontSize: 20 }}>
+          {labelText}
+        </Text>
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.main}>
-      <Header/>
+      <Header />
       <View style={styles.content}>
         <View style={styles.splitContainer}>
-          <View style={{flex:'49', height:'100%', justifyContent:'space-evenly',alignItems:'center'}}>
+          <View
+            style={{
+              flex: "49",
+              height: "100%",
+              justifyContent: "space-evenly",
+              alignItems: "center",
+            }}
+          >
             <View style={styles.loginContainer}>
               <Text style={styles.genericHeader}>Sign In</Text>
               <View>
@@ -54,7 +65,7 @@ export function LoginScreen() {
                   returnKeyType="done"
                   secureTextEntry
                 />
-                <ThemeButton 
+                <ThemeButton
                   iconSize={35}
                   iconName="key"
                   labelText="Login"
@@ -70,26 +81,33 @@ export function LoginScreen() {
               </View>
             </View>
           </View>
-          <View style={{flex:'1', height: '80%',borderLeftWidth:2,borderColor:"lightgray"}}></View>
-          <View style={{flex:'49', height:'100%', justifyContent:'center'}}>
-            <BulletPoint 
+          <View
+            style={{
+              flex: "1",
+              height: "80%",
+              borderLeftWidth: 2,
+              borderColor: "lightgray",
+            }}
+          ></View>
+          <View
+            style={{ flex: "49", height: "100%", justifyContent: "center" }}
+          >
+            <BulletPoint
               labelText="Access your medical records any time, any where"
               iconName="clipboard"
             />
-            <BulletPoint 
+            <BulletPoint
               labelText="Authenticate with BankID"
               iconName="shield-checkmark"
             />
-            <BulletPoint 
+            <BulletPoint
               labelText="Take control of your data"
               iconName="lock-closed"
             />
           </View>
         </View>
       </View>
-      <Footer/>
+      <Footer />
     </View>
   );
 }
-
-
