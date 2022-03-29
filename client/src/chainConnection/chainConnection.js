@@ -36,13 +36,13 @@ class ChainConnection extends Component {
     // TODO: add error handling if the state is not set correctly
     async hasPermission(patientId) {
         const {accounts, contract} = this.state;
-        const res = await contract.methods.hasPermission(patientId).send({from: accounts[0]});
+        const res = await contract.methods.hasPermission(patientId).call({from: accounts[0]});
         return res;
     }
 
     async getPermissionedRegions(patientId) {
         const {accounts, contract} = this.state;
-        const res = await contract.methods.getPermissionedRegions(patientId).send({from: accounts[0]});
+        const res = await contract.methods.getPermissionedRegions(patientId).call({from: accounts[0]});
         return res;
     }
 
