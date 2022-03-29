@@ -12,6 +12,7 @@ class ChainConnection extends Component {
 
         // Use web3 to get the user's accounts.
         const accounts = await web3.eth.getAccounts();
+        console.log(accounts); //TODO remove
 
         // Get the contract instance.
         const networkId = await web3.eth.net.getId();
@@ -32,6 +33,17 @@ class ChainConnection extends Component {
         }
     };
 
-    
+    // TODO: add error handling if the state is not set correctly
+    async hasPermission(patientId) {
+        const {accounts, contract} = this.state;
+        const res = await contract.methods.hasPermission(patientId).send({from: accounts[0]});
+        return res;
+    }
+
+    async getPermissionedRegions(patientId) {
+        const {accounts, contract} = this.state;
+        const res = await contract.methods.getPermissionedRegions(patientId).send({from: accounts[0]});
+        return res;
+    }
 
 }
