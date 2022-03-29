@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 
+//Change to GCM or CCM
 const algorithm = "aes-128-ctr";
 
 function encryptEHR(record_key, EHR, medPers_privKey) {
