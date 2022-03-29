@@ -23,13 +23,13 @@ contract Block4EHR {
     }
 
     struct MedicalPersonnel {
-        address addr; // ethereum wallet address 
+        address addr; // ethereum wallet address //TODO: redundant due to mapping medicalPersonnels. 
         string id;
         HealthcareInst healthcareInst; // workplace of this personnel. 
     }
 
     struct Patient {
-        address addr; // ethereum wallet address  
+        address addr; // ethereum wallet address  //TODO: either keep it like this or use a mapping from address to Patient as done for medicalPersonnels. 
         string id;
         string[] permissionedRegions;
     }
