@@ -1,9 +1,21 @@
 const crypto = require("crypto");
 const fs = require("fs");
 
+/**
+ * Methods for encrypting/decrypting EHR and record keys.
+ * @author David Zamanian, Nils Johnsson, Wendy Pau
+ */
+
 //Change to GCM or CCM
 const algorithm = "aes-128-ctr";
 
+/**
+ * Encrypts the EHR with the record key using the AES crypto algorithm.
+ * @param {*} record_key Encrypted record_key retrieved from DB.
+ * @param {*} EHR The EHR json file to be encrypted.
+ * @param {*} medPers_privKey The medical personnels' private key that writes the EHR.
+ * @returns The IV for the encryption and the encrypted EHR.
+ */
 function encryptEHR(record_key, EHR, medPers_privKey) {
   const decrypted_record_key = decryptRecordKey(record_key, medPers_privKey);
 
@@ -25,6 +37,13 @@ function encryptEHR(record_key, EHR, medPers_privKey) {
   };
 }
 
+/**
+ * Decrypts the EHR using the record key.
+ * @param {*} record_key Encrypted record_key retrieved from DB.
+ * @param {*} EHR Contains the IV and encrypted EHR.
+ * @param {*} privateKey Permissioned private key used to decrypt the record key.
+ * @returns The decrypted EHR.
+ */
 function decryptEHR(record_key, EHR, privateKey) {
   const decrypted_record_key = decryptRecordKey(record_key, privateKey);
   let iv = Buffer.from(EHR.iv, "hex");
@@ -44,7 +63,13 @@ function decryptEHR(record_key, EHR, privateKey) {
   return decryptedEHR.toString();
 }
 
-// Creating a function to encrypt string
+/**
+ * Encrypts the record key using asymmetric encryption. Also used to give permission to the EHR by which users' public key is used.
+ * Creating a function to encrypt string
+ * @param {*} plaintext A generated symmetric record key.
+ * @param {*} publicKeyFile The public key used to encrypt the record key.
+ * @returns Encrypted record key.
+ */
 function encryptRecordKey(plaintext, publicKeyFile) {
   const publicKey = fs.readFileSync(publicKeyFile, "utf8");
 
@@ -54,7 +79,13 @@ function encryptRecordKey(plaintext, publicKeyFile) {
   return encrypted.toString("base64");
 }
 
-// Creating a function to decrypt string
+/**
+ * Decrypts the record key using asymmetric encryption.
+ * // Creating a function to decrypt string
+ * @param {*} record_key Encrypted record key.
+ * @param {*} privateKey A users private key.
+ * @returns The decrypted record key.
+ */
 function decryptRecordKey(record_key, privateKey) {
   // privateDecrypt() method with its parameters
   const decrypted = crypto.privateDecrypt(
