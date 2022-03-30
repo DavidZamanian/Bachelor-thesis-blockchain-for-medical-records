@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { database } from "../firebaseSetup";
+import { database, get, child } from "../firebaseSetup";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -21,23 +21,21 @@ import { RoleContext } from "../contexts/RoleContext";
 export function apiService() {
   const [user, setUser] = useState();
   const auth = getAuth();
-  const { setRole } = React.useContext(RoleContext);
+  const { setRole, setUserSSN } = React.useContext(RoleContext);
 
   //Keeps track if user is logged in or not
   React.useEffect(() => {
-    const subscriber = onAuthStateChanged(auth, (user) => {
+    const subscriber = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
-        const mapRef = ref(database, "mapUser/" + auth.currentUser.uid);
-        onValue(mapRef, (snapshot) => {
-          if (snapshot.exists) {
-            setRole(snapshot.val().role);
-          } else {
-            alert("Database error");
-          }
-        });
+        let dbRef = ref(database);
+        const snapshot = await get(child(dbRef, 'mapUser/' + auth.currentUser.uid))
+        setUserSSN(snapshot.val().SSN);
+        setRole(snapshot.val().role);
       } else {
         setUser();
+        setRole("");
+        setUserSSN("");
       }
     });
     return subscriber;

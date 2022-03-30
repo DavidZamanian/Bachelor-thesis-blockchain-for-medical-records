@@ -14,21 +14,19 @@ import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { RoleContext } from "../../../contexts/RoleContext";
 
 export function EHROverviewScreen(props) {
+
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
-  const { role } = React.useContext(RoleContext);
+  const { role, userSSN } = React.useContext(RoleContext);
   const route = useRoute();
   const navigation = useNavigation();
 
-  // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "patient";
-
   const [state, setState] = useState({
-    doctorRole: false,
+    doctorRole: (role == "doctor"),
     regions: [],
     patientInfo: PlaceholderValues.patient,
-    patientID: props.route.params == null ? 8701104455 : props.route.params,
+    patientID: null,
     journalExpanded: [],
     editingContactInfo: false,
     inputAddress: "",
@@ -43,6 +41,7 @@ export function EHROverviewScreen(props) {
   const wipePatientData = () => {
     setState((prevState) => ({
       ...prevState,
+      patientID: null,
       patientInfo: PlaceholderValues.patient,
     }));
   };
@@ -51,19 +50,20 @@ export function EHROverviewScreen(props) {
     Gather patient info from Firebase (runs automatically at the start) 
   */
   const fetchPatientData = () => {
-    //alert("attempting fetch "+patientID)
-    if (state.patientID == state.patientInfo.patientId) {
+
+    //alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
+    if ( (state.patientID != null && state.patientID == state.patientInfo.id) || (state.doctorRole && props.route.params == state.patientInfo.id)) {
       return;
     }
-    const patientRef = ref(database, "Users/" + state.patientID);
+    const patientRef = ref(database, "Patients/" + (state.doctorRole ? props.route.params : userSSN ));
 
     try {
       onValue(patientRef, (snapshot) => {
         if (snapshot.val() === null) {
-          alert("ERROR: This patient does not exist:" + state.patientID);
+          alert("ERROR: This patient does not exist:" + state.patientID+"\n"+patientRef);
         } else {
+          
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
-          const userRole = placeholderRole; //snapshot.val().role
           const allRegions = PlaceholderValues.allRegions;
           const patientJournals = PlaceholderValues.journals;
           const patientPermittedRegions = PlaceholderValues.permittedRegions;
@@ -83,10 +83,10 @@ export function EHROverviewScreen(props) {
 
           setState((prevState) => ({
             ...prevState,
+            patientID: state.doctorRole ? props.route.params : userSSN,
             journalExpanded: journalIndexes,
-            doctorRole: userRole == "doctor",
             patientInfo: {
-              patientId: state.patientID,
+              id: state.doctorRole ? props.route.params : userSSN,
               firstName: snapshot.val().firstName,
               lastName: snapshot.val().lastName,
               email: snapshot.val().email,
@@ -171,10 +171,11 @@ export function EHROverviewScreen(props) {
     @Chrimle
   */
   const requestAddEHR = () => {
+
     // CHECK PRIVILEGE?
-    alert(state.patientInfo.patientId);
-    // Get rid of patient data
+
     wipePatientData();
+
     navigation.navigate("NewEntryScreen", state.patientID);
   };
 
@@ -195,7 +196,7 @@ export function EHROverviewScreen(props) {
   const editContactInfo = () => {
     toggleWarning(false);
     toggleEditingContactInfo(true);
-    // populate input forms before editing
+    // populating input forms before editing
     setAddress(state.patientInfo.address);
     setEmail(state.patientInfo.email);
     setPhoneNr(state.patientInfo.phoneNr);
@@ -212,13 +213,13 @@ export function EHROverviewScreen(props) {
       validPhoneNr(inputPhoneNr)
     ) {
       if (inputAddress !== state.patientInfo.address) {
-        updateAddress(state.patientInfo.patientId, inputAddress);
+        updateAddress(state.patientInfo.id, inputAddress);
       }
       if (inputEmail !== state.patientInfo.email) {
-        updateEmail(state.patientInfo.patientId, inputEmail);
+        updateEmail(state.patientInfo.id, inputEmail);
       }
       if (inputPhoneNr !== state.patientInfo.phoneNr) {
-        updatePhoneNr(state.patientInfo.patientId, inputPhoneNr);
+        updatePhoneNr(state.patientInfo.id, inputPhoneNr);
       }
       toggleEditingContactInfo(false);
     } else {
@@ -244,7 +245,6 @@ export function EHROverviewScreen(props) {
     }));
   };
 
-  // FETCH PATIENT DATA
   fetchPatientData();
 
   return (
@@ -455,7 +455,7 @@ export function EHROverviewScreen(props) {
               )}
             </View>
           </View>
-          {role == "doctor" ? (
+          { state.doctorRole ? (
             // Doctor Version
             <View style={styles.container}>
               <Text style={styles.header}>Add EHR entry</Text>

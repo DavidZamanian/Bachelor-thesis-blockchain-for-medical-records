@@ -6,10 +6,14 @@ import { apiService } from "../../../hooks/apiService";
 import { useNavigation } from "@react-navigation/native";
 import NavbarButton from "../navbarButton";
 import theme from "../../theme.style";
+import { RoleContext } from "../../../contexts/RoleContext";
+
 
 const Header = () => {
   const { authentication, user } = apiService();
   const { logOut } = React.useContext(AuthContext);
+
+  const { role } = React.useContext(RoleContext);
 
   const navigation = useNavigation();
   const onPressContact = () => {
@@ -20,9 +24,18 @@ const Header = () => {
   };
 
   function logIn() {
-    navigation.navigate("Login");
+    
+    if (role == "doctor"){
+      navigation.navigate("PatientSearchScreen");
+    }
+    else if (role == "patient"){
+      navigation.navigate("EHROverview");
+    }
+    else {
+      navigation.navigate("Login"); 
+    }
     // Danger, this is not the screen to show for doctors!
-    navigation.navigate("EHROverview");
+    
   }
 
   return (

@@ -14,7 +14,8 @@ function App() {
   const [data, setData] = React.useState(null);
   const { authentication, user, updateInfo } = apiService();
   const [role, setRole] = useState("");
-  const value = { role, setRole };
+  const [userSSN, setUserSSN] = useState("");
+  const value = { role, setRole, userSSN, setUserSSN };
 
   //For testing only
   /*
@@ -38,7 +39,7 @@ function App() {
       <RoleContext.Provider value={value}>
         <NavigationContainer>
           <RootStack.Navigator>
-            {user ? (
+            {user && role != ""? (
               <RootStack.Screen
                 options={{
                   headerShown: false,
