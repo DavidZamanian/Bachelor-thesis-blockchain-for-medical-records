@@ -138,7 +138,7 @@ export default class EHRService{
             // Testing if the cid and the files were uploaded
             console.log("New EHR directory: "+cid)
             
-            let testCID = "bafybeigpmk4vs2zkfpgy54swshajeopy7l7b2nnzbeu4duthpz2nslhsgq";
+            let testCID = "bafybeibmmgck2kowvthocgr2xtgccjyc3f3i2jmaxjpublooyrze4nmx4q";
 
             let oldFiles = await fs.fetchEHRContents(testCID);
             
