@@ -136,8 +136,24 @@ export default class EHRService{
             
             // TESTING ONLY
             // Testing if the cid and the files were uploaded
-            let newFiles = await EHRService.getEHR(cid);
+            console.log("New EHR directory: "+cid)
             
+            let testCID = "bafybeigpmk4vs2zkfpgy54swshajeopy7l7b2nnzbeu4duthpz2nslhsgq";
+
+            let oldFiles = await fs.fetchEHRContents(testCID);
+            
+            console.log("TESTING DOWNLOADING FILES (NOT THE ONES THAT WERE UPLOADED!):")
+            for (const file of oldFiles){
+                console.log(file.name+": "+ await file.text());
+            }
+
+            console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED, CHECK WITH Web3Storage!):")
+            for (const file of files){
+            console.log(file.name+": "+ await file.text());
+            }
+            
+
+
             return "Success";
         }
         catch (e){
@@ -146,6 +162,8 @@ export default class EHRService{
             } else if (e instanceof UploadFileError){
                 return "NoResponse";
             } else if (e instanceof FetchFileContentError){
+                return "Error";
+            } else{
                 return "Error";
             }
         }
@@ -160,10 +178,6 @@ export default class EHRService{
         let fs = new FileService(apiToken);
 
         let files = await fs.fetchEHRContents(cid);
-
-        for (const file of files){
-            console.log(file.name+": "+ await file.text());
-        }
         
         return files;
     }
