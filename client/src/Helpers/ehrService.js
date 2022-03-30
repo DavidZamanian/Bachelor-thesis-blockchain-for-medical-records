@@ -147,7 +147,7 @@ export default class EHRService{
                 console.log(file.name+": "+ await file.text());
             }
 
-            console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED, CHECK WITH Web3Storage!):")
+            console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED, CHECK WITH Web3Storage!):\n"+`https://${cid}.ipfs.dweb.link/`)
             for (const file of files){
             console.log(file.name+": "+ await file.text());
             }
