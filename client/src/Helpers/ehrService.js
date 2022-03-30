@@ -116,42 +116,69 @@ export default class EHRService{
                 prescriptions,
                 diagnoses
             )
+
+            // FETCH OLD FILES
+            let oldCID = "bafybeidwd4nlwbdr365lvnp5ffrqp4ejepkvr64wt6d6iyvohwhlp4755m";
+
+            let oldFiles = await fs.fetchEHRContents(oldCID);
+
+            let finalFiles = [];
+
+            // TODO: DECRYPT FILES
+            let decryptedFiles = oldFiles; // replace
+
+            for (const file of decryptedFiles){
+                if(file.name == "prescriptions.json"){
+                    // TODO: parse it to a valid array
+                    //prescriptions.push(); // add old prescriptions to the new
+                }
+                else if(file.name == "diagnoses.json"){
+                    // TODO: parse it to a valid array
+                    //diagnoses.push(); // add old diagnoses to the new
+                }
+                else{
+                    finalFiles.push(file)
+                }
+            }
+
+
             // Make into JSON objects
             let stringEHR = EHRService.stringify(objectEHR);
             let stringPrescriptions = EHRService.stringify(prescriptions);
             let stringDiagnoses = EHRService.stringify(diagnoses);
 
-            // Create JSON file from EHR 
-            let ehrFile = FileService.createJSONFile(stringEHR,"ehr");
+            // TODO: ENCRYPT THE THE 3 FILES' CONTENT
+            let encryptedEHR = stringEHR;
+            let encryptedPrescriptions = stringPrescriptions;
+            let encryptedDiagnoses = stringDiagnoses;
 
-            // Create JSON files from prescriptions & diagnoses
-            let prescriptionsFile = FileService.createJSONFile(stringPrescriptions,"prescriptions");
-            let diagnosesFile = FileService.createJSONFile(stringDiagnoses,"diagnoses");
+
+
+            // Create JSON files
+            let ehrFile = FileService.createJSONFile(encryptedEHR,"EHR_"+objectEHR.date.toString().slice(0, 19));
+            let prescriptionsFile = FileService.createJSONFile(encryptedPrescriptions,"prescriptions");
+            let diagnosesFile = FileService.createJSONFile(encryptedDiagnoses,"diagnoses");
 
             // Put JSON files into list and upload
-            let files = [ehrFile,prescriptionsFile,diagnosesFile];
+            finalFiles.push(ehrFile,prescriptionsFile,diagnosesFile);
 
             // Retrieve CID and return it
-            let cid = await fs.uploadFiles(files);
+            let cid = await fs.uploadFiles(finalFiles);
             
             // TESTING ONLY
             // Testing if the cid and the files were uploaded
             console.log("New EHR directory: "+cid)
-            
-            let testCID = "bafybeibzxj744momirgbb2zpjsxo7hpwg2kcbwyhkeuermg3tf2fec2fpm";
-
-            let oldFiles = await fs.fetchEHRContents(testCID);
             
             console.log("TESTING DOWNLOADING FILES (NOT THE ONES THAT WERE UPLOADED!):")
             for (const file of oldFiles){
                 console.log(file.name+": "+ await file.text());
             }
 
-            console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED, CHECK WITH Web3Storage!):\n"+`https://${cid}.ipfs.dweb.link/`)
-            for (const file of files){
+            console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n"+`https://${cid}.ipfs.dweb.link/`)
+            for (const file of finalFiles){
             console.log(file.name+": "+ await file.text());
             }
-            
+            // END OF TESTS
 
 
             return "Success";
