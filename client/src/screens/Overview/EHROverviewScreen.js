@@ -11,11 +11,13 @@ import theme from "../../theme.style";
 import { database, ref, onValue} from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext"
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
-import ChainConnectionFactory from "../../chainConnection/chainConnectionFactory";
+import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
+
+  const { chainConnection } = React.useContext(ChainConnectionContext);
   
   const route = useRoute();
   const navigation = useNavigation();
@@ -183,7 +185,9 @@ export function EHROverviewScreen(props) {
 
     const discardContactInfo = async () => {
       console.log("Discarding...");
-      const chainConnection = await ChainConnectionFactory.getChainConnection();
+      //const chainConnection = await ChainConnectionFactory.getChainConnection();
+      const res = await chainConnection.hasPermission("p_gbg");
+      console.log(res);
       console.log("Done discarding.");
       setEditingContactInfo(false)
     }
