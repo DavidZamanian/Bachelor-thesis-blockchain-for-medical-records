@@ -1,18 +1,56 @@
 import React, {Component} from "react";
 import Block4EHR from "../../../build/contracts/Block4EHR.json";
-import getWeb3 from "./getWeb3.js";
+import getWeb3 from "./getWeb3";
 
-class ChainConnection extends Component {
+export default class ChainConnection extends Component {
     state = { web3: null, accounts: null, contract: null };
 
+    setup = async () => {
+        alert("LOLOLOLOLOLOLOL");
+        alert("BEFORE TRY CATCH");
+        try {
+            alert("BEFORE get web 3");
+            // Get network provider and web3 instance.
+            const web3 = await getWeb3();
+    
+            // Use web3 to get the user's accounts.
+            const accounts = await web3.eth.getAccounts();
+            alert(accounts); //TODO remove
+    
+            // Get the contract instance.
+            const networkId = await web3.eth.net.getId();
+            const deployedNetwork = Block4EHR.networks[networkId];
+            const instance = new web3.eth.Contract(
+                Block4EHR.abi,
+                deployedNetwork && deployedNetwork.address,
+            );
+            alert("SETTING THE STATE");
+            // Set web3, accounts, and contract to the state. 
+            this.setState({ web3, accounts, contract: instance });
+            } catch (error) {
+            // Catch any errors for any of the above operations.
+            alert(
+                `Failed to load web3, accounts, or contract. Check console for details.`,
+            );
+            console.error(error);
+            }
+        alert("AFTER TRY CATCH");
+    }
+/*
+    constructor() {
+        setup();
+    }
+    */
+/*
     componentDidMount = async () => {
+        alert("LOLOLOLOLOLOLOL");
         try {
         // Get network provider and web3 instance.
         const web3 = await getWeb3();
 
         // Use web3 to get the user's accounts.
         const accounts = await web3.eth.getAccounts();
-        console.log(accounts); //TODO remove
+        alert(accounts); //TODO remove
 
         // Get the contract instance.
         const networkId = await web3.eth.net.getId();
@@ -32,6 +70,7 @@ class ChainConnection extends Component {
         console.error(error);
         }
     };
+*/
 
     // TODO: add error handling if the state is not set correctly
     async hasPermission(patientId) {

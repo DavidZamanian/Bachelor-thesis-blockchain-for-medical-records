@@ -11,6 +11,7 @@ import theme from "../../theme.style";
 import { database, ref, onValue} from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext"
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
+import ChainConnection from "../../chainConnection/chainConnection";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
@@ -180,7 +181,10 @@ export function EHROverviewScreen(props) {
       setPhoneNr(patientInfo.phoneNr)
     }
 
-    const discardContactInfo = () => {
+    const discardContactInfo = async () => {
+      const chainConnection = new ChainConnection();
+      alert("AFTER DISCARD");
+      await chainConnection.setup();
       setEditingContactInfo(false)
     }
 
