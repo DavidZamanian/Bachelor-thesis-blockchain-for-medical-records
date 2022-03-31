@@ -9,16 +9,9 @@
 
 import Web3 from "web3";
 
-/**
- * 
- * @returns {Promise<Web3>}
- */
 const getWeb3 = () =>
-  new Promise((resolve, reject) => {
-    // Wait for loading completion to avoid race conditions with web3 injection timing.
-    window.addEventListener("load", async () => {
-      console.log("ADDING LISTENER")
-      // Modern dapp browsers...
+  new Promise(async (resolve, reject) => {
+    // Modern dapp browsers...
       if (window.ethereum) {
         console.log("IN WINDOW.ETHEREUM")
         const web3 = new Web3(window.ethereum);
@@ -52,6 +45,6 @@ const getWeb3 = () =>
         resolve(web3);
       }
     });
-  });
+
 
 export default getWeb3;
