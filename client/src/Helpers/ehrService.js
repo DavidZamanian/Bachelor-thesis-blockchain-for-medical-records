@@ -72,10 +72,10 @@ export default class EHRService{
     /**
      * Converts an object or array into a string
      * @param  {} item -- Object or Array
-     * @returns {String} -- Object or list compounded into string
+     * @returns {Promise<String>} -- Object or list compounded into string
      * @author @Chrimle
      */
-    static stringify(item){
+    static async stringify(item){
         return JSON.stringify(item);
     }
 
@@ -151,21 +151,21 @@ export default class EHRService{
 
 
             // Make into JSON objects
-            let stringEHR = EHRService.stringify(objectEHR);
-            let stringPrescriptions = EHRService.stringify(prescriptions);
-            let stringDiagnoses = EHRService.stringify(diagnoses);
+            let stringEHR = await this.stringify(objectEHR);
+            let stringPrescriptions = await this.stringify(prescriptions);
+            let stringDiagnoses = await this.stringify(diagnoses);
 
             // TODO: ENCRYPT THE 3 NEW FILES' CONTENT
-            let encryptedEHR = this.encrypt(stringEHR);
-            let encryptedPrescriptions = this.encrypt(stringPrescriptions);
-            let encryptedDiagnoses = this.encrypt(stringDiagnoses);
+            let encryptedEHR = await this.encrypt(stringEHR);
+            let encryptedPrescriptions = await this.encrypt(stringPrescriptions);
+            let encryptedDiagnoses = await this.encrypt(stringDiagnoses);
 
 
 
             // Create JSON files
-            let ehrFile = FileService.createJSONFile(encryptedEHR,"EHR_"+objectEHR.date.toString().slice(0, 19));
-            let prescriptionsFile = FileService.createJSONFile(encryptedPrescriptions,"prescriptions");
-            let diagnosesFile = FileService.createJSONFile(encryptedDiagnoses,"diagnoses");
+            let ehrFile = await FileService.createJSONFile(encryptedEHR,"EHR_"+objectEHR.date.toString().slice(0, 19));
+            let prescriptionsFile = await FileService.createJSONFile(encryptedPrescriptions,"prescriptions");
+            let diagnosesFile = await FileService.createJSONFile(encryptedDiagnoses,"diagnoses");
 
             // Put JSON files into list and upload
             finalFiles.push(ehrFile,prescriptionsFile,diagnosesFile);
@@ -205,16 +205,51 @@ export default class EHRService{
     }
 
 
+    /**
+     * @param  {string} patientID
+     * @returns {Promise<object>}
+     */
+    static async getEHR(patientID){
 
-    static async getEHR(cid){
+        // TODO: Look up correct CID with patientID
+        let cid = "bafybeiaghgh4wrgon7dk3yslq7aokkpc6s4rtn45oto3gqcd6mclvzshtq";
 
         let apiToken = await EHRService.getWeb3StorageToken();
 
         let fs = new FileService(apiToken);
 
-        let files = await fs.fetchEHRContents(cid);
+        let fetchedFiles = await fs.fetchEHRFiles(cid);
         
-        return files;
+        let EHR = {
+            prescriptions: [],
+            diagnoses: [],
+            journals: []
+        }
+
+
+        for (const file of fetchedFiles){
+            let decrypted;
+            console.log("testing:"+file.name+" "+await file.text())
+            if(file.name == "prescriptions.json"){
+                // Decrypt
+                decrypted = await this.decrypt(await file.text());
+                // Parse
+                EHR.prescriptions = EHR.prescriptions.concat(await this.parseIntoArray(decrypted));
+            }
+            else if(file.name == "diagnoses.json"){
+                // Decrypt
+                decrypted = await this.decrypt(await file.text());
+                // Parse
+                EHR.diagnoses = EHR.diagnoses.concat(await this.parseIntoArray(decrypted));
+            }
+            else{
+                // Decrypt
+                decrypted = await this.decrypt(await file.text());
+                // Parse
+                EHR.journals = EHR.journals.concat(await this.parseIntoArray(decrypted));
+            }
+        }
+        return EHR;
     }
 
     /**
@@ -226,6 +261,17 @@ export default class EHRService{
         let array = await JSON.parse(input);
         console.log(array)
         return array;
+    }
+
+    /**
+     * @param  {Array<string>} input
+     * @returns  {Promise<object>}
+     */
+     static async parseIntoEHR(input){
+
+        let ehr = await JSON.parse(input);
+        console.log(ehr)
+        return ehr;
     }
 
     /**
