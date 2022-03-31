@@ -11,7 +11,7 @@ import theme from "../../theme.style";
 import { database, ref, onValue} from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext"
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
-import ChainConnection from "../../chainConnection/chainConnection";
+import ChainConnectionFactory from "../../chainConnection/chainConnectionFactory";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
@@ -182,9 +182,9 @@ export function EHROverviewScreen(props) {
     }
 
     const discardContactInfo = async () => {
-      const chainConnection = new ChainConnection();
-      alert("AFTER DISCARD");
-      await chainConnection.setup();
+      console.log("Discarding...");
+      const chainConnection = await ChainConnectionFactory.getChainConnection();
+      console.log("Done discarding.");
       setEditingContactInfo(false)
     }
 
