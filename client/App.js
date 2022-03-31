@@ -6,7 +6,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { AuthStackNavigator } from "./src/Navigation/AuthStackNavigator";
 import { MainStackNavigator } from "./src/Navigation/MainStackNavigator";
 import { SubmitContext } from "./contexts/SubmitContext";
-import {ChainConnectionContext} from "./contexts/ChainConnectionContext";
+import { ChainConnectionContext } from "./contexts/ChainConnectionContext";
 import ChainConnectionFactory from "./src/chainConnection/chainConnectionFactory";
 
 const RootStack = createStackNavigator(); //Contains all of our application
@@ -14,9 +14,9 @@ const RootStack = createStackNavigator(); //Contains all of our application
 function App() {
   const [data, setData] = React.useState(null);
   const { authentication, user, updateInfo } = apiService();
-  const [chainConnection, setChainConnection] = React.useState(
-    ChainConnectionFactory.getChainConnection()
-  );
+  const [chainConnection] = React.useState({
+    chainConnection: ChainConnectionFactory.getChainConnection(),
+  });
 
   //TODO This will be moved
   React.useEffect(() => {
@@ -24,6 +24,7 @@ function App() {
       .then((res) => res.json())
       .then((data) => setData(data.message));
   }, []);
+
   /**
    * AuthContext makes the authentication methods reachable throughout the entire application
    *

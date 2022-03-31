@@ -1,3 +1,5 @@
 import { createContext } from "react";
 
-export const ChainConnectionContext = createContext({chainConnection: null, setChainConnection: () => {} });
+export const ChainConnectionContext = createContext({
+  chainConnection: null,
+});
