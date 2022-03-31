@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Text, View } from "react-native";
-import { TextInput } from "react-native-gesture-handler";
+import { Text, View, TextInput } from "react-native";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header/Header";
 import ThemeButton from "../../../components/themeButton";
