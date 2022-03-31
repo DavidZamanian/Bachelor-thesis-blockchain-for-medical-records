@@ -120,23 +120,31 @@ export default class EHRService{
             // FETCH OLD FILES
             let oldCID = "bafybeidwd4nlwbdr365lvnp5ffrqp4ejepkvr64wt6d6iyvohwhlp4755m";
 
-            let oldFiles = await fs.fetchEHRContents(oldCID);
+            let fetchedFiles = await fs.fetchEHRFiles(oldCID);
+
+            let oldFiles = [];
 
             let finalFiles = [];
+            
 
-            // TODO: DECRYPT FILES
-            let decryptedFiles = oldFiles; // replace
-
-            for (const file of decryptedFiles){
+            for (const file of fetchedFiles){
+                let decrypted;
                 if(file.name == "prescriptions.json"){
-                    // TODO: parse it to a valid array
-                    //prescriptions.push(); // add old prescriptions to the new
+                    // Decrypt
+                    decrypted = await this.decrypt(await file.text());
+                    // Parse
+                    prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
                 }
                 else if(file.name == "diagnoses.json"){
-                    // TODO: parse it to a valid array
-                    //diagnoses.push(); // add old diagnoses to the new
+                    // Decrypt
+                    decrypted = await this.decrypt(await file.text());
+                    // Parse
+                    console.log("Before"+diagnoses.length)
+                    diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
+                    console.log("After"+diagnoses.length)
                 }
                 else{
+                    // For uploading
                     finalFiles.push(file)
                 }
             }
@@ -147,10 +155,10 @@ export default class EHRService{
             let stringPrescriptions = EHRService.stringify(prescriptions);
             let stringDiagnoses = EHRService.stringify(diagnoses);
 
-            // TODO: ENCRYPT THE THE 3 FILES' CONTENT
-            let encryptedEHR = stringEHR;
-            let encryptedPrescriptions = stringPrescriptions;
-            let encryptedDiagnoses = stringDiagnoses;
+            // TODO: ENCRYPT THE 3 NEW FILES' CONTENT
+            let encryptedEHR = this.encrypt(stringEHR);
+            let encryptedPrescriptions = this.encrypt(stringPrescriptions);
+            let encryptedDiagnoses = this.encrypt(stringDiagnoses);
 
 
 
@@ -207,5 +215,31 @@ export default class EHRService{
         let files = await fs.fetchEHRContents(cid);
         
         return files;
+    }
+
+    /**
+     * @param  {Array<string>} input
+     * @returns  {Promise<Array<string>>}
+     */
+    static async parseIntoArray(input){
+
+        let array = await JSON.parse(input);
+        console.log(array)
+        return array;
+    }
+
+    /**
+     * @param  {string} content
+     * @returns {Promise<string>}
+     */
+    static async encrypt(content){
+        return content;
+    }
+    /**
+     * @param  {string} content
+     * @returns {Promise<string>}
+     */
+    static async decrypt(content){
+        return content;
     }
 }
