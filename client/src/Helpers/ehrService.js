@@ -5,6 +5,7 @@ import UploadFileError from "./Errors/uploadFileError";
 import FileService from "./fileService";
 import { database, ref, get, child } from "../../firebaseSetup";
 import FetchFileContentError from "./Errors/FetchFileContentError";
+import { PlaceholderValues } from "../placeholders/placeholderValues";
 
 
 
@@ -14,7 +15,7 @@ export default class EHRService{
      * Fetches API-token to Web3Storage from Firebase
      * @returns {Promise<String>} apiToken to Web3Storage
      * @throws 
-     * @author @Chrimle
+     * @author Christopher Molin
      */
     static async getWeb3StorageToken() {
    
@@ -43,7 +44,7 @@ export default class EHRService{
      * @param  {Array<String>} prescriptions
      * @param  {Array<String>} diagnoses 
      * @returns {Object} "ehr" --EhrEntry-object
-     * @author @Chrimle
+     * @author Christopher Molin
      */
     static constructEHR (
         id,
@@ -73,7 +74,7 @@ export default class EHRService{
      * Converts an object or array into a string
      * @param  {} item -- Object or Array
      * @returns {Promise<String>} -- Object or list compounded into string
-     * @author @Chrimle
+     * @author Christopher Molin
      */
     static async stringify(item){
         return JSON.stringify(item);
@@ -91,7 +92,7 @@ export default class EHRService{
      * @param  {Array<String>} diagnoses
      * @returns {Promise<String>} result -- A string to notify the frontend if it succeeded,
      * or why it failed 
-     * @author Chrimle
+     * @author Christopher Molin
      */
     static async packageAndUploadEHR(
         id,
@@ -206,8 +207,11 @@ export default class EHRService{
 
 
     /**
+     * Gets EHR-files and parses contents to an object containing:
+     * prescriptions, diagnoses and journals.
      * @param  {string} patientID
      * @returns {Promise<object>}
+     * @author Christopher Molin
      */
     static async getEHR(patientID){
 
@@ -253,8 +257,10 @@ export default class EHRService{
     }
 
     /**
+     * Parses JSON-string to an array of strings
      * @param  {Array<string>} input
      * @returns  {Promise<Array<string>>}
+     * @author Christopher Molin
      */
     static async parseIntoArray(input){
 
@@ -264,8 +270,10 @@ export default class EHRService{
     }
 
     /**
+     * Parses JSON-string into JSON
      * @param  {Array<string>} input
      * @returns  {Promise<object>}
+     * @author Christopher Molin
      */
      static async parseIntoEHR(input){
 
@@ -275,6 +283,7 @@ export default class EHRService{
     }
 
     /**
+     * PLACEHOLDER
      * @param  {string} content
      * @returns {Promise<string>}
      */
@@ -282,10 +291,49 @@ export default class EHRService{
         return content;
     }
     /**
+     * PLACEHOLDER
      * @param  {string} content
      * @returns {Promise<string>}
      */
     static async decrypt(content){
         return content;
+    }
+
+    /**
+     * Gets all regions from Firebase, and returns them as a list of region names.
+     * @returns {Promise<Array<String>>}
+     * @async
+     * @author Christopher Molin
+     */
+    static async getRegions(){
+
+        let dbRef = ref(database);
+        let regions = [];
+        await get(child(dbRef, 'Regions/')).then((snapshot) => {
+        if (snapshot.exists()) {
+            let results = snapshot.val();
+            results.forEach((region) => {
+                regions.push(region.name)
+            })     
+        } else {
+            throw ("No data available");
+        }
+        }).catch((error) => {
+            throw (error);
+        });
+        return regions;
+    }
+
+    /**
+     * PLACEHOLDER: Gets all regions the given patient have granted permission.
+     * Returns a list of region names.
+     * @param {String} patientID
+     * @returns {Promise<Array<String>>}
+     */
+     static async getPatientRegions(patientID){
+        
+        let regions = PlaceholderValues.permittedRegions;
+        
+        return regions;
     }
 }

@@ -70,8 +70,9 @@ export function EHROverviewScreen(props) {
         } else {
           
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
-          const allRegions = PlaceholderValues.allRegions;
-          const patientPermittedRegions = PlaceholderValues.permittedRegions;
+
+          const allRegions = await EHRService.getRegions();
+          const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 
           let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
 

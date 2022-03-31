@@ -1,6 +1,6 @@
 export class PlaceholderValues{    
     static allRegions = ["Stockholm","Uppsala","Sormland","Ostergotland","Jonkoping","Kronoberg","Kalmar","Gotland","Blekinge","Skane","Halland","Varmland","Orebro","Vastmanland","Dalarna","Gavleborg","Vasternorrland","Jamtland","Vasterbotten","Norrbotten","Vastra Gotaland"];
-    static permittedRegions = ["Vastra Gotaland","Skane"];
+    static permittedRegions = ["Västra Götaland","Skåne"];
     static diagnoses = ["Birch Allergy"];
     static prescriptions = ["PollenStopper, 1 pill per day when needed","NoseSpray, 1 dose in each nostril per day if needed"];
 
