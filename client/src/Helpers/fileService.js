@@ -84,7 +84,7 @@ export default class FileService{
      * @returns {Promise<Array<File>>} results -- Array with all File objects in CID-directory
      * @author @Chrimle
      */
-    async fetchEHRContents(cid){
+    async fetchEHRFiles(cid){
 
         let results = [];
 

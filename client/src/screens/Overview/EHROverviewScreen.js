@@ -13,6 +13,7 @@ import { database, ref, onValue } from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext";
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { RoleContext } from "../../../contexts/RoleContext";
+import EHRService from "../../Helpers/ehrService";
 
 
 export function EHROverviewScreen(props) {
@@ -63,17 +64,20 @@ export function EHROverviewScreen(props) {
     const patientRef = ref(database, "Patients/" + (state.doctorRole ? props.route.params : userSSN ));
 
     try {
-      onValue(patientRef, (snapshot) => {
+      onValue(patientRef, async (snapshot) => {
         if (snapshot.val() === null) {
           alert("ERROR: This patient does not exist:" + state.patientID+"\n"+patientRef);
         } else {
           
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
           const allRegions = PlaceholderValues.allRegions;
-          const patientJournals = PlaceholderValues.journals;
           const patientPermittedRegions = PlaceholderValues.permittedRegions;
-          const patientPrescriptions = PlaceholderValues.prescriptions;
-          const patientDiagnoses = PlaceholderValues.diagnoses;
+
+          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
+
+          const patientPrescriptions = ehr.prescriptions
+          const patientDiagnoses = ehr.diagnoses;
+          const patientJournals = ehr.journals;
 
           let journalIndexes = [];
           patientJournals.forEach(() => journalIndexes.push(false));
