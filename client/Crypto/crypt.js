@@ -104,7 +104,7 @@ function decryptRecordKey(record_key, privateKeyFile) {
  *
  * @param {*} password The password of the user login
  * @param {*} salt The salt used in the hasing. This should be stored in database (can be public)
- * @returns
+ * @returns The privateKey that has been derived from the password
  */
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
@@ -121,7 +121,11 @@ function derivePrivateKeyFromPassword(password, salt) {
   );
   return hexKey.toString("base64");
 }
-
+/**
+ * Creates a publicKey from a given privateKey
+ * @param {*} privateKey The privateKey that has originally been derived from the user's password
+ * @returns The publicKey that has been extracted
+ */
 function extractPublicKeyFromPrivateKey(privateKey) {
   const pubKeyObject = crypto.createPublicKey({
     key: privateKey,
