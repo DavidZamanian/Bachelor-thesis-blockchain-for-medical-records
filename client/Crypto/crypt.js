@@ -7,7 +7,7 @@ const fs = require("fs");
  */
 
 //Change to GCM or CCM
-const algorithm = "aes-128-ctr";
+const algorithm = "aes-128-gcm";
 
 /**
  * Encrypts the EHR with the record key using the AES crypto algorithm.
