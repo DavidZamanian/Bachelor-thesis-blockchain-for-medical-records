@@ -6,8 +6,7 @@ const fs = require("fs");
  * @author David Zamanian, Nils Johnsson, Wendy Pau
  */
 
-//Change to GCM or CCM
-const algorithm = "aes-128-gcm";
+const algorithm = "aes-256-gcm";
 
 /**
  * Encrypts the EHR with the record key using the AES crypto algorithm.
@@ -18,7 +17,7 @@ const algorithm = "aes-128-gcm";
  */
 function encryptEHR(record_key, EHR, medPers_privKey) {
   const decrypted_record_key = decryptRecordKey(record_key, medPers_privKey);
-  const iv = crypto.randomBytes(16);
+  const iv = crypto.randomBytes(32);
 
   let cipher = crypto.createCipheriv(
     algorithm,
@@ -32,6 +31,7 @@ function encryptEHR(record_key, EHR, medPers_privKey) {
   return {
     iv: iv.toString("base64"),
     encryptedData: encryptedEHR.toString("base64"),
+    Tag: cipher.getAuthTag(),
   };
 }
 
@@ -52,9 +52,10 @@ function decryptEHR(record_key, EHR, privateKey) {
     Buffer.from(decrypted_record_key, "base64"),
     iv
   );
+  decipher.setAuthTag(EHR.Tag);
 
   // Updating encrypted text
-  let decryptedEHR = decipher.update(encryptedEHR);
+  let decryptedEHR = decipher.update(encryptedEHR, "base64");
   decryptedEHR = Buffer.concat([decryptedEHR, decipher.final()]);
 
   // returns data after decryption
@@ -97,22 +98,49 @@ function decryptRecordKey(record_key, privateKeyFile) {
   return decrypted.toString("base64");
 }
 
+/**
+ * Takes the password when logging in for the first time and
+ * derives a private key from it.
+ *
+ * @param {*} password The password of the user login
+ * @param {*} salt The salt used in the hasing. This should be stored in database (can be public)
+ * @returns
+ */
+function derivePrivateKeyFromPassword(password, salt) {
+  var hexKey;
+  var iterations = 100000;
+  var outputBitLen = 512;
+  var hashAlgo = "sha512";
+
+  hexKey = crypto.pbkdf2Sync(
+    password,
+    salt,
+    iterations,
+    outputBitLen,
+    hashAlgo
+  );
+  return hexKey.toString("base64");
+}
+
+function extractPublicKeyFromPrivateKey(privateKey) {
+  const pubKeyObject = crypto.createPublicKey({
+    key: privateKey,
+    format: "pem",
+  });
+
+  const publicKey = pubKeyObject.export({
+    format: "pem",
+    type: "spki",
+  });
+
+  return publicKey.toString("base64");
+}
+
 module.exports = {
   encryptRecordKey,
   decryptRecordKey,
   encryptEHR,
   decryptEHR,
+  derivePrivateKeyFromPassword,
+  extractPublicKeyFromPrivateKey,
 };
-
-/* Method for encryptEHR (symmetric with record_key)
-
-    AES-128 bits counter mode
-
-    */
-
-/* Method for encryptRecordKey (Assymtric with user's public key)
-
-    Eliptic curve??
-    Get the public key from firebase make method for retrieving the public key in ApiService
-
-    */

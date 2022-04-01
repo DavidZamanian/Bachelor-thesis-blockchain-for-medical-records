@@ -5,7 +5,6 @@ import * as path from "path";
 import crypt from "../client/Crypto/crypt.js";
 import JSONService from "../server/jsonHandling/jsonService.js";
 
-
 /**
  * Methods for encrypting/decrypting EHR and record keys.
  * @author David Zamanian, Nils Johnsson, Wendy Pau
@@ -17,11 +16,40 @@ describe("Test crypto", function () {
   // Generate keys
   generateKeyFiles();
 
+  //Test key derivation function
+  it("Should be able to derive privateKey from password", function () {
+    //512-bit salt for 512 bit output bitLen
+    var salt =
+      "4E635266556A586E3272357538782F413F4428472D4B6150645367566B5970337336763979244226452948404D6251655468576D5A7134743777217A25432A46";
+    var password = "password123";
+    var derivedKey;
+
+    // check if a key can be derived from the password
+    assert.doesNotThrow(() => {
+      derivedKey = crypt.derivePrivateKeyFromPassword(password, salt);
+    });
+  });
+
+  //Test key derivation function
+  it("Should be able to derive publicKey from privateKey", function () {
+    //512-bit salt for 512 bit output bitLen
+    const privateKey = fs.readFileSync("./private_key");
+    var publicKey;
+
+    console.log(
+      "Public key: " + crypt.extractPublicKeyFromPrivateKey(privateKey)
+    );
+    // check if a publicKey can be derived from a privateKey
+    assert.doesNotThrow(() => {
+      publicKey = crypt.extractPublicKeyFromPrivateKey(privateKey);
+    });
+  });
+
   let record_key;
 
   it("Should be able to encrypt/decrypt record key", function () {
     // generate symmetric AES key
-    crypto.generateKey("aes", { length: 128 }, (err, key) => {
+    crypto.generateKey("aes", { length: 256 }, (err, key) => {
       if (err) throw err;
 
       record_key = key;
