@@ -180,10 +180,18 @@ export function EHROverviewScreen(props) {
   const discardContactInfo = async () => {
     console.log("Discarding...");
     //const chainConnection = await ChainConnectionFactory.getChainConnection();
-    //const res = await chainConnection.hasPermission("p_gbg");
-    chainConnection.then((data) => console.log(data));
-    console.log("Done discarding.");
-    setEditingContactInfo(false);
+    //const res = await chainConnection.hasPermission("p_gbg"); 
+    chainConnection.then((obj) => {
+      console.log(obj);
+      obj.hasPermission("p_gbg").then(res => { 
+        console.log(res);
+        console.log("Done discarding.");
+        setEditingContactInfo(false);
+      });
+    });
+    // console.log(connection);
+    // console.log(connection.hasPermission("p_gbg"));
+    
   };
 
   const saveContactInfo = () => {
