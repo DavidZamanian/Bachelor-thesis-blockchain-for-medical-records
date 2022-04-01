@@ -178,14 +178,23 @@ export function EHROverviewScreen(props) {
   };
 
   const discardContactInfo = async () => {
+    //TODO REMOVE ALL LINES UP UNTIL sedEditingInfo(false)
     console.log("Discarding..."); //TODO REMOVE
     const connection = await chainConnection;
-    console.log(connection);
-    // testing hasPermission
-    const res = await connection.hasPermission("p_gbg");
-    // testing getPermissionedRegions
+    console.log(connection); //print the connection object to inspect things such as address used
+    // ====== TESTS: comment out all but the one you want to try and see result in your console =====
+    // TESTING hasPermission
+    //const res = await connection.hasPermission("p_gbg");
+    // TESTING getPermissionedRegions
     //const res = await connection.getPermissionedRegions("p_gbg");
+    // TESTING getEHRCid
+    //await connection.updateEHR("p_gbg", "CID NR 1");
+    //const res = await connection.getEHRCid("p_gbg"); //may have to run this separate from updateEHR
+    // TESTING setting new permissions
+    await connection.setPermissions("p_boras", ["boras", "gbg"]);
+    const res = await connection.getPermissionedRegions("p_boras"); //may have to run this separate from setPermissions
     console.log(res);
+    // ================
     console.log("Done discarding.");
     setEditingContactInfo(false);
   };
