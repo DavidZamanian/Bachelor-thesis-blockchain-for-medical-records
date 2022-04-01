@@ -184,7 +184,7 @@ export function EHROverviewScreen(props) {
 
     // CHECK PRIVILEGE?
 
-    wipePatientData();
+    //wipePatientData();
 
     navigation.navigate("NewEntryScreen", state.patientID);
   };

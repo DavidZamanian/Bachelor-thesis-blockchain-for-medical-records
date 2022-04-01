@@ -15,7 +15,8 @@ function App() {
   const { authentication, user, updateInfo } = apiService();
   const [role, setRole] = useState("");
   const [userSSN, setUserSSN] = useState("");
-  const value = { role, setRole, userSSN, setUserSSN };
+  const [institution, setInstitution] = useState("");
+  const value = { role, setRole, userSSN, setUserSSN, institution, setInstitution };
 
   //For testing only
   /*
