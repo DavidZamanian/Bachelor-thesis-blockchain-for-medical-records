@@ -9,15 +9,21 @@ import RemoveButton from "../../../components/removeButton";
 import styles from "../../../styles";
 import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
-import { database, ref, onValue} from "../../../../firebaseSetup";
 import EHRService from "../../../Helpers/ehrService";
-import FileService from "../../../Helpers/fileService";
+import { RoleContext } from "../../../../contexts/RoleContext";
 
 
 export function NewEntryScreen(props) {
 
   const route = useRoute();
   const navigation = useNavigation();
+
+  const { role, userSSN, institution } = React.useContext(RoleContext);
+
+  if (role != "doctor"){
+    alert("WARNING: NOT A DOCTOR");
+    return;
+  }
 
   // These are for testing purposes only
   const prescriptions = [];
@@ -29,7 +35,7 @@ export function NewEntryScreen(props) {
   const [inputDiagnosis, setInputDiagnosis] = useState("");
   const [inputDetails, setInputDetails] = useState("");
   /* For patient ID to be prefilled, enter it here below */
-  const [inputPatient, setInputPatient] = useState(props.route.params === undefined ? "PROVIDE PATIENT ID!" : props.route.params.toString());
+  const [inputPatient, setInputPatient] = useState(props.route.params);
   const medicalPerson = "Placeholder Staff";
   const healthcareInst = "Placeholder Hospital";
 
@@ -150,11 +156,16 @@ export function NewEntryScreen(props) {
     let diagnoseList = [];
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
 
+    let medicalPersonnel = await EHRService.getDoctorFullName(userSSN);
+
+    let healthcareInstitution = await EHRService.getInstitutionName(institution);
+
+    console.log(medicalPersonnel+institution+healthcareInstitution)
     try{
       let status =  await EHRService.packageAndUploadEHR(
-      inputPatient,
-      medicalPerson,
-      healthcareInst,
+      props.route.params.toString(),
+      medicalPersonnel,
+      healthcareInstitution,
       inputDetails,
       prescriptList,
       diagnoseList)

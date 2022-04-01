@@ -140,9 +140,7 @@ export default class EHRService{
                     // Decrypt
                     decrypted = await this.decrypt(await file.text());
                     // Parse
-                    console.log("Before"+diagnoses.length)
                     diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
-                    console.log("After"+diagnoses.length)
                 }
                 else{
                     // For uploading
@@ -265,7 +263,6 @@ export default class EHRService{
     static async parseIntoArray(input){
 
         let array = await JSON.parse(input);
-        console.log(array)
         return array;
     }
 
@@ -335,5 +332,52 @@ export default class EHRService{
         let regions = PlaceholderValues.permittedRegions;
         
         return regions;
+    }
+
+
+    /**
+     * Fetches the doctor's full name from Firebase.
+     * @param  {String} doctorID A valid SSN
+     * @returns {Promise<String>} Doctor's full name
+     * @author Christopher Molin
+     */
+    static async getDoctorFullName(doctorID){
+
+        let dbRef = ref(database);
+        let fullName = "";
+        await get(child(dbRef, 'Doctors/'+doctorID)).then((snapshot) => {
+        if (snapshot.exists()) {
+            fullName = snapshot.val().lastName+", "+snapshot.val().firstName;
+                 
+        } else {
+            throw ("The requested doctor is not available");
+        }
+        }).catch((error) => {
+            throw (error);
+        });
+        return fullName;
+    }
+
+    /**
+     * Fetches the name of the institution from Firebase.
+     * @param  {String} institution A valid id
+     * @returns {Promise<String>} The name of the institution
+     * @author Christopher Molin
+     */
+     static async getInstitutionName(institution){
+
+        let dbRef = ref(database);
+        let institutionName = "";
+        await get(child(dbRef, 'Institutions/'+institution)).then((snapshot) => {
+        if (snapshot.exists()) {
+            institutionName = snapshot.val().name;
+                 
+        } else {
+            throw ("No data available");
+        }
+        }).catch((error) => {
+            throw (error);
+        });
+        return institutionName;
     }
 }
