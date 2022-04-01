@@ -143,8 +143,8 @@ const styles = StyleSheet.create({
         padding:5,
     },
     popupWindow:{
-        height:500,
-        width:500,
+        height:650,
+        width:650,
         backgroundColor:"white",
         borderRadius:15,
         blurRadius:20
@@ -173,13 +173,17 @@ const styles = StyleSheet.create({
         paddingHorizontal:20,
     },
     regionContainer:{
-        flex: 1,
+        width:"33%",
+        height:50,
         flexDirection: 'row',
-        margin: 1,
-        alignItems:"center"
+        padding: 5,
+        margin:1,
+        alignItems:"center",
+        alignSelf:"flex-start",
+        borderRadius:3,
     },
     regionLabel:{
-        margin:10,
+        marginLeft:10,
     },
     warningLabel:{
         borderColor:"#ce0018",

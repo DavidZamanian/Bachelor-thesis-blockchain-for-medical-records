@@ -306,7 +306,10 @@ export function EHROverviewScreen(props) {
                   numColumns={3}
                   keyExtractor={({ item, index }) => index}
                   renderItem={({ item, index }) => (
-                    <View style={styles.regionContainer} key={item.toString()}>
+                    <View style={[styles.regionContainer,
+                      {
+                        backgroundColor:(index%2 ? "#FFFFFF" : "#F7F7F7")
+                      }]} key={item.toString()}>
                       <TouchableOpacity
                         style={[
                           styles.checkbox,
