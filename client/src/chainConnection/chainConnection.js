@@ -69,9 +69,30 @@ export default class ChainConnection {
 
   async getPermissionedRegions(patientId) {
     const { accounts, contract } = this.state;
-    const res = await contract.methods
+    const arr = await contract.methods
       .getPermissionedRegions(patientId)
       .call({ from: accounts[0] });
-    return res;
+    return arr;
+  }
+
+  async getEHRCid(patientId) {
+    const { accounts, contract } = this.state;
+    const cid = await contract.methods
+        .getEHRCid(patientId)
+        .call({ from: accounts[0] });
+  }
+
+  async updateEHR(patientId, cid) {
+      const { accounts, contract } = this.state;
+      await contract.methods
+        .updateEHR(patientId, cid)
+        .send({ from: accounts[0] });
+  }
+
+  async setPermissions(patientId, regions) {
+    const { accounts, contract } = this.state;
+    await contract.methods
+        .setPermissions(patientId, regions)
+        .send({ from: accounts[0] });
   }
 }
