@@ -11,20 +11,20 @@ import * as assert from "assert";
 // const expect = chai.expect;
 const fileStorage = new FileStorage();
 
-describe("check if we get the right url", function () {
-    it("returns the correct url for a valid cid", async function () {
+// describe("check if we get the right url", function () {
+//     it("returns the correct url for a valid cid", async function () {
         
-        const cid = "bafybeig2ni6bdohftpj62m4cqxf2tu2s5plza7enpi7ynyp3nqvmvd4n4u";
-        const urls = await fileStorage.retrieveFilesHelper(cid);
-        const expected = "https://bafybeig2ni6bdohftpj62m4cqxf2tu2s5plza7enpi7ynyp3nqvmvd4n4u.ipfs.dweb.link/tmp_test_upload/test1.txt"
-        assert.strictEqual(urls[0],expected);
-    });
-    /*
-    it('throws an error for wrong cid', async function() {
-        await expect(fileStorage.retrieveFilesHelper("_")).to.be.rejected.and.be.an.instanceOf(CouldNotResolveCidError);
-    });
-    */
-});
+//         const cid = "bafybeig2ni6bdohftpj62m4cqxf2tu2s5plza7enpi7ynyp3nqvmvd4n4u";
+//         const urls = await fileStorage.retrieveFilesHelper(cid);
+//         const expected = "https://bafybeig2ni6bdohftpj62m4cqxf2tu2s5plza7enpi7ynyp3nqvmvd4n4u.ipfs.dweb.link/tmp_test_upload/test1.txt"
+//         assert.strictEqual(urls[0],expected);
+//     });
+//     /*
+//     it('throws an error for wrong cid', async function() {
+//         await expect(fileStorage.retrieveFilesHelper("_")).to.be.rejected.and.be.an.instanceOf(CouldNotResolveCidError);
+//     });
+//     */
+// });
 
 describe("check removing the cid ", function () {
     it("returns directoryname/filename from a valid path", function () {
