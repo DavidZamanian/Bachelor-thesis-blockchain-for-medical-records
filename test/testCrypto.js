@@ -5,21 +5,19 @@ import * as path from "path";
 import crypt from "../client/Crypto/crypt.js";
 import JSONService from "../server/jsonHandling/jsonService.js";
 
-
 /**
  * Methods for encrypting/decrypting EHR and record keys.
  * @author David Zamanian, Nils Johnsson, Wendy Pau
  */
 
 const example_directory = "./test/json_examples";
+var record_key = crypto.KeyObject;
 
 describe("Test crypto", function () {
   // Generate keys
   generateKeyFiles();
 
-  let record_key;
-
-  it("Should be able to encrypt/decrypt record key", function () {
+  it("Can encrypt/decrypt record key", function () {
     // generate symmetric AES key
     crypto.generateKey("aes", { length: 128 }, (err, key) => {
       if (err) throw err;
