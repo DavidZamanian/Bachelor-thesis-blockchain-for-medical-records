@@ -5,7 +5,6 @@ import Footer from "../../../components/Footer";
 import Header from "../../../components/Header/Header";
 import ThemeButton from "../../../components/themeButton";
 import styles from "./styles";
-import { database, ref, onValue} from "../../../../firebaseSetup";
 import { useNavigation } from "@react-navigation/native";
 import EHRService from "../../../Helpers/ehrService";
 
