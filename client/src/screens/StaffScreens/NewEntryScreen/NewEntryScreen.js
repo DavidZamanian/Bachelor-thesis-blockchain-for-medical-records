@@ -1,20 +1,17 @@
 import React, { useState, setState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Text, View, TextInput, Pressable , Image, SafeAreaView, FlatList, Alert, Modal} from "react-native";
+import { Text, View, TextInput, SafeAreaView, FlatList, Modal, ActivityIndicator} from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import Header from "../../../components/Header/Header";
 import Icon from "react-native-vector-icons/Ionicons";
 import ColouredIcon from "../../../components/colouredIcon";
-import ColouredButton from "../../../components/colouredButton";
 import RemoveButton from "../../../components/removeButton";
-import ContrastIcon from "../../../components/contrastIcon";
-import ContrastText from "../../../components/contrastText";
 import styles from "../../../styles";
-import EhrEntry from "../../../../../server/jsonHandling/ehrEntry";
 import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
-
-  
+import { database, ref, onValue} from "../../../../firebaseSetup";
+import EHRService from "../../../Helpers/ehrService";
+import FileService from "../../../Helpers/fileService";
 
 
 export function NewEntryScreen(props) {
@@ -43,38 +40,35 @@ export function NewEntryScreen(props) {
   const [prescriptionsList, setPrescriptionsList] = useState(prescriptions);
   const [diagnosesList, setDiagnosesList] = useState(diagnoses);
 
-  /*
-    Method is given an index of a prescription to be deleted.
-    It deletes the prescription at (index).
-    The <FlatList> will automatically re-render to reflect this change.
-    
-    @Chrimle 
-  */
+  const [submitStatus, setSubmitStatus] = useState({
+    message: "Placeholder",
+    style: {},
+    status: "hide",
+    visible: false
+  });
+
+  /**
+   * Deletes the prescription at the given index
+   * @param {Number} index
+   * @author @Chrimle
+   */
   const removePrescription = (index) => {
   
     setPrescriptionsList((prevState) => { 
-
       prevState.splice(index,1);
-      
       return [...prevState];
     })
     
   }
 
-  /*
-    Method gathers TextInput values for Prescription name and dosage.
-    Adds it to locally stored JSON object, by updating the state.
-    The <FlatList> will automatically trigger a re-render to reflect the new state.
-    Clears both <TextInput> fields.
-    
-    @Chrimle 
-  */
+  /**
+   * Creates a list element based on text from prescription name and dosage
+   * @author @Chrimle
+   */
   const addPrescription = () => {
 
     setPrescriptionsList((prevState) => {
-      
       prevState.push({name:inputPrescription,dosage:inputDosage});
-
       return [...prevState];
     })
     setInputPrescription((prevState) => {
@@ -84,39 +78,28 @@ export function NewEntryScreen(props) {
       return "";
     })
   }
-  
-
-
-  /* 
-    Method for removing a diagnosis.
-    This removes a diagnosis at index from the list of diagnoses.
-    This in turn triggers a re-render of the <FlatList> of diagnoses.
-
-    @Chrimle
-  */
+ 
+  /**
+   * Method for removing a diagnosis at a given index.
+   * @param  {Number} index - Index of diagnosis to be removed
+   * @author @Chrimle
+   */
   const removeDiagnosis = (index) => {
-  
-    setDiagnosesList((prevState) => {
 
+    setDiagnosesList((prevState) => {
       prevState.splice(index,1);
-      
       return [...prevState];
     })
-    
   }
-  /* 
-    Method for adding diagnosis to the list of diagnoses
-    This updates the list, triggers a re-render of the <FlatList>,
-    and clears the old text in the <TextInput>
 
-    @Chrimle
+  /**
+  * Method for adding diagnosis to the list of diagnoses
+  * @author @Chrimle
   */
   const addDiagnosis = () => {
 
     setDiagnosesList((prevState) => {
-      
       prevState.push({diagnosis:inputDiagnosis});
-
       return [...prevState];
     })
     setInputDiagnosis((prevState) => {
@@ -124,73 +107,130 @@ export function NewEntryScreen(props) {
     })
   }
 
-
-  /* 
-    Method for submitting data.
-    Create an EHR entry object, and populate it with data.
-    (Includes a work-around for prescription names and dosages being separate).
-    The resulting contents of the EHR object is printed as an alert message - for testing.
-
-    @Chrimle
-  */
-  const submitData = () => {
+  /**
+   * Constructs and submits an EHR file to Web3Storage
+   * @author @Chrimle
+   */
+  const submitData = async () => {
     
-    let ehr = new EhrEntry();
+    //For testing fetching a Web3Storage EHR file
 
-    ehr.setPatientID(inputPatient);
-    ehr.setMedicalPersonnel(medicalPerson);
-    ehr.setHealthcareInstitution(healthcareInst);
-    ehr.setDetails(inputDetails.toString());
+    //let cid = "bafybeifxi2lwmni6gnqanpposc74jugdxe6g6wfpl5saxfsq3t552mrl34"
+    //let fileName = "ehr"
     
+    //let x = ( await EHRService.getPatientData())
+    //let x = ( await FileService.fetchFileContent(cid,fileName))
+    
+    
+
+    updateSubmitStatus("Loading")
+    
+    let status = await submitEHR()
+    updateSubmitStatus(status)
+    if (status == "Success"){
+      setTimeout(()=>{
+        navigation.navigate("PatientSearchScreen");
+        setModalVisible(false);
+       },3000)
+     }   
+  }
+
+  /**
+   * Sends input data to be made into files and uploaded
+   * @returns {Promise<String>} cid -- Successful if not 'null'
+   * @author @Chrimle
+   */
+  const submitEHR = async () => {
+
     // Merge prescription name and dosage into single string
     let prescriptList = [];
     prescriptionsList.forEach(element => prescriptList.push(element.name.toString()+" "+element.dosage.toString()));
-    ehr.setPrescriptions(prescriptList);
-
+    
     // Create list of diagnoses
     let diagnoseList = [];
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
-    ehr.setDiagnoses(diagnoseList);
 
-    // Set date to current time and date
-    let dateNow = new Date().toJSON();
-    ehr.setDate(dateNow);
+    try{
+      let status =  await EHRService.packageAndUploadEHR(
+      inputPatient,
+      medicalPerson,
+      healthcareInst,
+      inputDetails,
+      prescriptList,
+      diagnoseList)
 
-
-    // Mainly for testing and debugging
-    alert("Date: "+ehr.date+
-    "\nPatient ID: "+ehr.patientID+
-    "\nStaff:"+ehr.medicalPersonnel+
-    "\nInstitution:"+ehr.healthcareInstitution+
-    "\nPrescriptions:"+ehr.prescriptions+
-    "\nDiagnoses:"+ehr.diagnoses+
-    "\nDetails:"+ehr.details);
-
-
-    /* INSERT CHECK IF DATA SUBMISSION WAS SUCCESSFULL BEFORE THIS*/
-    navigation.navigate("PatientSearchScreen");
-    setModalVisible(false);
+      return status;
+    }
+    catch(e){
+      updateSubmitStatus("Error")
+      return false;
+    }
+    
   }
 
-  const openPopup = () => {
-    // Trigger a popup warning
-    // Show the pop up window (Modal)
-    setModalVisible(true);
 
+
+  const openPopup = () => {
+
+    setModalVisible(true);
   }
 
   const cancelAndReturn = () => {
     navigation.navigate("EHROverview",inputPatient);
   }
 
+  /**
+   * Sets the submit message, style and text according to a given status.
+   * @param {String} newStatus - if nothing is given, it will be hidden.
+   * @author @Chrimle
+   */
+  const updateSubmitStatus = (newStatus) => {
+    let newStyle;
+    let newMessage;
+    let newVisible = true;
+    
+    switch(newStatus){
+      case "Loading":
+        newStyle = styles.submitLoading;
+        newMessage = "Submitting data, please wait...";
+        break;
+      case "Success":
+        newStyle = styles.submitSuccess;
+        newMessage = "Success, the data has successfully been submitted!"+
+        "\nRedirecting in 3 seconds...";
+        break;
+      case "Error":
+        newStyle = styles.submitError;
+        newMessage = "Error, something went wrong";
+        break;
+      case "NoResponse":
+        newStyle = styles.submitError;
+        newMessage = "Error, no response from database";
+        break;
+      case "TimedOut":
+        newStyle = styles.submitError;
+        newMessage = "Error: Operation timed out";
+        break;
+      default:
+        newStyle = {};
+        newMessage = "";
+        newVisible != newVisible
+        break;
+    }
 
+    setSubmitStatus({
+      style: newStyle,
+      status: newStatus,
+      message: newMessage,
+      visible: newVisible
+    })
+  }
 
   return (
     <View style={styles.main}>
       <Header/>
       <View style={styles.content}>
         <Modal
-          
           animationType="none"
           transparent={true}
           visible={modalVisible}
@@ -209,6 +249,13 @@ export function NewEntryScreen(props) {
                 <Text style={{fontSize:20,fontWeight:"bold", textAlign:"center"}}>You are about to submit a record entry for:</Text>
                 <Text style={{fontSize:25, textAlign:"center"}}>Patient ID: {inputPatient}</Text>
                 <Text style={{fontSize:20, fontStyle:"italic", textAlign:"center"}}>By submitting, you ensure this record is meant for the individual listed above.</Text>
+                {
+                submitStatus.visible && 
+                <View style={[styles.submitMessage,submitStatus.style]}>
+                  <Text>{submitStatus.message}</Text>
+                  {submitStatus.status=="Loading" && <ActivityIndicator size="small" color="grey"/>} 
+                </View>
+                }
               </View>
               <View style={{flex:1, padding:10, borderTopColor:"grey", borderTopWidth:2, flexDirection:"row", justifyContent:"flex-end"}}>
                 <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.greyButton,{height:"100%"}]} onPress={()=>{setModalVisible(false)}}>
@@ -217,7 +264,6 @@ export function NewEntryScreen(props) {
                 <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.primaryButton,{height:"100%"}]} onPress={()=>{submitData()}}>
                   <Text style={[styles.contrastText,{fontWeight:"bold"}]}>Submit</Text>
                 </TouchableOpacity>
-                
               </View>
             </View>
           </View>
@@ -274,7 +320,6 @@ export function NewEntryScreen(props) {
                         <Text style={styles.genericListItemText}>{item.name}</Text>
                         <Text>{item.dosage}</Text>
                       </View>
-                      
                       <RemoveButton onPress={() => {removePrescription(index)}}/>
                     </View>
                   )}
@@ -343,8 +388,7 @@ export function NewEntryScreen(props) {
                   iconName={"add-outline"}
                   bWidth={100}
                   extraStyle={{margin:5, justifyContent:"center", borderWidth:2}}
-                />
-              
+                /> 
             </View>
             <ThemeButton 
               onPress={() => openPopup()}

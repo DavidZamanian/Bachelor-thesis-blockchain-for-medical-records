@@ -8,10 +8,12 @@ import ThemeButton from "../../components/themeButton";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../theme.style";
+
 import { database, ref, onValue } from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext";
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { RoleContext } from "../../../contexts/RoleContext";
+
 
 export function EHROverviewScreen(props) {
 
@@ -21,6 +23,7 @@ export function EHROverviewScreen(props) {
   const { role, userSSN } = React.useContext(RoleContext);
   const route = useRoute();
   const navigation = useNavigation();
+
 
   const [state, setState] = useState({
     doctorRole: (role == "doctor"),
@@ -38,6 +41,7 @@ export function EHROverviewScreen(props) {
     regionSnapshot: [],
   });
 
+
   const wipePatientData = () => {
     setState((prevState) => ({
       ...prevState,
@@ -49,6 +53,7 @@ export function EHROverviewScreen(props) {
   /* 
     Gather patient info from Firebase (runs automatically at the start) 
   */
+
   const fetchPatientData = () => {
 
     //alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
