@@ -308,7 +308,7 @@ export function EHROverviewScreen(props) {
                   renderItem={({ item, index }) => (
                     <View style={[styles.regionContainer,
                       {
-                        backgroundColor:(index%2 ? "#FFFFFF" : "#F7F7F7")
+                        backgroundColor:(index%2 ? "#FFFFFF" : "#F2F2F2")
                       }]} key={item.toString()}>
                       <TouchableOpacity
                         style={[
