@@ -179,14 +179,15 @@ export function EHROverviewScreen(props) {
 
   const discardContactInfo = async () => {
     console.log("Discarding..."); //TODO REMOVE
-    chainConnection.then((obj) => {
-      console.log(obj);
-      obj.hasPermission("p_gbg").then(res => { 
-        console.log(res);
-        console.log("Done discarding.");
-        setEditingContactInfo(false);
-      });
-    });
+    const connection = await chainConnection;
+    console.log(connection);
+    // testing hasPermission
+    const res = await connection.hasPermission("p_gbg");
+    // testing getPermissionedRegions
+    //const res = await connection.getPermissionedRegions("p_gbg");
+    console.log(res);
+    console.log("Done discarding.");
+    setEditingContactInfo(false);
   };
 
   const saveContactInfo = () => {
