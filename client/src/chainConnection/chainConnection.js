@@ -1,21 +1,26 @@
 import Block4EHR from "../../../build/contracts/Block4EHR.json";
 import getWeb3 from "./getWeb3";
 
+/**
+ * Handles the connection to the smart contract Block4EHR on the blockchain. 
+ * Is used to both integrate with metamask and acts as an intermediate
+ * against contract calls. 
+ * 
+ * TODO: remove console.log:s. Only there for dev purposes. 
+ * 
+ * @author Hampus Jernkrook
+ */
 export default class ChainConnection {
-  //state = { web3: null, accounts: null, contract: null };
-
   constructor() {
     this.state = {
       web3: null,
       accounts: null,
       contract: null,
     };
-    //this.web3 = null;
   }
 
   setState(state) {
     this.state = state;
-    alert(state); //TODO REMOVE
   }
 
   async init() {

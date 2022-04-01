@@ -5,8 +5,14 @@ import ChainConnection from "./chainConnection";
  * @author Hampus Jernkrook
  */
 export default class ChainConnectionFactory {
-    static _chainConnection = null;
+    static _chainConnection = null; // the single instance shared by all callers. 
 
+    /**
+     * Initializes a ChainConnection instance and sets all state variables iff
+     * no instance has been previously initialized. Else returns the previously
+     * initialized instance. 
+     * @returns {ChainConnection} instance with state variables set. 
+     */
     static async getChainConnection() {
         // singleton ChainConnection object. Do not init if already initialized.
         if (!this._chainConnection) { 

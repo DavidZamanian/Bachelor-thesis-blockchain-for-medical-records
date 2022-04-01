@@ -4,7 +4,9 @@
  * Suggested by youtuber EatTheBlocks in https://www.youtube.com/watch?v=LzdMosLzj80
  * for integrating with metamask. 
  * 
- * TODO: add error handling?
+ * TODO: remove the console.log:s with CAPSED TEXT
+ * 
+ * Copy-pasted and used by @author Hampus Jernkrook
  */
 
 import Web3 from "web3";
@@ -22,9 +24,6 @@ const getWeb3 = () =>
           console.log("WAITING FOR USER ACCEPTING")
           // Request account access if needed
           await window.ethereum.enable();
-
-          //alert(`WEB3 INSTANCE IS: ${web3}`);
-          //alert(`web3 accounts are: ${await web3.eth.getAccounts()}`);
           // Accounts now exposed
           resolve(web3);
         } catch (error) {

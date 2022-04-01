@@ -14,6 +14,7 @@ const RootStack = createStackNavigator(); //Contains all of our application
 function App() {
   const [data, setData] = React.useState(null);
   const { authentication, user, updateInfo } = apiService();
+  // set the single chainConnection instance to be used throughout the entire app. 
   const [chainConnection] = React.useState({
     chainConnection: ChainConnectionFactory.getChainConnection(),
   });

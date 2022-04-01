@@ -178,9 +178,7 @@ export function EHROverviewScreen(props) {
   };
 
   const discardContactInfo = async () => {
-    console.log("Discarding...");
-    //const chainConnection = await ChainConnectionFactory.getChainConnection();
-    //const res = await chainConnection.hasPermission("p_gbg"); 
+    console.log("Discarding..."); //TODO REMOVE
     chainConnection.then((obj) => {
       console.log(obj);
       obj.hasPermission("p_gbg").then(res => { 
@@ -189,9 +187,6 @@ export function EHROverviewScreen(props) {
         setEditingContactInfo(false);
       });
     });
-    // console.log(connection);
-    // console.log(connection.hasPermission("p_gbg"));
-    
   };
 
   const saveContactInfo = () => {
