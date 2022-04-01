@@ -80,6 +80,7 @@ export default class ChainConnection {
     const cid = await contract.methods
         .getEHRCid(patientId)
         .call({ from: accounts[0] });
+    return cid;
   }
 
   async updateEHR(patientId, cid) {
