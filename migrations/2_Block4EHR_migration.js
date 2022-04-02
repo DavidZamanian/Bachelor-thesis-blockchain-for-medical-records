@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { database } from "../../../firebaseSetup";
+import { onValue, ref } from "../client/firebaseSetup";
 const Block4EHR = artifacts.require("Block4EHR");
 
 /**
@@ -29,44 +30,28 @@ module.exports = function (deployer, network, accounts) {
 };
 //Not done yet
 const [institutions, setInstitutions] = React.useState([]);
-const [patients, setpatients] = React.useState([]);
-
+const [patients, setPatients] = React.useState([]);
+const [doctors, setDoctors] = React.useState([]);
 let dbRef = ref(database);
-const allInstitutions = [];
-React.useEffect(() => {
-  const OnLoadingListener = dbRef.on("value", (snapshot) => {
-    snapshot.forEach(function (childSnapshot) {
-      setInstitutions((institutions) => [...institutions, childSnapshot.val()]);
-    });
-  });
-  return () => {
-    userRef.off("value", OnLoadingListener);
-    userRef.off("child_removed", childRemovedListener);
-    userRef.off("child_changed", childChangedListener);
-  };
-}, []);
+const institutionsRef = ref(dbRef, "Institutions/");
+const patientsRef = ref(dbRef, "Patiens/");
+const doctorsRef = ref(dbRef, "Doctors/");
 
-//Not gonna use this, irrelevent
-/*
-React.useEffect(() => {
-  const subscriber = onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      setUser(user);
-      let dbRef = ref(database);
-      const snapshot = await get(
-        child(dbRef, "mapUser/" + auth.currentUser.uid)
-      );
-      setUserSSN(snapshot.val().SSN);
-      setRole(snapshot.val().role);
-    } else {
-      setUser();
-      setRole("");
-      setUserSSN("");
-    }
+onValue(institutionsRef, (snapshot) => {
+  snapshot.forEach(function (childSnapshot) {
+    setInstitutions((Institutions) => [...Institutions, childSnapshot.val()]);
   });
-  return subscriber;
-}, []);
-*/
+});
+onValue(patientsRef, (snapshot) => {
+  snapshot.forEach(function (childSnapshot) {
+    setPatients((Patients) => [...Patients, childSnapshot.val()]);
+  });
+});
+onValue(doctorsRef, (snapshot) => {
+  snapshot.forEach(function (childSnapshot) {
+    setDoctors((Doctors) => [...Doctors, childSnapshot.val()]);
+  });
+});
 
 /* SOME COMMANDS FOR TESTING THIS IN THE TRUFFLE COMMAND LINE:
 
