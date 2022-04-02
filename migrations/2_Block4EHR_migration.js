@@ -33,10 +33,18 @@ const [patients, setpatients] = React.useState([]);
 
 let dbRef = ref(database);
 const allInstitutions = [];
-const getInstitutions = async () => {
-  const snapshot = await get(child(dbRef, "Institutions/"));
-  snapshot.array.forEach((element) => {});
-};
+React.useEffect(() => {
+  const OnLoadingListener = dbRef.on("value", (snapshot) => {
+    snapshot.forEach(function (childSnapshot) {
+      setInstitutions((institutions) => [...institutions, childSnapshot.val()]);
+    });
+  });
+  return () => {
+    userRef.off("value", OnLoadingListener);
+    userRef.off("child_removed", childRemovedListener);
+    userRef.off("child_changed", childChangedListener);
+  };
+}, []);
 
 //Not gonna use this, irrelevent
 /*
