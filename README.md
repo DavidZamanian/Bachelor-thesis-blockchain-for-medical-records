@@ -30,6 +30,7 @@ Run `npm install -g truffle` in your terminal.
 1. Go through the Metamask setup steps. Select `IMPORT WALLET` and input the 12-word string displayed right above your accounts in Ganache. 
 1. Once Metamask is setup, go to Setting > Advanced, and enable `Show test networks`. Then select `Localhost 8545` as the network to connect to. 
 1. Account 1 in Metamask will already be initialized to Account 0 from Ganache. Add more accounts by clicking on your profile pic > import account, and then paste in the private key of the account you wish to import from Ganache. You find the private key by clicking the key to the far right in Ganache's Account overview. 
+You should add all 10 accounts in Ganache to your metamask. Account $i$ will correspond to accounts[$i-1$] (i.e. the account in Ganache with index $i-1$).
 
 ## SETTING UP THE BLOCKCHAIN
 1. Launch Ganache. 
