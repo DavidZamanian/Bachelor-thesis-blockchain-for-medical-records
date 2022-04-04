@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { database } from "../../../firebaseSetup";
-import { onValue, ref } from "../client/firebaseSetup";
+import { onValue, ref, get, child } from "../client/firebaseSetup";
 const Block4EHR = artifacts.require("Block4EHR");
 
 /**
