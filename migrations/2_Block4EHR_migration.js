@@ -28,30 +28,68 @@ module.exports = function (deployer, network, accounts) {
     await instance.addPatient(accounts[8], "p_boras", ["boras"]);
   });
 };
-//Not done yet
+
+/**
+ * Need to call await getInstitutions() and then get the info from 'institutions'
+ *
+ *
+ */
+
 const [institutions, setInstitutions] = React.useState([]);
 const [patients, setPatients] = React.useState([]);
 const [doctors, setDoctors] = React.useState([]);
 let dbRef = ref(database);
-const institutionsRef = ref(dbRef, "Institutions/");
-const patientsRef = ref(dbRef, "Patiens/");
-const doctorsRef = ref(dbRef, "Doctors/");
 
-onValue(institutionsRef, (snapshot) => {
-  snapshot.forEach(function (childSnapshot) {
-    setInstitutions((Institutions) => [...Institutions, childSnapshot.val()]);
+const getDoctors = async () => {
+  let dbRef = ref(database);
+  var doctors = [];
+
+  await get(child(dbRef, "Doctors/")).then((snapshot) => {
+    snapshot.forEach((childSnapshot) => {
+      const { institution } = childSnapshot.val();
+      doctors.unshift({
+        institution: institution,
+        id: childSnapshot.key,
+      });
+      setDoctors((doctors) => [...doctors, childSnapshot.val()]);
+    });
   });
-});
-onValue(patientsRef, (snapshot) => {
-  snapshot.forEach(function (childSnapshot) {
-    setPatients((Patients) => [...Patients, childSnapshot.val()]);
+  return doctors;
+};
+
+const getPatients = async () => {
+  let dbRef = ref(database);
+  var patients = [];
+
+  await get(child(dbRef, "Patients/")).then((snapshot) => {
+    snapshot.forEach((childSnapshot) => {
+      //const { name, region } = childSnapshot.val();
+      patients.unshift({
+        id: childSnapshot.key,
+      });
+      setPatients((patients) => [...patients, childSnapshot.val()]);
+    });
   });
-});
-onValue(doctorsRef, (snapshot) => {
-  snapshot.forEach(function (childSnapshot) {
-    setDoctors((Doctors) => [...Doctors, childSnapshot.val()]);
+  return patients;
+};
+
+const getInstitutions = async () => {
+  let dbRef = ref(database);
+  var institutions = [];
+
+  await get(child(dbRef, "Institutions/")).then((snapshot) => {
+    snapshot.forEach((childSnapshot) => {
+      const { name, region } = childSnapshot.val();
+      institutions.unshift({
+        name: name,
+        region: region,
+        id: childSnapshot.key,
+      });
+      setInstitutions((institutions) => [...institutions, childSnapshot.val()]);
+    });
   });
-});
+  return institutions;
+};
 
 /* SOME COMMANDS FOR TESTING THIS IN THE TRUFFLE COMMAND LINE:
 
