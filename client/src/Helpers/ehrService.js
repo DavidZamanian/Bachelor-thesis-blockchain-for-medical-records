@@ -6,7 +6,7 @@ import FileService from "./fileService";
 import { database, ref, get, child } from "../../firebaseSetup";
 import FetchFileContentError from "./Errors/FetchFileContentError";
 import { PlaceholderValues } from "../placeholders/placeholderValues";
-import { encryptEHR } from "../../Crypto/crypt";
+import { decryptEHR, encryptEHR } from "../../Crypto/crypt";
 
 
 
@@ -120,9 +120,10 @@ export default class EHRService{
             )
 
             // FETCH OLD FILES
-            let oldCID = "bafybeidwd4nlwbdr365lvnp5ffrqp4ejepkvr64wt6d6iyvohwhlp4755m";
-
+            let oldCID = "bafybeia7d4ysw3mkcyhn5icvhdanlkdb6kvhylouwclovytibdc5v5c5qi";
+            console.log("testb4")
             let fetchedFiles = await fs.fetchEHRFiles(oldCID);
+            console.log("test")
 
             let oldFiles = [];
 
@@ -131,9 +132,12 @@ export default class EHRService{
 
             for (const file of fetchedFiles){
                 let decrypted;
+                console.log(file.name+"before:"+await file.text())
                 if(file.name == "prescriptions.json"){
                     // Decrypt
+                    
                     decrypted = await this.decrypt(await file.text());
+                    
                     // Parse
                     prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
                 }
@@ -147,6 +151,7 @@ export default class EHRService{
                     // For uploading
                     finalFiles.push(file)
                 }
+                console.log("after:"+decrypted)
             }
 
 
@@ -286,7 +291,11 @@ export default class EHRService{
      * @returns {Promise<string>}
      */
     static async encrypt(content){
-        return encryptEHR(PlaceholderValues.recordKey,content,PlaceholderValues.medicPrivateKey);
+        console.log("ERROr")
+        return encryptEHR(
+            PlaceholderValues.encryptedRecordKey,
+            content,
+            PlaceholderValues.medicPrivateKey).encryptedData;
     }
     /**
      * PLACEHOLDER
@@ -294,7 +303,12 @@ export default class EHRService{
      * @returns {Promise<string>}
      */
     static async decrypt(content){
-        return content;
+        let EHR = {
+            iv: PlaceholderValues.iv,
+            encryptedData: content,
+            Tag: PlaceholderValues.tag
+          }
+        return decryptEHR(PlaceholderValues.encryptedRecordKey,EHR,PlaceholderValues.privateKey)
     }
 
     /**

@@ -1,5 +1,10 @@
 export class PlaceholderValues{
 
+
+
+  static tag = Buffer.from([0x9e, 0x1b, 0x72, 0xbc, 0x70, 0xc3, 0xbd, 0xde, 0x73, 0xcd, 0x7c, 0x64, 0x51, 0x1b, 0xc5, 0xae])
+  static iv = "X1CaFR0Dj+vUG8lWVs5Kt2l7RzDD4dq8Pv/MUen6WIM=";
+
   static privateKey = `-----BEGIN PRIVATE KEY-----
 MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBANSIBpLQNO+J+VGL
 TO6bhB+lO6lOoRwCe6NPcjqv1r0z6Eu3eEFfvkgGpCxxwZjpj8Vb/OfCgJkABNn4
@@ -36,13 +41,7 @@ HTPhtf3w2f2F
 -----END PRIVATE KEY-----
 `;
 
-static recordKey = `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUiAaS0DTviflRi0zum4QfpTup
-TqEcAnujT3I6r9a9M+hLt3hBX75IBqQsccGY6Y/FW/znwoCZAATZ+HnAUuI9ImIS
-M9AUuOtuGfhv+pBXMvzKlHlDj0lHiTDlnQh/LrI16pE7gfW09FjojZjzZtseaDj1
-HHivzD+EFv2LcyWtUwIDAQAB
------END PUBLIC KEY-----
-`;
+static encryptedRecordKey = `LhUjB3jms1JNWgHfmsNZcjrAgQWdRzITn49lZs+CHfSkWTWkqNNKY9/Qn/GdJh1jE1fmSOfnuRgE2BuwUl3TG25TDYIGqmFVG3ydSOyi5i5PqE5xWJSOTvn4g6zp/syPzzA8pr8zD//f8d2+C97Nvpypfh8DaUhG2HY2FyaHyIE=`;
 
   static publicKey = `-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUiAaS0DTviflRi0zum4QfpTup
