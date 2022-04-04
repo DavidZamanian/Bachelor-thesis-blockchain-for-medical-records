@@ -6,6 +6,7 @@ import FileService from "./fileService";
 import { database, ref, get, child } from "../../firebaseSetup";
 import FetchFileContentError from "./Errors/FetchFileContentError";
 import { PlaceholderValues } from "../placeholders/placeholderValues";
+import { encryptEHR } from "../../Crypto/crypt";
 
 
 
@@ -285,7 +286,7 @@ export default class EHRService{
      * @returns {Promise<string>}
      */
     static async encrypt(content){
-        return content;
+        return encryptEHR(PlaceholderValues.recordKey,content,PlaceholderValues.medicPrivateKey);
     }
     /**
      * PLACEHOLDER
