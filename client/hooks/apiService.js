@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import { auth, database } from "../firebaseSetup";
+import { database, get, child } from "../firebaseSetup";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
+  getAuth,
+  onAuthStateChanged,
 } from "@firebase/auth";
-import { ref, set, update } from "firebase/database";
+import { ref, update, onValue } from "firebase/database";
+import { RoleContext } from "../contexts/RoleContext";
 
 /**
  * All the methods contacting firebase. Maybe add methods to contact backend aswell,
@@ -17,14 +20,32 @@ import { ref, set, update } from "firebase/database";
 
 export function apiService() {
   const [user, setUser] = useState();
+  const auth = getAuth();
+  const { setRole, setUserSSN, setInstitution } = React.useContext(RoleContext);
 
   //Keeps track if user is logged in or not
-  const onAuthStateChanged = (user) => {
-    setUser(user);
-  };
-
   React.useEffect(() => {
-    const subscriber = auth.onAuthStateChanged(onAuthStateChanged);
+    const subscriber = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user);
+        let dbRef = ref(database);
+        const userSnapshot = await get(child(dbRef, 'mapUser/' + auth.currentUser.uid))
+        if (userSnapshot.val().role == "doctor"){
+          const doctorSnapshot = await get(child(dbRef, 'Doctors/' + userSnapshot.val().SSN))
+          setInstitution(doctorSnapshot.val().institution);
+        }
+        else{
+          setInstitution("");
+        }
+        setUserSSN(userSnapshot.val().SSN);
+        setRole(userSnapshot.val().role);
+      } else {
+        setUser();
+        setRole("");
+        setUserSSN("");
+        setInstitution("");
+      }
+    });
     return subscriber;
   }, []);
 
@@ -72,7 +93,6 @@ export function apiService() {
     }),
     []
   );
-
   const authentication = React.useMemo(
     () => ({
       login: async (email, password) => {
@@ -88,11 +108,9 @@ export function apiService() {
       },
       logOut: async () => {
         return new Promise(function (resolve, reject) {
-          alert("Sign out");
           signOut(auth)
             .then(() => {
               resolve("Sign Out Success");
-              console.log("sign out");
             })
             .catch((error) => {
               reject(error);

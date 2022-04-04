@@ -8,113 +8,121 @@ import ThemeButton from "../../components/themeButton";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../theme.style";
-import { database, ref, onValue, get, child } from "../../../firebaseSetup";
+
+import { database, ref, onValue } from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext";
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
-import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
-import { settings } from "firebase/analytics";
-//import ChainConnection from "../../chainConnection/chainConnection";
+import { RoleContext } from "../../../contexts/RoleContext";
+import EHRService from "../../Helpers/ehrService";
+
 
 export function EHROverviewScreen(props) {
+
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
-  const { chainConnection } = React.useContext(ChainConnectionContext);
-
+  const { role, userSSN } = React.useContext(RoleContext);
   const route = useRoute();
   const navigation = useNavigation();
 
-  /* TODO: Replace this in some way, need to cross-reference with Firebase with User UID */
-  const patientID =
-    props.route.params == null ? 8701104455 : props.route.params;
 
-  // FOR TESTING, CHANGE THIS TO "doctor" or "patient", to access the 2 views
-  const placeholderRole = "patient";
+  const [state, setState] = useState({
+    doctorRole: (role == "doctor"),
+    regions: [],
+    patientInfo: PlaceholderValues.patient,
+    patientID: null,
+    journalExpanded: [],
+    editingContactInfo: false,
+    inputAddress: "",
+    inputAddress: "",
+    inputPhoneNr: "",
+    inputEmail: "",
+    modalVisible: false,
+    showWarning: false,
+    regionSnapshot: [],
+  });
 
-  const [doctorRole, setDoctorRole] = useState(false);
-  const [regions, setRegions] = useState([]);
-
-  const [patientInfo, setPatientInfo] = useState(PlaceholderValues.patient);
 
   const wipePatientData = () => {
-    setPatientInfo(PlaceholderValues.patient);
+    setState((prevState) => ({
+      ...prevState,
+      patientID: null,
+      patientInfo: PlaceholderValues.patient,
+    }));
   };
 
   /* 
     Gather patient info from Firebase (runs automatically at the start) 
   */
+
   const fetchPatientData = () => {
-    //alert("attempting fetch "+patientID)
-    if (patientID == patientInfo.patientId) {
+
+    //alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
+    if ( (state.patientID != null && state.patientID == state.patientInfo.id) || (state.doctorRole && props.route.params == state.patientInfo.id)) {
       return;
     }
-    const patientRef = ref(database, "Users/" + patientID);
-    onValue(patientRef, (snapshot) => {
-      if (snapshot.val() === null) {
-        alert("ERROR: This patient does not exist:" + patientID);
-      } else {
-        // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
-        const userRole = placeholderRole; //snapshot.val().role
-        const allRegions = PlaceholderValues.allRegions;
-        const patientJournals = PlaceholderValues.journals;
-        const patientPermittedRegions = PlaceholderValues.permittedRegions;
-        const patientPrescriptions = PlaceholderValues.prescriptions;
-        const patientDiagnoses = PlaceholderValues.diagnoses;
+    const patientRef = ref(database, "Patients/" + (state.doctorRole ? props.route.params : userSSN ));
 
-        setDoctorRole(userRole == "doctor");
+    try {
+      onValue(patientRef, async (snapshot) => {
+        if (snapshot.val() === null) {
+          alert("ERROR: This patient does not exist:" + state.patientID+"\n"+patientRef);
+        } else {
+          
+          // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
 
-        //alert("accessing patient:"+patientID)
-        setJournalExpanded((prevState) => {
-          prevState = [];
-          patientJournals.forEach(() => prevState.push(false));
-          return [...prevState];
-        });
-        // getPatientContactInfo
-        setPatientInfo(() => ({
-          patientId: patientID,
-          firstName: snapshot.val().firstName,
-          lastName: snapshot.val().lastName,
-          email: snapshot.val().email,
-          address: snapshot.val().address,
-          phoneNr: snapshot.val().phoneNr,
-          // getPrescriptions
-          // getDiagnoses
-          // getPermittedRegions
-          // getJournals
-          prescriptions: patientPrescriptions,
-          diagnoses: patientDiagnoses,
-          permittedRegions: patientPermittedRegions,
-          journals: patientJournals,
-        }));
-        setRegions((prevState) => {
-          prevState = [];
+          const allRegions = await EHRService.getRegions();
+          const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
+
+          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
+
+          const patientPrescriptions = ehr.prescriptions
+          const patientDiagnoses = ehr.diagnoses;
+          const patientJournals = ehr.journals;
+
+          let journalIndexes = [];
+          patientJournals.forEach(() => journalIndexes.push(false));
+
+          let regionIndexes = [];
           allRegions.forEach((reg) =>
-            prevState.push({ name: reg, enabled: false })
+            regionIndexes.push({ name: reg, enabled: false })
           );
           patientPermittedRegions.forEach(
-            (reg) => (prevState.find((r) => r.name === reg).enabled = true)
+            (reg) => (regionIndexes.find((r) => r.name === reg).enabled = true)
           );
-          return [...prevState];
-        });
-      }
-    });
+
+          setState((prevState) => ({
+            ...prevState,
+            patientID: state.doctorRole ? props.route.params : userSSN,
+            journalExpanded: journalIndexes,
+            patientInfo: {
+              id: state.doctorRole ? props.route.params : userSSN,
+              firstName: snapshot.val().firstName,
+              lastName: snapshot.val().lastName,
+              email: snapshot.val().email,
+              address: snapshot.val().address,
+              phoneNr: snapshot.val().phoneNr,
+              // getPrescriptions
+              // getDiagnoses
+              // getPermittedRegions
+              // getJournals
+              prescriptions: patientPrescriptions,
+              diagnoses: patientDiagnoses,
+              permittedRegions: patientPermittedRegions,
+              journals: patientJournals,
+            },
+            regions: [...regionIndexes],
+            regionSnapshot: [...regionIndexes],
+          }));
+        }
+      });
+    } catch (e) {}
   };
 
-  // This causes a bug where the first journal expand will show a "0" from the start
-  // Workaround: added ">0" to journalExpanded[index] of the show-condition - no issues!
-  const [journalExpanded, setJournalExpanded] = useState([]);
-
   // To toggle editing of contact info
-  const [editingContactInfo, setEditingContactInfo] = useState(false);
   const [inputAddress, setAddress] = useState("");
   const [inputPhoneNr, setPhoneNr] = useState("");
   const [inputEmail, setEmail] = useState("");
-
-  /* This is the popup window - whether it is visible or no */
-  const [modalVisible, setModalVisible] = useState(false);
-
-  /* This is the popup window - whether it is visible or no */
-  const [showWarning, setShowWarning] = useState(false);
 
   /* 
     Method for toggle the collapsing of a journal entry.
@@ -123,10 +131,14 @@ export function EHROverviewScreen(props) {
     @Chrimle
   */
   const toggleExpandJournal = (index) => {
-    setJournalExpanded((prevState) => {
-      prevState.splice(index, 1, !prevState.at(index));
-      return [...prevState];
-    });
+    let enabled = state.journalExpanded[index];
+    let updated = state.journalExpanded;
+    updated.splice(index, 1, !enabled);
+
+    setState((prevState) => ({
+      ...prevState,
+      journalExpanded: updated,
+    }));
   };
 
   /* 
@@ -136,11 +148,12 @@ export function EHROverviewScreen(props) {
   */
   const submitData = () => {
     alert("Submitting settings...");
-    const regStrings = regions.map(function (item) {
+    const regStrings = state.regions.map(function (item) {
       return item["name"] + " " + item["enabled"] + "\n";
     });
     alert(regStrings.toString());
-    setModalVisible(false);
+
+    togglePopup(false);
   };
 
   /* 
@@ -149,10 +162,16 @@ export function EHROverviewScreen(props) {
     @Chrimle
   */
   const toggleCheckbox = (index) => {
-    setRegions((prevState) => {
-      prevState[index].enabled = !prevState[index].enabled;
-      return [...prevState];
-    });
+    let enabled = state.regions[index].enabled;
+    let name = state.regions[index].name;
+    let updated = state.regions;
+
+    updated.splice(index, 1, { name: name, enabled: !enabled });
+
+    setState((prevState) => ({
+      ...prevState,
+      regions: updated,
+    }));
   };
 
   /*
@@ -162,42 +181,39 @@ export function EHROverviewScreen(props) {
     @Chrimle
   */
   const requestAddEHR = () => {
+
     // CHECK PRIVILEGE?
-    alert(patientInfo.patientId);
-    // Get rid of patient data
-    wipePatientData();
-    navigation.navigate("NewEntryScreen", patientID);
+
+    //wipePatientData();
+
+    navigation.navigate("NewEntryScreen", state.patientID);
   };
 
-  const editContactInfo = async () => {
-    setShowWarning(false);
-    setEditingContactInfo(true);
-    // populate input forms before editing
-    setAddress(patientInfo.address);
-    setEmail(patientInfo.email);
-    setPhoneNr(patientInfo.phoneNr);
+  const toggleWarning = (enabled) => {
+    setState((prevState) => ({
+      ...prevState,
+      showWarning: enabled,
+    }));
   };
 
-  const discardContactInfo = async () => {
-    //TODO REMOVE ALL LINES UP UNTIL sedEditingInfo(false)
-    console.log("Discarding..."); //TODO REMOVE
-    const connection = await chainConnection;
-    console.log(connection); //print the connection object to inspect things such as address used
-    // ====== TESTS: comment out all but the one you want to try and see result in your console =====
-    // TESTING hasPermission
-    //const res = await connection.hasPermission("p_gbg");
-    // TESTING getPermissionedRegions
-    //const res = await connection.getPermissionedRegions("p_gbg");
-    // TESTING getEHRCid
-    //await connection.updateEHR("p_gbg", "CID NR 1");
-    //const res = await connection.getEHRCid("p_gbg"); //may have to run this separate from updateEHR
-    // TESTING setting new permissions
-    await connection.setPermissions("p_boras", ["boras", "gbg"]);
-    const res = await connection.getPermissionedRegions("p_boras"); //may have to run this separate from setPermissions
-    console.log(res);
-    // ================
-    console.log("Done discarding.");
-    setEditingContactInfo(false);
+  const toggleEditingContactInfo = (enabled) => {
+    setState((prevState) => ({
+      ...prevState,
+      editingContactInfo: enabled,
+    }));
+  };
+
+  const editContactInfo = () => {
+    toggleWarning(false);
+    toggleEditingContactInfo(true);
+    // populating input forms before editing
+    setAddress(state.patientInfo.address);
+    setEmail(state.patientInfo.email);
+    setPhoneNr(state.patientInfo.phoneNr);
+  };
+
+  const discardContactInfo = () => {
+    toggleEditingContactInfo(false);
   };
 
   const saveContactInfo = () => {
@@ -206,18 +222,18 @@ export function EHROverviewScreen(props) {
       validAddress(inputAddress) &&
       validPhoneNr(inputPhoneNr)
     ) {
-      if (inputAddress !== patientInfo.address) {
-        updateAddress(patientInfo.patientId, inputAddress);
+      if (inputAddress !== state.patientInfo.address) {
+        updateAddress(state.patientInfo.id, inputAddress);
       }
-      if (inputEmail !== patientInfo.email) {
-        updateEmail(patientInfo.patientId, inputEmail);
+      if (inputEmail !== state.patientInfo.email) {
+        updateEmail(state.patientInfo.id, inputEmail);
       }
-      if (inputEmail !== patientInfo.email) {
-        updatePhoneNr(patientInfo.patientId, inputPhoneNr);
+      if (inputPhoneNr !== state.patientInfo.phoneNr) {
+        updatePhoneNr(state.patientInfo.id, inputPhoneNr);
       }
-      setEditingContactInfo(false);
+      toggleEditingContactInfo(false);
     } else {
-      setShowWarning(true);
+      toggleWarning(true);
     }
   };
 
@@ -231,8 +247,16 @@ export function EHROverviewScreen(props) {
     return phoneNr !== "";
   };
 
-  // FETCH PATIENT DATA
+  const togglePopup = (enabled) => {
+    setState((prevState) => ({
+      ...prevState,
+      modalVisible: enabled,
+      regions: [...state.regionSnapshot],
+    }));
+  };
+
   fetchPatientData();
+
   return (
     <View>
       <Header />
@@ -240,12 +264,12 @@ export function EHROverviewScreen(props) {
         <Modal
           animationType="none"
           transparent={true}
-          visible={modalVisible}
+          visible={state.modalVisible}
           horizontal={false}
           numColumns={3}
           onRequestClose={() => {
             alert("The submission was cancelled.");
-            setModalVisible(!modalVisible);
+            togglePopup(false);
           }}
         >
           <View
@@ -278,11 +302,11 @@ export function EHROverviewScreen(props) {
                 </Text>
                 <FlatList
                   style={styles.regionList}
-                  data={regions}
+                  data={state.regions}
                   numColumns={3}
                   keyExtractor={({ item, index }) => index}
                   renderItem={({ item, index }) => (
-                    <View style={styles.regionContainer}>
+                    <View style={styles.regionContainer} key={item.toString()}>
                       <TouchableOpacity
                         style={[
                           styles.checkbox,
@@ -318,7 +342,7 @@ export function EHROverviewScreen(props) {
                 }}
               >
                 <TouchableOpacity
-                  onPress={() => setModalVisible(false)}
+                  onPress={() => togglePopup(false)}
                   style={[styles.popupButton, styles.greyButton]}
                 >
                   <Text>Discard changes</Text>
@@ -341,12 +365,12 @@ export function EHROverviewScreen(props) {
               <View style={styles.contactItem}>
                 <Text style={styles.contactKey}>Full name: </Text>
                 <Text style={styles.contactValue}>
-                  {patientInfo.lastName}, {patientInfo.firstName}
+                  {state.patientInfo.lastName}, {state.patientInfo.firstName}
                 </Text>
               </View>
               <View style={styles.contactItem}>
                 <Text style={styles.contactKey}>Address: </Text>
-                {editingContactInfo ? (
+                {state.editingContactInfo ? (
                   <View style={styles.contactValue}>
                     <TextInput
                       style={styles.contactInput}
@@ -357,12 +381,14 @@ export function EHROverviewScreen(props) {
                     />
                   </View>
                 ) : (
-                  <Text style={styles.contactValue}>{patientInfo.address}</Text>
+                  <Text style={styles.contactValue}>
+                    {state.patientInfo.address}
+                  </Text>
                 )}
               </View>
               <View style={styles.contactItem}>
                 <Text style={styles.contactKey}>Phone: </Text>
-                {editingContactInfo ? (
+                {state.editingContactInfo ? (
                   <View style={styles.contactValue}>
                     <TextInput
                       style={styles.contactInput}
@@ -372,12 +398,14 @@ export function EHROverviewScreen(props) {
                     />
                   </View>
                 ) : (
-                  <Text style={styles.contactValue}>{patientInfo.phoneNr}</Text>
+                  <Text style={styles.contactValue}>
+                    {state.patientInfo.phoneNr}
+                  </Text>
                 )}
               </View>
               <View style={styles.contactItem}>
                 <Text style={styles.contactKey}>Email: </Text>
-                {editingContactInfo ? (
+                {state.editingContactInfo ? (
                   <View style={styles.contactValue}>
                     <TextInput
                       style={styles.contactInput}
@@ -388,10 +416,12 @@ export function EHROverviewScreen(props) {
                     />
                   </View>
                 ) : (
-                  <Text style={styles.contactValue}>{patientInfo.email}</Text>
+                  <Text style={styles.contactValue}>
+                    {state.patientInfo.email}
+                  </Text>
                 )}
               </View>
-              {editingContactInfo && showWarning && (
+              {state.editingContactInfo && state.showWarning && (
                 <View style={styles.contactItem}>
                   <Text style={styles.warningLabel}>
                     Error: Input fields cannot be empty
@@ -399,9 +429,9 @@ export function EHROverviewScreen(props) {
                 </View>
               )}
 
-              {!doctorRole && (
+              {role == "patient" && (
                 <View style={styles.contactItem}>
-                  {editingContactInfo ? (
+                  {state.editingContactInfo ? (
                     <>
                       <ThemeButton
                         labelText="Discard Changes"
@@ -435,7 +465,7 @@ export function EHROverviewScreen(props) {
               )}
             </View>
           </View>
-          {doctorRole ? (
+          { state.doctorRole ? (
             // Doctor Version
             <View style={styles.container}>
               <Text style={styles.header}>Add EHR entry</Text>
@@ -468,7 +498,7 @@ export function EHROverviewScreen(props) {
                 iconSize={30}
                 bWidth={200}
                 bHeight={60}
-                onPress={() => setModalVisible(true)}
+                onPress={() => togglePopup(true)}
               />
             </View>
           )}
@@ -477,10 +507,10 @@ export function EHROverviewScreen(props) {
           <View style={styles.container}>
             <Text style={styles.header}>Prescriptions</Text>
             <FlatList
-              data={patientInfo.prescriptions}
+              data={state.patientInfo.prescriptions}
               keyExtractor={({ item, index }) => index}
               renderItem={({ item, index }) => (
-                <View>
+                <View key={index}>
                   <Text style={styles.bulletpointList}>
                     {"\u2022"} {item}
                   </Text>
@@ -491,10 +521,10 @@ export function EHROverviewScreen(props) {
           <View style={styles.container}>
             <Text style={styles.header}>Diagnoses</Text>
             <FlatList
-              data={patientInfo.diagnoses}
+              data={state.patientInfo.diagnoses}
               keyExtractor={({ item, index }) => index}
               renderItem={({ item, index }) => (
-                <View>
+                <View key={index}>
                   <Text style={styles.bulletpointList}>
                     {"\u2022"} {item}
                   </Text>
@@ -508,7 +538,7 @@ export function EHROverviewScreen(props) {
             <Text style={styles.header}>Past record entries</Text>
             <FlatList
               style={{ width: "100%" }}
-              data={patientInfo.journals}
+              data={state.patientInfo.journals}
               keyExtractor={({ item, index }) => index}
               ListHeaderComponent={
                 <View style={styles.journalListItem}>
@@ -545,12 +575,12 @@ export function EHROverviewScreen(props) {
                 </View>
               }
               renderItem={({ item, index }) => (
-                <View style={styles.journalContainer}>
+                <View style={styles.journalContainer} key={index}>
                   <TouchableOpacity
                     style={[
                       styles.journalListItem,
                       {
-                        backgroundColor: journalExpanded[index]
+                        backgroundColor: state.journalExpanded[index]
                           ? theme.SECONDARY_COLOR
                           : "#F3F3F3",
                       },
@@ -568,7 +598,7 @@ export function EHROverviewScreen(props) {
                     </Text>
                     <Icon
                       name={
-                        journalExpanded[index]
+                        state.journalExpanded[index]
                           ? "chevron-up-outline"
                           : "chevron-down-outline"
                       }
@@ -579,7 +609,7 @@ export function EHROverviewScreen(props) {
                       ]}
                     />
                   </TouchableOpacity>
-                  {journalExpanded[index] > 0 && (
+                  {state.journalExpanded[index] > 0 && (
                     <View style={styles.journalExpandedContainer}>
                       <View style={styles.journalExpandedRow}>
                         <View style={styles.journalDataBlock}>
@@ -597,7 +627,7 @@ export function EHROverviewScreen(props) {
                             Prescriptions
                           </Text>
                           {item.prescriptions.map((txt) => {
-                            return <Text>{txt}</Text>;
+                            return <Text key={txt}>{txt}</Text>;
                           })}
                         </View>
                         <View style={styles.journalDataBlock}>
@@ -605,7 +635,7 @@ export function EHROverviewScreen(props) {
                             Diagnoses
                           </Text>
                           {item.diagnoses.map((txt) => {
-                            return <Text>{txt}</Text>;
+                            return <Text key={txt}>{txt}</Text>;
                           })}
                         </View>
                         <View style={styles.journalDataBlock}>

@@ -148,6 +148,30 @@ const styles = StyleSheet.create({
   },
   contrastText: {
     color: theme.SECONDARY_COLOR,
+  },
+  submitMessage:{
+    borderWidth:2,
+    borderRadius:10,
+    padding:10,
+    fontSize:18,
+    fontWeight:"500",
+    borderColor:"black",
+    backgroundColor:"white",
+    textAlign:"center",
+    flexDirection:"row",
+    justifyContent:"center"
+  },
+  submitLoading:{
+    
+    borderColor:"#333333"
+  },
+  submitSuccess:{
+    backgroundColor:theme.SECONDARY_COLOR,
+    borderColor:theme.PRIMARY_COLOR
+  },
+  submitError:{
+    borderColor:"#ce0018",
+    backgroundColor:"#ffdcd5",
   }
 });
 export default styles;
