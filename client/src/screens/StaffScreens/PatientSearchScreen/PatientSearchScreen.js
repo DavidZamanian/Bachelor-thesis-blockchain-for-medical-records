@@ -5,8 +5,8 @@ import Footer from "../../../components/Footer";
 import Header from "../../../components/Header/Header";
 import ThemeButton from "../../../components/themeButton";
 import styles from "./styles";
-import { database, ref, onValue} from "../../../../firebaseSetup";
 import { useNavigation } from "@react-navigation/native";
+import EHRService from "../../../Helpers/ehrService";
 
 export function PatientSearchScreen() {
 
@@ -45,25 +45,18 @@ export function PatientSearchScreen() {
 
     @Chrimle
   */
-  const searchPatient = () => {
+  const searchPatient = async () => {
     //alert("[DEBUG] Attempting to search for patient: "+patientID);
-    if(patientID.toString().length === expectedPatientIDLength){
-        const patientRef = ref(database, 'Users/' + patientID);
-        onValue(patientRef, (snapshot) => {
-          if(snapshot.val() === null){
-            setShowError(true);
-          }
-          else{
-            // This will occur only if the specified user exists
-            /*
-              PLACE CODE HERE
-              This is where a check for permission COULD be made. 
-            */
-            setPatientID("");
-            redirectTo();
-          }
-        });
-    }
+    if(patientID.toString().length === expectedPatientIDLength &&
+      await EHRService.checkPatientExist(patientID)){
+        // This will occur only if the specified user exists
+        /*
+          PLACE CODE HERE
+          This is where a check for permission COULD be made. 
+        */
+        setPatientID("");
+        redirectTo();
+      }
     else{
       setShowError(true);
     }
