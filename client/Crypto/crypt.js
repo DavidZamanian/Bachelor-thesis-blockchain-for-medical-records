@@ -69,8 +69,8 @@ function decryptEHR(record_key, EHR, privateKey) {
  * @param {*} publicKeyFile The public key used to encrypt the record key.
  * @returns Encrypted record key.
  */
-function encryptRecordKey(record_key, publicKeyFile) {
-  const publicKey = fs.readFileSync(publicKeyFile, "utf8");
+function encryptRecordKey(record_key, publicKey) {
+  //const publicKey = fs.readFileSync(publicKeyFile, "utf8");
 
   // publicEncrypt() method with its parameters
   const encrypted = crypto.publicEncrypt(
@@ -87,8 +87,8 @@ function encryptRecordKey(record_key, publicKeyFile) {
  * @param {*} privateKeyFile A users private key.
  * @returns The decrypted record key.
  */
-function decryptRecordKey(record_key, privateKeyFile) {
-  const privateKey = fs.readFileSync(privateKeyFile, "utf8");
+function decryptRecordKey(record_key, privateKey) {
+  //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
 
   // privateDecrypt() method with its parameters
   const decrypted = crypto.privateDecrypt(

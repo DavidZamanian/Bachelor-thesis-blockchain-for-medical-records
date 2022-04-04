@@ -12,6 +12,8 @@ import JSONService from "../server/jsonHandling/jsonService.js";
 
 const example_directory = "./test/json_examples";
 var record_key = crypto.KeyObject;
+let privateKey;
+let publicKey;
 
 describe("Test crypto", function () {
   // Generate keys
@@ -34,7 +36,6 @@ describe("Test crypto", function () {
   //Test key derivation function
   it("Can derive publicKey from privateKey", function () {
     //512-bit salt for 512 bit output bitLen
-    const privateKey = fs.readFileSync("./private_key");
     var publicKey;
 
     //console.log("Public key: " + crypt.extractPublicKeyFromPrivateKey(privateKey));
@@ -57,17 +58,14 @@ describe("Test crypto", function () {
 
       // check if record key can be encrypted
       assert.doesNotThrow(() => {
-        encrypted_record_key = crypt.encryptRecordKey(
-          key.export(),
-          "./public_key"
-        );
+        encrypted_record_key = crypt.encryptRecordKey(key.export(), publicKey);
       });
 
       // check if record key can be decrypted
       assert.doesNotThrow(() => {
         decrypted_record_key = crypt.decryptRecordKey(
           encrypted_record_key,
-          "./private_key"
+          privateKey
         );
       });
 
@@ -91,16 +89,12 @@ describe("Test crypto", function () {
     // encrypt the record key
     var encrypted_record_key = crypt.encryptRecordKey(
       record_key.export(),
-      "./public_key"
+      publicKey
     );
 
     // check if EHR can be encrypted
     assert.doesNotThrow(() => {
-      encryptedEHR = crypt.encryptEHR(
-        encrypted_record_key,
-        ehrBuf,
-        "./private_key"
-      );
+      encryptedEHR = crypt.encryptEHR(encrypted_record_key, ehrBuf, privateKey);
     });
 
     // check if EHR can be decrypted
@@ -108,7 +102,7 @@ describe("Test crypto", function () {
       decryptedEHR = crypt.decryptEHR(
         encrypted_record_key,
         encryptedEHR,
-        "./private_key"
+        privateKey
       );
     });
 
@@ -119,6 +113,7 @@ describe("Test crypto", function () {
 
 function generateKeyFiles() {
   // Generate keypair
+
   const keyPair = crypto.generateKeyPairSync("rsa", {
     modulusLength: 1024,
     publicKeyEncoding: {
@@ -132,6 +127,8 @@ function generateKeyFiles() {
   });
 
   // Creating public and private key file
-  fs.writeFileSync("public_key", keyPair.publicKey);
-  fs.writeFileSync("private_key", keyPair.privateKey);
+  //fs.writeFileSync("public_key", keyPair.publicKey);
+  //fs.writeFileSync("private_key", keyPair.privateKey);
+  privateKey = keyPair.privateKey;
+  publicKey = keyPair.publicKey;
 }
