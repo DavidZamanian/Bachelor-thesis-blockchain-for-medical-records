@@ -1,7 +1,14 @@
+const { assert } = require("chai");
+
 const Block4EHR = artifacts.require("Block4EHR");
 
 /**
- * Test for the Block4EHR smart contract. 
+ * Tests for the Block4EHR smart contract. 
+ * Testing that error are thrown were to be tested using chai, 
+ * but e.g. https://github.com/chaijs/chai/issues/958 
+ * describes an issue with how chai won't work with asyn functions.
+ * We thus use a work-around which is slighlty less elegant. 
+ * 
  * @author Hampus Jernkrook
  * @author Edenia Isaac
  */
@@ -46,6 +53,67 @@ contract("Block4EHR", accounts => {
         await instance.addPatient(pat_kungalv_account, pat_kungalv, [kungalv]);
     });
 
+    describe("updateEHR updates the patients EHR cid ", function () {
+
+        it("updateEHR updates the patients EHR cid when called by permissioned personnel ", async function () {
+            await instance.updateEHR(pat_gbg_kungalv, "123456", { from: doc_gbg_account });
+            let cid = await instance.getEHRCid(pat_gbg_kungalv, { from: doc_gbg_account });
+            assert.deepEqual("123456", cid);
+
+        });
+
+        it("updateEHR throws an error when called by an unauthorized actor ", async function () {
+            let e;
+            let cid;
+            try {
+                // this throws an error.
+                await instance.updateEHR(pat_boras, "0", { from: doc_gbg_account });
+                // this should never be run, so cid will remain undefined. 
+                cid = await instance.getEHRCid(pat_boras, { from: pat_boras_account });
+            } catch (err) {
+                e = err;
+            }
+            assert.notEqual(e, undefined); // e will be === err, so not undefined. 
+            assert.strictEqual(cid, undefined); // cid will never be assigned, so it is undefined. 
+        });
+
+
+    });
+
+    describe("getEHRCid retrieves the cid conected to the latest EHR update", function () {
+
+        it("getEHRCid retrieves the latest cid when called by the patient", async function () {
+            let cid = await instance.getEHRCid(pat_gbg_kungalv, { from: pat_gbg_kungalv_accounts });
+            await instance.updateEHR(pat_gbg_kungalv, "678910", { from: doc_gbg_account });
+            let newcid = await instance.getEHRCid(pat_gbg_kungalv, { from: pat_gbg_kungalv_accounts });
+            assert.deepEqual("678910", newcid);
+            assert.notEqual(cid, newcid);
+        });
+
+        it("getEHRCid retrieves the latest cid when called by a permitioned personnel", async function () {
+            await instance.updateEHR(pat_boras, "3456789", { from: doc_boras_account });
+            let newcid = await instance.getEHRCid(pat_boras, { from: doc_boras_account });
+            assert.deepEqual("3456789", newcid);
+        });
+
+        it("getEHRCid throws an error when called by an unauthorized actor ", async function () {
+            let e;
+            let cid;
+            try {
+                // this runs fine. 
+                await instance.updateEHR(pat_boras, "0", { from: doc_boras_account });
+                // this throws an error. 
+                cid = await instance.getEHRCid(pat_boras, { from: doc_gbg_account });
+            } catch (err) {
+                e = err;
+            }
+            assert.notEqual(e, undefined); // e will be === err, so not undefined. 
+            assert.strictEqual(cid, undefined); // cid will never be assigned, so it is undefined. 
+        });
+
+    });
+
+
     describe("hasPermission returns the correct value", function () {
         it("hasPermission returns true for the patient itself", async function () {
             let res = await instance.hasPermission(pat_boras, { from: pat_boras_account });
@@ -63,7 +131,7 @@ contract("Block4EHR", accounts => {
         });
     });
 
-    describe("getPermissionedRegion sets the permission correctly", function () {
+    describe("getPermissionedRegion returns the correct result", function () {
         it("getPermissionedRegions returns the correct array of regions when called by the patient", async function () {
             let res = await instance.getPermissionedRegions(pat_gbg_kungalv, { from: pat_gbg_kungalv_accounts });
             assert.ok(res);
@@ -73,32 +141,12 @@ contract("Block4EHR", accounts => {
         it("getPermissionnedRegions throws an error when called by anybody else but the patient", async function () {
             let e;
             try {
-                await instance.getPermissionedRegions(pat_gbg_kungalv, { from: pat_boras_account });
+                await instance.getPermissionedRegions(pat_gbg_kungalv, { from: doc_gbg_account });
             } catch (error) {
                 e = error;
-
             }
-            assert.notEqual(e, undefined, 'Exception thrown, as expected.');
+            assert.notEqual(e, undefined);
         });
-
-
-        //TODO: write test for checking that it throws on the wrong sender
-        /* it("getPermissionnedRegions throws an error when called by anybody else but the patient", async function () {
-             var expect = require('chai').expect;
-            // await instance.getPermissionedRegions(pat_gbg_kungalv, { from: pat_boras_account })
-            // expect(instance.getPermissionedRegions.bind(instance,pat_gbg_kungalv, { from: pat_boras_account })).to.throw(Error,"Function called by unauthorized actor");
-             expect(async () => {
-                await instance.getPermissionedRegions.bind(instance, pat_gbg_kungalv, { from: pat_boras_account })
-             }).to.throw(Error, "Function called by unauthorized actor");
-         });*/
-
-
-        /* it("getPermissionnedRegions throws an error when called by anybody else but the patient", async function () {
-             expect(async () => {
-                 await instance.getPermissionedRegions(pat_gbg_kungalv, { from: pat_boras_account })
-             }).to.throw(Error, "Function called by unauthorized actor");
-         });*/
-
     });
 
 
@@ -113,58 +161,22 @@ contract("Block4EHR", accounts => {
 
         it("setPermissions sets the permission array correctly when the patient adds a region", async function () {
             let arr = await instance.getPermissionedRegions(pat_boras, { from: pat_boras_account });
-            arr = Object.assign([], arr);
-            arr.push(kungalv); //TODO: arr is an object, not an array so this cannot be done. Throws an error. 
+            arr = Object.assign([], arr); //assign the contents of arr into the empty array
+            arr.push(kungalv); // add kungalv to the list of permissioned regions 
             await instance.setPermissions(pat_boras, arr, { from: pat_boras_account });
             let res = await instance.getPermissionedRegions(pat_boras, { from: pat_boras_account });
             assert.deepEqual(res, arr);
         });
 
-
-        //TODO: write test for checking that it throws on the wrong sender
-    });
-
-    // test updating EHR
-    describe("updateEHR updates the patients EHR cid ", function () {
-
-        it("updateEHR updates the patients EHR cid when called by permitioned personnel ", async function () {
-            await instance.updateEHR(pat_gbg_kungalv, "123456", { from: doc_gbg_account });
-            let cid = await instance.getEHRCid(pat_gbg_kungalv, { from: doc_gbg_account });
-            assert.deepEqual("123456", cid);
-
+        it("setPermissions throws an error when anyone other than the patient invokes it", async function() {
+            let e;
+            try {
+                await instance.setPermissions(pat_boras, [gbg], { from: doc_boras_account });
+            } catch (err) {
+                e = err;
+            }
+            assert.notEqual(e, undefined);
         });
-
-        /* it("updateEHR throws an error when called by an unauthorized actor ", async function () {
- 
-         });*/
-
-
-    });
-
-    // test getting the EHR CID
-
-    describe("getEHRCid retrieves the cid conected to the latest EHR update", function () {
-
-        it("getEHRCid retrieves the latest cid when called by the patient", async function () {
-            let cid = await instance.getEHRCid(pat_gbg_kungalv, { from: pat_gbg_kungalv_accounts });
-            await instance.updateEHR(pat_gbg_kungalv, "678910", { from: doc_gbg_account });
-            let newcid = await instance.getEHRCid(pat_gbg_kungalv, { from: pat_gbg_kungalv_accounts });
-            assert.deepEqual("678910", newcid);
-            assert.notEqual(cid, newcid);
-        });
-
-        it("getEHRCid retrieves the latest cid when called by a permitioned personnel", async function () {
-            // let cid = await instance.getEHRCid(pat_gbg_kungalv, { from: doc_kungalv_account });
-            await instance.updateEHR(pat_boras, "3456789", { from: doc_boras_account });
-            let newcid = await instance.getEHRCid(pat_boras, { from: doc_kungalv_account });
-            assert.deepEqual("3456789", newcid);
-            // assert.notEqual(cid, newcid);
-        });
-
-        it("getEHRCid throws an error when called by an unauthorized actor ", async function () {
-
-        });
-
     });
 
 })
