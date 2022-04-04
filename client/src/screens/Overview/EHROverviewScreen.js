@@ -169,77 +169,13 @@ export function EHROverviewScreen(props) {
     navigation.navigate("NewEntryScreen", patientID);
   };
 
-  const [institutions, setInstitutions] = React.useState([]);
-  const [patients, setPatients] = React.useState([]);
-  const [doctors, setDoctors] = React.useState([]);
-
   const editContactInfo = async () => {
-    const patietns = await getDoctors();
-    console.log(patietns);
-
-    //const inst = await getInstitutions();
-    //console.log(inst);
-    //getInstitutions().then((data) => alert(data));
     setShowWarning(false);
     setEditingContactInfo(true);
     // populate input forms before editing
     setAddress(patientInfo.address);
     setEmail(patientInfo.email);
     setPhoneNr(patientInfo.phoneNr);
-  };
-
-  const getDoctors = async () => {
-    let dbRef = ref(database);
-    var doctors = [];
-
-    await get(child(dbRef, "Doctors/")).then((snapshot) => {
-      snapshot.forEach((childSnapshot) => {
-        const { institution } = childSnapshot.val();
-        doctors.unshift({
-          institution: institution,
-          id: childSnapshot.key,
-        });
-        setDoctors((doctors) => [...doctors, childSnapshot.val()]);
-      });
-    });
-    return doctors;
-  };
-
-  const getPatients = async () => {
-    let dbRef = ref(database);
-    var patients = [];
-
-    await get(child(dbRef, "Patients/")).then((snapshot) => {
-      snapshot.forEach((childSnapshot) => {
-        //const { name, region } = childSnapshot.val();
-        patients.unshift({
-          id: childSnapshot.key,
-        });
-        setPatients((patients) => [...patients, childSnapshot.val()]);
-      });
-    });
-    return patients;
-  };
-
-  const getInstitutions = async () => {
-    let dbRef = ref(database);
-    var institutions = [];
-
-    await get(child(dbRef, "Institutions/")).then((snapshot) => {
-      snapshot.forEach((childSnapshot) => {
-        const { name, region } = childSnapshot.val();
-        institutions.unshift({
-          name: name,
-          region: region,
-          id: childSnapshot.key,
-        });
-        setInstitutions((institutions) => [
-          ...institutions,
-          childSnapshot.val(),
-        ]);
-      });
-    });
-    return institutions;
   };
 
   const discardContactInfo = async () => {
