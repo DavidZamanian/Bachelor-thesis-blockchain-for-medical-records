@@ -29,12 +29,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-
       - name: Add msbuild to PATH
           # we need msbuild tools for the `bigint-buffer` module
           if: startsWith(matrix.os, 'windows-')
           uses: microsoft/setup-msbuild@v1.0.2
-
       - name: install node tools
           # we don't need to install the windows-build-tools package, as we
           # already have almost everything we need. We only need to install
@@ -45,7 +43,6 @@ jobs:
           uses: actions/setup-python@v2
           with:
             python-version: "2.7"
-
       - name: install node-gyp
           if: startsWith(matrix.os, 'windows-')
           run: npm install --global node-gyp@7.1.2
