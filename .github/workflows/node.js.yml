@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+
       - name: Add msbuild to PATH
           # we need msbuild tools for the `bigint-buffer` module
           if: startsWith(matrix.os, 'windows-')
