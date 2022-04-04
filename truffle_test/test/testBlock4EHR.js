@@ -1,5 +1,3 @@
-const { assert } = require("chai");
-
 const Block4EHR = artifacts.require("Block4EHR");
 
 /**
