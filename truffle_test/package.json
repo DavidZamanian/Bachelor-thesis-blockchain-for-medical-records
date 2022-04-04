@@ -10,10 +10,5 @@
     },
     "keywords": [],
     "author": "",
-    "license": "ISC",
-    "devDependencies": {
-      "chai": "*",
-      "mocha": "*"
-    }
-
+    "license": "ISC"
   }
