@@ -314,27 +314,45 @@ export default class EHRService{
      * @returns {Promise<string>}
      */
     static async decrypt(content, tag, iv){
+        
         /*
         console.log("before encryptRecordKey")
         let x = crypt.decryptRecordKey(PlaceholderValues.recordKey,PlaceholderValues.privateKey)
         console.log(x)
         return "no :)";
         */
+
+        let privateKey = PlaceholderValues.medicPrivateKey;
+        let ivBuffer = Buffer.from(iv, "base64");
+        let tagBuffer = Buffer.from(tag,"base64");
+
+        console.log("----------------")
+        console.log("ATTEMPTING DECRYPT")
+        console.log("DATA:")
+        console.log(content)
+        console.log("IV:")
+        console.log(ivBuffer.toString("base64"))
+        console.log("TAG:")
+        console.log(tagBuffer.toString("base64"))
         
-        console.log("trying to decrypt:\n"+content+"\nIV:\n"+Buffer.from(iv,"base64").toString("base64")+"\nTag:\n"+tag)
+
+
         let EHR = {
-            iv: Buffer.from(iv, "base64"),
+            iv: ivBuffer,
             encryptedData: content,
-            Tag: Buffer.from(tag,"base64")
+            Tag: tagBuffer
           }
         
         
         
-        return crypt.decryptEHR(
+        let x = crypt.decryptEHR(
             PlaceholderValues.recordKey,
             EHR,
-            PlaceholderValues.privateKey).toString("base64")
-        
+            privateKey)
+
+        console.log("DECRYPTED DATA:")
+        console.log(x)
+        return x;
     }
 
     /**

@@ -61,7 +61,7 @@ function decryptEHR(record_key, EHR, privateKey) {
   decryptedEHR = Buffer.concat([decryptedEHR, decipher.final()]);
 
   // returns data after decryption
-  return decryptedEHR.toString();
+  return decryptedEHR.toString("base64");
 }
 
 /**
