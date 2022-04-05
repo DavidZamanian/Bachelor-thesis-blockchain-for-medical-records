@@ -139,13 +139,13 @@ export default class EHRService{
                     decrypted = await this.decrypt(await file.text(),PlaceholderValues.tagPrescriptions, PlaceholderValues.ivPrescriptions);
                     
                     // Parse
-                    prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
+                    //prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
                 }
                 else if(file.name == "diagnoses.json"){
                     // Decrypt
                     decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagDiagnoses, PlaceholderValues.ivDiagnoses);
                     // Parse
-                    diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
+                    //diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
                 }
                 else{
                     // For uploading

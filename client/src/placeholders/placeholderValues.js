@@ -7,13 +7,13 @@ export class PlaceholderValues{
   static ipfsCID = "bafybeic2n6soaty4gjmhsnw2rywrxf2h6xdde4iupmlt5s5j7m67pvnfwa"
 
   static tagEHR= "jnMCY+0ZKlHJdiAosx8lYQ==";
-  static ivEHR = "LY9Mrp3+GUagOweft09KM6CCkcs7FOxmuBtIs3jivP4="
+  static ivEHR = "LY9Mrp3+GUagOweft09KM6CCkcs7FOxmuBtIs3jivP4=";
 
   static tagPrescriptions = "ESJunxZldPBEV42HyZ8AgA==";
-  static ivPrescriptions = "RyAzlXYE9IL2Mv0QifOmZDxezTd7i7cXP/pqpX+61Ps="
+  static ivPrescriptions = "RyAzlXYE9IL2Mv0QifOmZDxezTd7i7cXP/pqpX+61Ps=";
 
   static tagDiagnoses = "ZEemAXGR33z/qEnbuEcHjA==";
-  static ivDiagnoses = "N1lnPOao8AKuHgLPfb0dUql2eVOc/15HCQyULxmzeww="
+  static ivDiagnoses = "N1lnPOao8AKuHgLPfb0dUql2eVOc/15HCQyULxmzeww=";
   
 
   static privateKey = `-----BEGIN PRIVATE KEY-----
