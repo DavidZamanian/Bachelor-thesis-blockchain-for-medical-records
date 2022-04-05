@@ -363,19 +363,9 @@ export function EHROverviewScreen(props) {
           animationType="none"
           transparent={true}
           visible={state.isLoading}
-          horizontal={false}
-        >
-          <View
-            style={{
-              position:"absolute",
-              marginTop: theme.NAVBAR_HEIGHT,
-              width:"100%",
-              height: "100%",
-              backgroundColor: "white",
-              alignItems: "center",
-            }}
-          >
-            <Text style={[{marginTop:250, fontSize:36, color:theme.PRIMARY_COLOR,textAlign:"center"}]}>Loading patient data...</Text>
+          horizontal={false}>
+          <View style={styles.loadingOverlay}>
+            <Text style={styles.loadingText}>Loading patient data...</Text>
             <ActivityIndicator size="large" color={theme.PRIMARY_COLOR}/>
           </View>
         </Modal>
