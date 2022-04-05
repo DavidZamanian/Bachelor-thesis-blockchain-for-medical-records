@@ -63,6 +63,9 @@ const Header = () => {
 
 const styles = StyleSheet.create({
   navbarContainer:{
+    position:"fixed",
+    top:0,
+    left:0,
     width: '100%',
     height: theme.NAVBAR_HEIGHT,
     backgroundColor: theme.SECONDARY_COLOR,

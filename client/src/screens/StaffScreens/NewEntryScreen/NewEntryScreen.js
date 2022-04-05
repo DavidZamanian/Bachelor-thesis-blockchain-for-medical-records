@@ -239,7 +239,7 @@ export function NewEntryScreen(props) {
 
   return (
     <View style={styles.main}>
-      <Header/>
+      
       <View style={styles.content}>
         <Modal
           animationType="none"
@@ -412,6 +412,7 @@ export function NewEntryScreen(props) {
           </View>
         </View>
       </View>
+      <Header/>
       <Footer/>
     </View>
   );

@@ -3,8 +3,9 @@ import theme from "../../theme.style";
 
 const styles = StyleSheet.create({
     content:{
+        top:theme.NAVBAR_HEIGHT,
+        height:"110%",
         width:"100%",
-        height:"100%",
     },
     contentHeader:{
         color:theme.PRIMARY_COLOR,

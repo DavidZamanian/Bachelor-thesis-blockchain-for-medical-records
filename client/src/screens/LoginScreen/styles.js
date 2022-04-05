@@ -8,6 +8,7 @@ const styles = StyleSheet.create({
       backgroundColor: "white",
     },
     content: {
+      top: theme.NAVBAR_HEIGHT,
       width: '100%',
       height: theme.CONTENT_HEIGHT,
     },
