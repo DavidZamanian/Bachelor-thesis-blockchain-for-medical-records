@@ -42,7 +42,7 @@ describe("Test crypto", function () {
     // check if a publicKey can be derived from a privateKey
     assert.doesNotThrow(() => {
       publicKey = crypt.extractPublicKeyFromPrivateKey(privateKey);
-      console.log(publicKey.);
+      console.log(publicKey);
     });
   });
 

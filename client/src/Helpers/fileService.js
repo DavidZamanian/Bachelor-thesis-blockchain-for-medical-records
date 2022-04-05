@@ -21,11 +21,11 @@ export default class FileService{
      * Creates a JSON-file with the content and name specified
      * @param  {String} content
      * @param  {String} fileName
-     * @returns {File} -- file object with the name and content provided
+     * @returns {Promise<File>} -- file object with the name and content provided
      * @throws {CreateFileObjectError}
      * @author @Chrimle
      */
-    static createJSONFile( content, fileName ){
+    static async createJSONFile( content, fileName ){
         try{
             return new File([content], fileName+'.json', { type: 'text/json' });
         }

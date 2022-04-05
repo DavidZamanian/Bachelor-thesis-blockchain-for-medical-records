@@ -15,9 +15,9 @@ const algorithm = "aes-256-gcm";
  * @param {*} medPers_privKey The medical personnels' private key that writes the EHR.
  * @returns The IV for the encryption and the encrypted EHR.
  */
-function encryptEHR(record_key, EHR, medPers_privKey) {
+function encryptEHR(record_key, medPers_privKey, content, iv) {
   const decrypted_record_key = decryptRecordKey(record_key, medPers_privKey);
-  const iv = crypto.randomBytes(32);
+  //const iv = crypto.randomBytes(32);
 
   let cipher = crypto.createCipheriv(
     algorithm,
@@ -25,7 +25,7 @@ function encryptEHR(record_key, EHR, medPers_privKey) {
     iv
   );
 
-  let encryptedEHR = cipher.update(Buffer.from(EHR, "base64"));
+  let encryptedEHR = cipher.update(Buffer.from(content, "base64"));
   encryptedEHR = Buffer.concat([encryptedEHR, cipher.final()]);
 
   return {
@@ -44,6 +44,7 @@ function encryptEHR(record_key, EHR, medPers_privKey) {
  */
 function decryptEHR(record_key, EHR, privateKey) {
   const decrypted_record_key = decryptRecordKey(record_key, privateKey);
+  console.log("decrypt key works")
   let iv = Buffer.from(EHR.iv, "base64");
   let encryptedEHR = Buffer.from(EHR.encryptedData, "base64");
 

@@ -7,7 +7,7 @@ import { database, ref, get, child } from "../../firebaseSetup";
 import FetchFileContentError from "./Errors/FetchFileContentError";
 import { PlaceholderValues } from "../placeholders/placeholderValues";
 import { decryptEHR, encryptEHR } from "../../Crypto/crypt";
-
+import crypto from "crypto";
 
 
 export default class EHRService{
@@ -120,7 +120,7 @@ export default class EHRService{
             )
 
             // FETCH OLD FILES
-            let oldCID = "bafybeia7d4ysw3mkcyhn5icvhdanlkdb6kvhylouwclovytibdc5v5c5qi";
+            let oldCID = "bafybeiegq4cd7z2vg3ei2c66ycteu56ebbz5dyqzzflcky6gbjfyrs3rni";
             console.log("testb4")
             let fetchedFiles = await fs.fetchEHRFiles(oldCID);
             console.log("test")
@@ -129,31 +129,32 @@ export default class EHRService{
 
             let finalFiles = [];
             
-
+            
             for (const file of fetchedFiles){
                 let decrypted;
                 console.log(file.name+"before:"+await file.text())
                 if(file.name == "prescriptions.json"){
                     // Decrypt
                     
-                    decrypted = await this.decrypt(await file.text());
+                    decrypted = await this.decrypt(await file.text(),PlaceholderValues.tagPrescriptions);
                     
                     // Parse
                     prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
                 }
                 else if(file.name == "diagnoses.json"){
                     // Decrypt
-                    decrypted = await this.decrypt(await file.text());
+                    decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagDiagnoses);
                     // Parse
                     diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
                 }
                 else{
                     // For uploading
-                    finalFiles.push(file)
+                    decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagEHR);
+                    //finalFiles.push(file)
                 }
                 console.log("after:"+decrypted)
             }
-
+            
 
             // Make into JSON objects
             let stringEHR = await this.stringify(objectEHR);
@@ -189,7 +190,7 @@ export default class EHRService{
 
             console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n"+`https://${cid}.ipfs.dweb.link/`)
             for (const file of finalFiles){
-            console.log(file.name+": "+ await file.text());
+            console.log(file.name+": "+(await file.text()).toString("base64"));
             }
             // END OF TESTS
 
@@ -291,24 +292,33 @@ export default class EHRService{
      * @returns {Promise<string>}
      */
     static async encrypt(content){
-        console.log("ERROr")
-        return encryptEHR(
+        
+        let x =  encryptEHR(
             PlaceholderValues.encryptedRecordKey,
+            PlaceholderValues.medicPrivateKey,
             content,
-            PlaceholderValues.medicPrivateKey).encryptedData;
+            Buffer.from(PlaceholderValues.iv, "base64")
+        );
+        console.log("Tag:"+x.Tag.toString("base64"));
+        console.log("IV:"+x.iv.toString("base64"));
+        console.log("Data:"+x.encryptedData);
+        return x.encryptedData;
     }
     /**
      * PLACEHOLDER
      * @param  {string} content
      * @returns {Promise<string>}
      */
-    static async decrypt(content){
+    static async decrypt(content, tag){
+        console.log("trying to decrypt:"+content+"\nIV:"+Buffer.from(PlaceholderValues.iv,"base64").toString("base64")+"\nTag:"+tag)
         let EHR = {
-            iv: PlaceholderValues.iv,
+            iv: iv,
             encryptedData: content,
-            Tag: PlaceholderValues.tag
+            Tag: Buffer.from(tag,"base64")
           }
-        return decryptEHR(PlaceholderValues.encryptedRecordKey,EHR,PlaceholderValues.privateKey)
+        let privKey = PlaceholderValues.privateKey;
+    
+        return decryptEHR(PlaceholderValues.encryptedRecordKey,EHR,privKey)
     }
 
     /**
