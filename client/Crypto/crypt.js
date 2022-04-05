@@ -10,19 +10,18 @@ const algorithm = "aes-256-gcm";
 
 /**
  * Encrypts the EHR with the record key using the AES crypto algorithm.
- * @param {String} recordKey Encrypted record_key retrieved from DB.
- * @param {Object} EHR The EHR json file to be encrypted.
- * @param {Buffer} iv
- * @param {crypto.RsaPrivateKey | crypto.KeyLike} medicPrivateKey The medical personnels' private key that writes the EHR.
+ * @param {*} record_key Encrypted record_key retrieved from DB.
+ * @param {*} EHR The EHR json file to be encrypted.
+ * @param {*} medPers_privKey The medical personnels' private key that writes the EHR.
  * @returns The IV for the encryption and the encrypted EHR.
  */
-function encryptEHR(recordKey, EHR, medicPrivateKey, iv) {
-  const decryptedRecordKey = decryptRecordKey(recordKey, medicPrivateKey);
-  //const iv = crypto.randomBytes(32);
+function encryptEHR(record_key, EHR, medPers_privKey) {
+  const decrypted_record_key = decryptRecordKey(record_key, medPers_privKey);
+  const iv = crypto.randomBytes(32);
 
   let cipher = crypto.createCipheriv(
     algorithm,
-    Buffer.from(decryptedRecordKey, "base64"),
+    Buffer.from(decrypted_record_key, "base64"),
     iv
   );
 
@@ -38,23 +37,21 @@ function encryptEHR(recordKey, EHR, medicPrivateKey, iv) {
 
 /**
  * Decrypts the EHR using the record key.
- * @param {String} recordKey Encrypted record_key retrieved from DB.
- * @param {Object} EHR 
- * @param {Buffer} EHR.iv
- * @param {Buffer} EHR.Tag
- * @param {String} EHR.encryptedData
- * @param {crypto.RsaPrivateKey | crypto.KeyLike} privateKey Permissioned private key used to decrypt the record key.
- * @returns {String} The decrypted EHR in string.
+ * @param {*} record_key Encrypted record_key retrieved from DB.
+ * @param {*} EHR Contains the IV and encrypted EHR.
+ * @param {*} EHR.iv
+ * @param {*} EHR.Tag
+ * @param {*} privateKey Permissioned private key used to decrypt the record key.
+ * @returns The decrypted EHR in string.
  */
-function decryptEHR(recordKey, EHR, privateKey) {
-  const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
-  console.log("decrypt key works")
+function decryptEHR(record_key, EHR, privateKey) {
+  const decrypted_record_key = decryptRecordKey(record_key, privateKey);
   let iv = Buffer.from(EHR.iv, "base64");
   let encryptedEHR = Buffer.from(EHR.encryptedData, "base64");
 
   let decipher = crypto.createDecipheriv(
     algorithm,
-    Buffer.from(decryptedRecordKey, "base64"),
+    Buffer.from(decrypted_record_key, "base64"),
     iv
   );
   decipher.setAuthTag(EHR.Tag);
@@ -70,17 +67,17 @@ function decryptEHR(recordKey, EHR, privateKey) {
 /**
  * Encrypts the record key using asymmetric encryption. Also used to give permission to the EHR by which users' public key is used.
  * Creating a function to encrypt string
- * @param {String} recordKey A generated symmetric record key.
- * @param {crypto.RsaPrivateKey | crypto.KeyLike | crypto.RsaPublicKey} publicKey The public key used to encrypt the record key.
- * @returns {String} Encrypted record key.
+ * @param {*} record_key A generated symmetric record key.
+ * @param {*} publicKeyFile The public key used to encrypt the record key.
+ * @returns Encrypted record key.
  */
-function encryptRecordKey(recordKey, publicKey) {
+function encryptRecordKey(record_key, publicKey) {
   //const publicKey = fs.readFileSync(publicKeyFile, "utf8");
 
   // publicEncrypt() method with its parameters
   const encrypted = crypto.publicEncrypt(
     publicKey,
-    Buffer.from(recordKey, "base64")
+    Buffer.from(record_key, "base64")
   );
   return encrypted.toString("base64");
 }
@@ -88,28 +85,28 @@ function encryptRecordKey(recordKey, publicKey) {
 /**
  * Decrypts the record key using asymmetric encryption.
  * // Creating a function to decrypt string
- * @param {String} recordKey Encrypted record key.
- * @param {crypto.RsaPrivateKey | crypto.KeyLike} privateKey A users private key.
- * @returns {String} The decrypted record key.
+ * @param {*} record_key Encrypted record key.
+ * @param {*} privateKeyFile A users private key.
+ * @returns The decrypted record key.
  */
-function decryptRecordKey(recordKey, privateKey) {
+function decryptRecordKey(record_key, privateKey) {
   //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
 
   // privateDecrypt() method with its parameters
-  const decryptedKey = crypto.privateDecrypt(
+  const decrypted = crypto.privateDecrypt(
     privateKey,
-    Buffer.from(recordKey, "base64")
+    Buffer.from(record_key, "base64")
   );
-  return decryptedKey.toString("base64");
+  return decrypted.toString("base64");
 }
 
 /**
  * Takes the password when logging in for the first time and
  * derives a private key from it.
  *
- * @param {crypto.BinaryLike} password The password of the user login
- * @param {crypto.BinaryLike} salt The salt used in the hasing. This should be stored in database (can be public)
- * @returns {String} The privateKey that has been derived from the password
+ * @param {*} password The password of the user login
+ * @param {*} salt The salt used in the hasing. This should be stored in database (can be public)
+ * @returns The privateKey that has been derived from the password
  */
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
@@ -128,8 +125,8 @@ function derivePrivateKeyFromPassword(password, salt) {
 }
 /**
  * Creates a publicKey from a given privateKey
- * @param {string | crypto.KeyObject | Buffer | crypto.PublicKeyInput | crypto.JsonWebKeyInput} privateKey The privateKey that has originally been derived from the user's password
- * @returns {String} The publicKey that has been extracted
+ * @param {*} privateKey The privateKey that has originally been derived from the user's password
+ * @returns The publicKey that has been extracted
  */
 function extractPublicKeyFromPrivateKey(privateKey) {
   const pubKeyObject = crypto.createPublicKey({

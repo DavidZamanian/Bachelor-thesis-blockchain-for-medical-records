@@ -6,8 +6,8 @@ import FileService from "./fileService";
 import { database, ref, get, child } from "../../firebaseSetup";
 import FetchFileContentError from "./Errors/FetchFileContentError";
 import { PlaceholderValues } from "../placeholders/placeholderValues";
-import { decryptEHR, encryptEHR } from "../../Crypto/crypt";
-import crypto from "crypto";
+import  * as crypt from "../../Crypto/crypt";
+import crypto, { createPrivateKey } from "crypto";
 
 
 export default class EHRService{
@@ -120,7 +120,7 @@ export default class EHRService{
             )
 
             // FETCH OLD FILES
-            let oldCID = "bafybeiegq4cd7z2vg3ei2c66ycteu56ebbz5dyqzzflcky6gbjfyrs3rni";
+            let oldCID = PlaceholderValues.ipfsCID;
             console.log("testb4")
             let fetchedFiles = await fs.fetchEHRFiles(oldCID);
             console.log("test")
@@ -136,20 +136,20 @@ export default class EHRService{
                 if(file.name == "prescriptions.json"){
                     // Decrypt
                     
-                    decrypted = await this.decrypt(await file.text(),PlaceholderValues.tagPrescriptions);
+                    decrypted = await this.decrypt(await file.text(),PlaceholderValues.tagPrescriptions, PlaceholderValues.ivPrescriptions);
                     
                     // Parse
                     prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
                 }
                 else if(file.name == "diagnoses.json"){
                     // Decrypt
-                    decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagDiagnoses);
+                    decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagDiagnoses, PlaceholderValues.ivDiagnoses);
                     // Parse
                     diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
                 }
                 else{
                     // For uploading
-                    decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagEHR);
+                    decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagEHR, PlaceholderValues.ivEHR);
                     //finalFiles.push(file)
                 }
                 console.log("after:"+decrypted)
@@ -161,6 +161,7 @@ export default class EHRService{
             let stringPrescriptions = await this.stringify(prescriptions);
             let stringDiagnoses = await this.stringify(diagnoses);
 
+            console.log("Starting to encrypt files")
             // TODO: ENCRYPT THE 3 NEW FILES' CONTENT
             let encryptedEHR = await this.encrypt(stringEHR);
             let encryptedPrescriptions = await this.encrypt(stringPrescriptions);
@@ -293,32 +294,47 @@ export default class EHRService{
      */
     static async encrypt(content){
         
-        let x =  encryptEHR(
-            PlaceholderValues.encryptedRecordKey,
-            PlaceholderValues.medicPrivateKey,
+        let x =  crypt.encryptEHR(
+            PlaceholderValues.recordKey,
             content,
-            Buffer.from(PlaceholderValues.iv, "base64")
+            PlaceholderValues.medicPrivateKey,
         );
+        console.log("----------------------------------")
         console.log("Tag:"+x.Tag.toString("base64"));
         console.log("IV:"+x.iv.toString("base64"));
         console.log("Data:"+x.encryptedData);
+        console.log("----------------------------------")
         return x.encryptedData;
+        
+        
     }
     /**
      * PLACEHOLDER
      * @param  {string} content
      * @returns {Promise<string>}
      */
-    static async decrypt(content, tag){
-        console.log("trying to decrypt:"+content+"\nIV:"+Buffer.from(PlaceholderValues.iv,"base64").toString("base64")+"\nTag:"+tag)
+    static async decrypt(content, tag, iv){
+        /*
+        console.log("before encryptRecordKey")
+        let x = crypt.decryptRecordKey(PlaceholderValues.recordKey,PlaceholderValues.privateKey)
+        console.log(x)
+        return "no :)";
+        */
+        
+        console.log("trying to decrypt:\n"+content+"\nIV:\n"+Buffer.from(iv,"base64").toString("base64")+"\nTag:\n"+tag)
         let EHR = {
-            iv: iv,
+            iv: Buffer.from(iv, "base64"),
             encryptedData: content,
             Tag: Buffer.from(tag,"base64")
           }
-        let privKey = PlaceholderValues.privateKey;
-    
-        return decryptEHR(PlaceholderValues.encryptedRecordKey,EHR,privKey)
+        
+        
+        
+        return crypt.decryptEHR(
+            PlaceholderValues.recordKey,
+            EHR,
+            PlaceholderValues.privateKey).toString("base64")
+        
     }
 
     /**

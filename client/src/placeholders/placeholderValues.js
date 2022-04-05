@@ -3,13 +3,17 @@ export class PlaceholderValues{
 
 
 
-  static tag = Buffer.from([0x9e, 0x1b, 0x72, 0xbc, 0x70, 0xc3, 0xbd, 0xde, 0x73, 0xcd, 0x7c, 0x64, 0x51, 0x1b, 0xc5, 0xae])
-  static iv = "X1CaFR0Dj+vUG8lWVs5Kt2l7RzDD4dq8Pv/MUen6WIM=";
+  
+  static ipfsCID = "bafybeic2n6soaty4gjmhsnw2rywrxf2h6xdde4iupmlt5s5j7m67pvnfwa"
 
-  static tagPrescriptions = "JqlkGRmVC/PIbrRWK7/woA==";
-  static tagDiagnoses = "VvEniXEOaRURsAIOavhYPQ==";
-  static tagEHR= "Y1y0e+vHxF7T2pSPTgLGwg==";
+  static tagEHR= "jnMCY+0ZKlHJdiAosx8lYQ==";
+  static ivEHR = "LY9Mrp3+GUagOweft09KM6CCkcs7FOxmuBtIs3jivP4="
 
+  static tagPrescriptions = "ESJunxZldPBEV42HyZ8AgA==";
+  static ivPrescriptions = "RyAzlXYE9IL2Mv0QifOmZDxezTd7i7cXP/pqpX+61Ps="
+
+  static tagDiagnoses = "ZEemAXGR33z/qEnbuEcHjA==";
+  static ivDiagnoses = "N1lnPOao8AKuHgLPfb0dUql2eVOc/15HCQyULxmzeww="
   
 
   static privateKey = `-----BEGIN PRIVATE KEY-----
@@ -48,7 +52,7 @@ HTPhtf3w2f2F
 -----END PRIVATE KEY-----
 `;
 
-static encryptedRecordKey = "LhUjB3jms1JNWgHfmsNZcjrAgQWdRzITn49lZs+CHfSkWTWkqNNKY9/Qn/GdJh1jE1fmSOfnuRgE2BuwUl3TG25TDYIGqmFVG3ydSOyi5i5PqE5xWJSOTvn4g6zp/syPzzA8pr8zD//f8d2+C97Nvpypfh8DaUhG2HY2FyaHyIE=";
+static recordKey = "LhUjB3jms1JNWgHfmsNZcjrAgQWdRzITn49lZs+CHfSkWTWkqNNKY9/Qn/GdJh1jE1fmSOfnuRgE2BuwUl3TG25TDYIGqmFVG3ydSOyi5i5PqE5xWJSOTvn4g6zp/syPzzA8pr8zD//f8d2+C97Nvpypfh8DaUhG2HY2FyaHyIE=";
 
   static publicKey = `-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUiAaS0DTviflRi0zum4QfpTup
