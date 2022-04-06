@@ -22,6 +22,8 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    # THIS PART IS INSPIRED BY https://github.com/trufflesuite/ganache/blob/develop/.github/workflows/push.yml
+    # TO GET THE CI TO WORK WITH TRUFFLE ON WINDOWS.
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
