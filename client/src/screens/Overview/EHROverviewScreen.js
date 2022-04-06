@@ -219,11 +219,13 @@ export function EHROverviewScreen(props) {
     const connection = await chainConnection;
     console.log(connection); //print the connection object to inspect things such as address used
     // ====== TESTS: comment out all but the one you want to try and see result in your console =====
+    // ACCOUNT 10: Patient p_gbg's account. 
+    // ACCOUNT 2: account of Doctor dy (in gbg) with access to p_gbg. 
     // TESTING hasPermission - set your account to either Account 2 or Account 10 for this to pass. 
     const res = await connection.hasPermission("p_gbg");
     // TESTING getPermissionedRegions - set your account to Account 10 for this to pass. 
     //const res = await connection.getPermissionedRegions("p_gbg");
-    // TESTING getEHRCid - set your account to Account 1 for this to pass. 
+    // TESTING getEHRCid - set your account to Account 2 for this to pass. 
     //await connection.updateEHR("p_gbg", "CID NR 1");
     //const res = await connection.getEHRCid("p_gbg"); //may have to run this separate from updateEHR
     // TESTING setting new permissions - set your account to Account 10 for this to pass. 
