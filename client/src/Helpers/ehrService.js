@@ -119,15 +119,21 @@ export default class EHRService{
                 diagnoses
             )
 
-            // FETCH OLD FILES
-            let oldCID = PlaceholderValues.ipfsCID;
-            console.log("Attempting Fetch")
-            let fetchedFiles = await fs.fetchEHRFiles(oldCID);
-            console.log("Fetch success, found "+fetchedFiles.length+" files!")
-
             let oldFiles = [];
 
             let finalFiles = [];
+
+            
+            
+            // FETCH OLD FILES
+            let oldCID = PlaceholderValues.ipfsCID;
+            console.log("Attempting Fetch")
+            let filesAndIndex = await fs.fetchEHRFiles(oldCID);
+            let fetchedFiles = filesAndIndex.files
+            let index = filesAndIndex.index
+            console.log("Fetch success, found "+fetchedFiles.length+" files!")
+
+            
             
             
             for (const file of fetchedFiles){
@@ -167,7 +173,7 @@ export default class EHRService{
 
 
             // Create JSON files
-            let ehrFile = await FileService.createJSONFile(encryptedEHR,"EHR_"+objectEHR.date.toString().slice(0, 19));
+            let ehrFile = await FileService.createJSONFile(encryptedEHR,"EHR_"+index);
             let prescriptionsFile = await FileService.createJSONFile(encryptedPrescriptions,"prescriptions");
             let diagnosesFile = await FileService.createJSONFile(encryptedDiagnoses,"diagnoses");
 
@@ -203,6 +209,7 @@ export default class EHRService{
             } else if (e instanceof FetchFileContentError){
                 return "Error";
             } else{
+                console.log(e)
                 return "Error";
             }
         }

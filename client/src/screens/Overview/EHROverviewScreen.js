@@ -74,11 +74,11 @@ export function EHROverviewScreen(props) {
           const allRegions = await EHRService.getRegions();
           const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 
-          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
+          //let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
 
-          const patientPrescriptions = ehr.prescriptions
-          const patientDiagnoses = ehr.diagnoses;
-          const patientJournals = ehr.journals;
+          const patientPrescriptions = []//ehr.prescriptions
+          const patientDiagnoses = []//ehr.diagnoses;
+          const patientJournals = []//ehr.journals;
 
           let journalIndexes = [];
           patientJournals.forEach(() => journalIndexes.push(false));

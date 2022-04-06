@@ -81,25 +81,48 @@ export default class FileService{
     /**
      * Fetches all EHR files
      * @param  {String} cid
-     * @returns {Promise<Array<File>>} results -- Array with all File objects in CID-directory
+     * @returns {Promise<*>} results -- Array with all File objects in CID-directory
      * @author @Chrimle
      */
     async fetchEHRFiles(cid){
 
         let results = [];
 
-        let fileNames = await this.retrieveFileNames(cid);
+        //let fileNames = await this.retrieveFileNames(cid);
 
-        for (const fileName of fileNames) {
+        // Get prescriptions
+        let content = await FileService.fetchFileContent(cid, "prescriptions.json");
+        let file = new File([content], "prescriptions.json", { type: 'text/json' });
+        results.push(file);
+        console.log("Got pre:"+content)
 
-            let content = await FileService.fetchFileContent(cid, fileName);
+        // get diagnoses
+        content = await FileService.fetchFileContent(cid, "diagnoses.json");
+        file = new File([content], "diagnoses.json", { type: 'text/json' });
+        results.push(file);
+        console.log("Got dia:"+content)
+        // LOOP: get EHR_index
+        let index = 0;
+        let keepSearching = true;
+        do {
+            try{
+                let fileName = "EHR_"+index+".json"
+                let content = await FileService.fetchFileContent(cid, fileName);
+                console.log("Got EHR:"+content)
+                if (content.search("ipfs resolve") == -1){
+                    let file = new File([content], fileName, { type: 'text/json' });
+                    results.push(file);  
+                    index += 1;  
+                }else{
+                    keepSearching = false
+                }
+            }
+            catch (e){
+                keepSearching = false
+            }
+        } while(keepSearching)
 
-            let file = new File([content], fileName, { type: 'text/json' });
-
-            results.push(file);
-        }
-
-        return results;
+        return {files: results, index: index};
     }
 
 
@@ -113,8 +136,10 @@ export default class FileService{
      * @returns {Promise<Array<String>>} Array of urls of the files to be retrieved 
      */
       async retrieveFileNames(cid) { 
+        console.log("Waiting for names")
         const res = await this.client.get(cid);
         const files = await res.files(); // Web3File[]
+        console.log("Got file names!")
  
         let fileNames = [];
         for (const file of files) {
