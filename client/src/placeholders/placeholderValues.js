@@ -4,7 +4,7 @@ export class PlaceholderValues{
 
 
   
-  static ipfsCID = "bafybeib2w4dqgqzf57utwznbla3wt4sn7ounxkblehgrt4ov5uiboj66pq"
+  static ipfsCID = "bafybeighyjh33wrv6xxdgsowiopp3yykiez74ps3uuvouwt5pugi4kcm6a"
   
   static tagEHR           = "v0F4M64Xcw+HHJo5Xow70Q==";
   static ivEHR =  "szZVrAUdUMo1XEdmGU0jOshALYYJ1bZGl8YpX4WYtKw=";
