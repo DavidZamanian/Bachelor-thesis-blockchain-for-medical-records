@@ -1,19 +1,7 @@
 
 export class PlaceholderValues{
 
-
-
-  
   static ipfsCID = "bafybeihcjr6rbsjgfljtrl5ii2duyrotmv2l527ufz6aao32rx7fp2k7ya"
-  
-  static tagEHR           = "v0F4M64Xcw+HHJo5Xow70Q==";
-  static ivEHR =  "szZVrAUdUMo1XEdmGU0jOshALYYJ1bZGl8YpX4WYtKw=";
-                  "1dTkXS9xQBQxgqoMtmenEQ7vbFxnGTvhEIiyp9qr0c8d"
-  static tagPrescriptions = "mcU8ffB8ZybbUHNiPBAUKA==";
-  static ivPrescriptions = "Y5LA1ThHV6hsPGxWWR6VfGjwzJXxWLHWY88NgHX2Dx4=";
-
-  static tagDiagnoses = "oso6cFFJxmT55WjbOzozag==";
-  static ivDiagnoses = "GFvkkz2Fkc9fi2RrpIi/jVMVath+MAvTjVUTipqqfHE=";
   
 
   static privateKey = `-----BEGIN PRIVATE KEY-----

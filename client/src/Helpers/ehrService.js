@@ -147,11 +147,11 @@ export default class EHRService{
                 decrypted = await this.decrypt(encrypted, tag, iv);
                 if(file.name == "prescriptions.json"){
                     // Parse
-                    prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
+                    prescriptions = prescriptions.concat(await this.parseIntoJSON(decrypted));
                 }
                 else if(file.name == "diagnoses.json"){
                     // Parse
-                    diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
+                    diagnoses = diagnoses.concat(await this.parseIntoJSON(decrypted));
                 }
                 else{
                     finalFiles.push(file)
@@ -253,43 +253,30 @@ export default class EHRService{
             decrypted = await this.decrypt(encrypted, tag, iv);
             if(file.name == "prescriptions.json"){
                 // Parse
-                EHR.prescriptions = EHR.prescriptions.concat(await this.parseIntoArray(decrypted));
+                EHR.prescriptions = EHR.prescriptions.concat(await this.parseIntoJSON(decrypted));
             }
             else if(file.name == "diagnoses.json"){
                 // Parse
-                EHR.diagnoses = EHR.diagnoses.concat(await this.parseIntoArray(decrypted));
+                EHR.diagnoses = EHR.diagnoses.concat(await this.parseIntoJSON(decrypted));
             }
             else{
                 // Parse
-                EHR.journals = EHR.journals.concat(await this.parseIntoArray(decrypted));
+                EHR.journals = EHR.journals.concat(await this.parseIntoJSON(decrypted));
             }
         }
         return EHR;
     }
 
     /**
-     * Parses JSON-string to an array of strings
+     * Parser 
      * @param  {Array<string>} input
-     * @returns  {Promise<Array<string>>}
+     * @returns  {Promise<Array<string> | object>}
      * @author Christopher Molin
      */
-    static async parseIntoArray(input){
+    static async parseIntoJSON(input){
 
         let array = await JSON.parse(input);
         return array;
-    }
-
-    /**
-     * Parses JSON-string into JSON
-     * @param  {Array<string>} input
-     * @returns  {Promise<object>}
-     * @author Christopher Molin
-     */
-     static async parseIntoEHR(input){
-
-        let ehr = await JSON.parse(input);
-        console.log(ehr)
-        return ehr;
     }
 
     /**
@@ -322,15 +309,7 @@ export default class EHRService{
      * @returns {Promise<string>}
      */
     static async decrypt(content, tag, iv){
-        
-        /*
-        console.log("before encryptRecordKey")
-        let x = crypt.decryptRecordKey(PlaceholderValues.recordKey,PlaceholderValues.privateKey)
-        console.log(x)
-        return "no :)";
-        */
 
-        let privateKey = PlaceholderValues.medicPrivateKey;
         let ivBuffer = Buffer.from(iv, "base64");
         let tagBuffer = Buffer.from(tag,"base64");
 
@@ -342,8 +321,6 @@ export default class EHRService{
         console.log(ivBuffer.toString("base64"))
         console.log("TAG:")
         console.log(tagBuffer.toString("base64"))
-        
-
 
         let EHR = {
             iv: ivBuffer,
@@ -356,7 +333,7 @@ export default class EHRService{
         let x = crypt.decryptEHR(
             PlaceholderValues.recordKey,
             EHR,
-            privateKey)
+            PlaceholderValues.medicPrivateKey)
 
         console.log("DECRYPTED DATA:")
         console.log(x)
