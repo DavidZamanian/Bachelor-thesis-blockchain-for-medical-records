@@ -119,45 +119,33 @@ export default class EHRService{
                 diagnoses
             )
 
-            let oldFiles = [];
-
             let finalFiles = [];
-
-            
             
             // FETCH OLD FILES
-            let oldCID = PlaceholderValues.ipfsCID;
             console.log("Attempting Fetch")
-            let filesAndIndex = await fs.fetchEHRFiles(oldCID);
+            let filesAndIndex = await fs.fetchEHRFiles(PlaceholderValues.ipfsCID, true);
             let fetchedFiles = filesAndIndex.files
             let index = filesAndIndex.index
             console.log("Fetch success, found "+fetchedFiles.length+" files!")
-
-            
-            
             
             for (const file of fetchedFiles){
-                let decrypted;
-                //console.log("testing:"+file.name+" "+await file.text())
+
                 let fileContent = await file.text();
-                console.log(fileContent)
-                let tag = fileContent.slice(0,24);
-                let iv = fileContent.slice(24,68);
-                let encrypted = fileContent.slice(68);
-                decrypted = await this.decrypt(encrypted, tag, iv);
+                
+                let decryptedData = await this.decrypt(fileContent);
+
+                let parsedData = await this.parseIntoJSON(decryptedData);
+
                 if(file.name == "prescriptions.json"){
-                    // Parse
-                    prescriptions = prescriptions.concat(await this.parseIntoJSON(decrypted));
+                    prescriptions = prescriptions.concat(parsedData);
                 }
                 else if(file.name == "diagnoses.json"){
-                    // Parse
-                    diagnoses = diagnoses.concat(await this.parseIntoJSON(decrypted));
+                    diagnoses = diagnoses.concat(parsedData);
                 }
                 else{
                     finalFiles.push(file)
                 }
             }
-            
 
             // Make into JSON objects
             let stringEHR = await this.stringify(objectEHR);
@@ -169,8 +157,6 @@ export default class EHRService{
             let encryptedEHR = await this.encrypt(stringEHR);
             let encryptedPrescriptions = await this.encrypt(stringPrescriptions);
             let encryptedDiagnoses = await this.encrypt(stringDiagnoses);
-
-
 
             // Create JSON files
             let ehrFile = await FileService.createJSONFile(encryptedEHR,"EHR_"+index);
@@ -185,19 +171,10 @@ export default class EHRService{
             
             // TESTING ONLY
             // Testing if the cid and the files were uploaded
-            console.log("New EHR directory: "+cid)
-            
-            console.log("TESTING DOWNLOADING FILES (NOT THE ONES THAT WERE UPLOADED!):")
-            for (const file of oldFiles){
-                console.log(file.name+": "+ await file.text());
-            }
-
             console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n"+`https://${cid}.ipfs.dweb.link/`)
             for (const file of finalFiles){
             console.log(file.name+": "+(await file.text()).toString("base64"));
             }
-            // END OF TESTS
-
 
             return "Success";
         }
@@ -234,7 +211,8 @@ export default class EHRService{
         let fs = new FileService(apiToken);
 
         let fetchedFiles = (await fs.fetchEHRFiles(cid)).files;
-        console.log("fetch success")
+
+
         let EHR = {
             prescriptions: [],
             diagnoses: [],
@@ -243,25 +221,19 @@ export default class EHRService{
 
 
         for (const file of fetchedFiles){
-            let decrypted;
-            //console.log("testing:"+file.name+" "+await file.text())
+
             let fileContent = await file.text();
-            console.log(fileContent)
-            let tag = fileContent.slice(0,24);
-            let iv = fileContent.slice(24,68);
-            let encrypted = fileContent.slice(68);
-            decrypted = await this.decrypt(encrypted, tag, iv);
+            let decryptedData = await this.decrypt(fileContent);
+            let parsedData = await this.parseIntoJSON(decryptedData)
+            
             if(file.name == "prescriptions.json"){
-                // Parse
-                EHR.prescriptions = EHR.prescriptions.concat(await this.parseIntoJSON(decrypted));
+                EHR.prescriptions = EHR.prescriptions.concat(parsedData);
             }
             else if(file.name == "diagnoses.json"){
-                // Parse
-                EHR.diagnoses = EHR.diagnoses.concat(await this.parseIntoJSON(decrypted));
+                EHR.diagnoses = EHR.diagnoses.concat(parsedData);
             }
             else{
-                // Parse
-                EHR.journals = EHR.journals.concat(await this.parseIntoJSON(decrypted));
+                EHR.journals = EHR.journals.concat(parsedData);
             }
         }
         return EHR;
@@ -280,9 +252,10 @@ export default class EHRService{
     }
 
     /**
-     * PLACEHOLDER
-     * @param  {string} content
-     * @returns {Promise<string>}
+     * Encrypts the content and put the Tag and IV at the beginning
+     * @param  {string} content The text to be encrypted
+     * @returns {Promise<string>} The encrypted text, with Tag and IV at the beginning
+     * @author Christopher Molin
      */
     static async encrypt(content){
         
@@ -298,17 +271,21 @@ export default class EHRService{
         console.log("----------------------------------")
 
         let result = "";
-        result = result.concat(x.Tag.toString("base64"),x.iv.toString("base64"),x.encryptedData);
         
-        return result;
+        return result.concat(x.Tag.toString("base64"),x.iv.toString("base64"),x.encryptedData);
         
     }
     /**
-     * PLACEHOLDER
-     * @param  {string} content
-     * @returns {Promise<string>}
+     * Decrypts and returns the given file content
+     * @param  {string} fileContent file content (including Tag and IV at the beginning)
+     * @returns {Promise<string>} The decrypted content data (Tag and IV excluded)
+     * @author Christopher Molin
      */
-    static async decrypt(content, tag, iv){
+    static async decrypt(fileContent){
+
+        let tag = fileContent.slice(0,24);
+        let iv = fileContent.slice(24,68);
+        let encrypted = fileContent.slice(68);
 
         let ivBuffer = Buffer.from(iv, "base64");
         let tagBuffer = Buffer.from(tag,"base64");
@@ -316,7 +293,7 @@ export default class EHRService{
         console.log("----------------")
         console.log("ATTEMPTING DECRYPT")
         console.log("DATA:")
-        console.log(content)
+        console.log(encrypted)
         console.log("IV:")
         console.log(ivBuffer.toString("base64"))
         console.log("TAG:")
@@ -324,11 +301,9 @@ export default class EHRService{
 
         let EHR = {
             iv: ivBuffer,
-            encryptedData: content,
+            encryptedData: encrypted,
             Tag: tagBuffer
           }
-        
-        
         
         let x = crypt.decryptEHR(
             PlaceholderValues.recordKey,

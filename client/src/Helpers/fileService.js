@@ -10,7 +10,7 @@ export default class FileService{
     /**
      * Constructs a FileService object with the API Token to Web3Storage
      * @param  {String} apiToken
-     * @author @Chrimle
+     * @author Christopher Molin
      */
     constructor(apiToken){
         this.client = new Web3Storage({ token: apiToken});
@@ -21,9 +21,9 @@ export default class FileService{
      * Creates a JSON-file with the content and name specified
      * @param  {String} content
      * @param  {String} fileName
-     * @returns {Promise<File>} -- file object with the name and content provided
+     * @returns {Promise<File>} file object with the name and content provided
      * @throws {CreateFileObjectError}
-     * @author @Chrimle
+     * @author Christopher Molin
      */
     static async createJSONFile( content, fileName ){
         try{
@@ -38,10 +38,10 @@ export default class FileService{
     
     /**
      * Uploads file(s) to Web3Storage and returns the CID for the root folder
-     * @param  {Array<File>} files
-     * @returns {Promise<String>} cid -- The Web3Storage CID to the root folder
+     * @param  {Array<File>} files The files to be uploaded
+     * @returns {Promise<String>} The IPFS CID to the root folder
      * @throws {UploadFileError}
-     * @author @Chrimle
+     * @author Christopher Molin
      */
      async uploadFiles(files){
 
@@ -57,11 +57,11 @@ export default class FileService{
 
     /**
      * Fetches a Web3Storage file, and returns fhe content
-     * @param  {String} cid -- Only the random part of the full address
-     * @param  {String} fileName -- The name and filetype of the file
+     * @param  {String} cid Only the random part of the full address
+     * @param  {String} fileName The name and filetype of the file
      * @returns {Promise<string>} content 
-     * @author @Chrimle
-     * Inspiration: Kamil Kiełczewski https://stackoverflow.com/a/55784549/5424535
+     * @author Christopher Molin 
+     * - Inspiration: Kamil Kiełczewski https://stackoverflow.com/a/55784549/5424535
      */
     static async fetchFileContent(cid, fileName){
 
@@ -81,10 +81,11 @@ export default class FileService{
     /**
      * Fetches all EHR files
      * @param  {String} cid
-     * @returns {Promise<{files: Array<File>, index: number}>} results -- Array with all File objects in CID-directory
-     * @author @Chrimle
+     * @param {boolean} [getNextEHRIndex]
+     * @returns {Promise<{files: Array<File>, index?: number}>} Array with Files and the next index for EHR if upload is true
+     * @author Christopher Molin
      */
-    async fetchEHRFiles(cid){
+    async fetchEHRFiles(cid, getNextEHRIndex){
 
         let results = [];
 
@@ -92,13 +93,12 @@ export default class FileService{
         let content = await FileService.fetchFileContent(cid, "prescriptions.json");
         let file = new File([content], "prescriptions.json", { type: 'text/json' });
         results.push(file);
-        console.log("Got pre:"+content)
 
         // get diagnoses
         content = await FileService.fetchFileContent(cid, "diagnoses.json");
         file = new File([content], "diagnoses.json", { type: 'text/json' });
         results.push(file);
-        console.log("Got dia:"+content)
+
         // LOOP: get EHR_index
         let index = 0;
         let keepSearching = true;
@@ -106,7 +106,7 @@ export default class FileService{
             try{
                 let fileName = "EHR_"+index+".json"
                 let content = await FileService.fetchFileContent(cid, fileName);
-                console.log("Got EHR:"+content)
+
                 if (content.search("ipfs resolve") == -1){
                     let file = new File([content], fileName, { type: 'text/json' });
                     results.push(file);  
@@ -120,7 +120,13 @@ export default class FileService{
             }
         } while(keepSearching)
 
-        return {files: results, index: index};
+        if (getNextEHRIndex){
+            return {files: results, index: index};
+        }
+        else{
+            return {files: results};
+        }
+        
     }
 
 
