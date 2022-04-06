@@ -1,5 +1,7 @@
 import Block4EHR from "../../../build/contracts/Block4EHR.json";
 import getWeb3 from "./getWeb3";
+import ChainConnectionError from "./chainConnectionError";
+import ChainOperationDeniedError from "./chainOperationDeniedError";
 
 /**
  * Handles the connection to the smart contract Block4EHR on the blockchain. 
@@ -52,8 +54,8 @@ export default class ChainConnection {
       // Catch any errors for any of the above operations.
       alert(
         `Failed to load web3, accounts, or contract. Check console for details.`
-      );
-      console.error(error);
+      ); //TODO: change this to something more user friendly and ask user to reload the page and allow metamask to connect. 
+      throw new ChainConnectionError(`Failed to load web3, accounts, or contract. Error thrown with message:\n ${error.message}`);
     }
     console.log("Done init()");
   }
@@ -69,31 +71,47 @@ export default class ChainConnection {
 
   async getPermissionedRegions(patientId) {
     const { accounts, contract } = this.state;
-    const arr = await contract.methods
+    try {
+      const arr = await contract.methods
       .getPermissionedRegions(patientId)
       .call({ from: accounts[0] });
-    return arr;
+      return arr;
+    } catch (err) {
+      throw new ChainOperationDeniedError(err.message);
+    }
   }
 
   async getEHRCid(patientId) {
     const { accounts, contract } = this.state;
-    const cid = await contract.methods
-        .getEHRCid(patientId)
-        .call({ from: accounts[0] });
-    return cid;
+    try {
+      const cid = await contract.methods
+          .getEHRCid(patientId)
+          .call({ from: accounts[0] });
+      return cid;
+    } catch (err) {
+      throw new ChainOperationDeniedError(err.message);
+    }
   }
 
   async updateEHR(patientId, cid) {
+    try {
       const { accounts, contract } = this.state;
       await contract.methods
         .updateEHR(patientId, cid)
         .send({ from: accounts[0] });
+    } catch (err) {
+      throw new ChainOperationDeniedError(err.message);
+    }
   }
 
   async setPermissions(patientId, regions) {
-    const { accounts, contract } = this.state;
-    await contract.methods
-        .setPermissions(patientId, regions)
-        .send({ from: accounts[0] });
+    try {
+      const { accounts, contract } = this.state;
+      await contract.methods
+          .setPermissions(patientId, regions)
+          .send({ from: accounts[0] });
+    } catch (err) {
+      throw new ChainOperationDeniedError(err.message);
+    }
   }
 }
