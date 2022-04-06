@@ -88,8 +88,6 @@ export default class FileService{
 
         let results = [];
 
-        //let fileNames = await this.retrieveFileNames(cid);
-
         // Get prescriptions
         let content = await FileService.fetchFileContent(cid, "prescriptions.json");
         let file = new File([content], "prescriptions.json", { type: 'text/json' });
