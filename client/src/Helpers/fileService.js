@@ -81,7 +81,7 @@ export default class FileService{
     /**
      * Fetches all EHR files
      * @param  {String} cid
-     * @returns {Promise<*>} results -- Array with all File objects in CID-directory
+     * @returns {Promise<{files: Array<File>, index: number}>} results -- Array with all File objects in CID-directory
      * @author @Chrimle
      */
     async fetchEHRFiles(cid){

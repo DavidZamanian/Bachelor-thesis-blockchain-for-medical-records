@@ -233,8 +233,8 @@ export default class EHRService{
 
         let fs = new FileService(apiToken);
 
-        let fetchedFiles = await fs.fetchEHRFiles(cid);
-        
+        let fetchedFiles = (await fs.fetchEHRFiles(cid)).files;
+        console.log("fetch success")
         let EHR = {
             prescriptions: [],
             diagnoses: [],
