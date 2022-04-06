@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Text, View, Modal, TextInput } from "react-native";
+import { Text, View, Modal, TextInput, ActivityIndicator } from "react-native";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header/Header";
 import styles from "./styles";
@@ -41,6 +41,7 @@ export function EHROverviewScreen(props) {
     modalVisible: false,
     showWarning: false,
     regionSnapshot: [],
+    isLoading: true,
   });
 
 
@@ -94,6 +95,7 @@ export function EHROverviewScreen(props) {
 
           setState((prevState) => ({
             ...prevState,
+            isLoading: false,
             patientID: state.doctorRole ? props.route.params : userSSN,
             journalExpanded: journalIndexes,
             patientInfo: {
@@ -380,6 +382,16 @@ export function EHROverviewScreen(props) {
                 </TouchableOpacity>
               </View>
             </View>
+          </View>
+        </Modal>
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={state.isLoading}
+          horizontal={false}>
+          <View style={styles.loadingOverlay}>
+            <Text style={styles.loadingText}>Loading patient data...</Text>
+            <ActivityIndicator size="large" color={theme.PRIMARY_COLOR}/>
           </View>
         </Modal>
         <Text style={styles.contentHeader}>Patient Overview</Text>

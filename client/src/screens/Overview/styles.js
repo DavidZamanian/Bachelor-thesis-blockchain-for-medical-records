@@ -195,6 +195,20 @@ const styles = StyleSheet.create({
         paddingVertical:5,
         paddingHorizontal:10,
         textAlign:"center"
+    },
+    loadingOverlay:{
+        position:"absolute",
+        marginTop: theme.NAVBAR_HEIGHT,
+        width:"100%",
+        height: "100%",
+        backgroundColor: "white",
+        alignItems: "center",
+    },
+    loadingText:{
+        marginTop:250,
+        fontSize:36, 
+        color:theme.PRIMARY_COLOR,
+        textAlign:"center"
     }
 });
 
