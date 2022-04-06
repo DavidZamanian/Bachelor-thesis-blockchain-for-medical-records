@@ -132,27 +132,24 @@ export default class EHRService{
             
             for (const file of fetchedFiles){
                 let decrypted;
-                console.log("Fetched: "+file.name)
+                //console.log("testing:"+file.name+" "+await file.text())
+                let fileContent = await file.text();
+                console.log(fileContent)
+                let tag = fileContent.slice(0,24);
+                let iv = fileContent.slice(24,68);
+                let encrypted = fileContent.slice(68);
+                decrypted = await this.decrypt(encrypted, tag, iv);
                 if(file.name == "prescriptions.json"){
-                    // Decrypt
-                    
-                    decrypted = await this.decrypt(await file.text(),PlaceholderValues.tagPrescriptions, PlaceholderValues.ivPrescriptions);
-                    
                     // Parse
-                    //prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
+                    prescriptions = prescriptions.concat(await this.parseIntoArray(decrypted));
                 }
                 else if(file.name == "diagnoses.json"){
-                    // Decrypt
-                    decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagDiagnoses, PlaceholderValues.ivDiagnoses);
                     // Parse
-                    //diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
+                    diagnoses = diagnoses.concat(await this.parseIntoArray(decrypted));
                 }
                 else{
-                    // For uploading
-                    decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagEHR, PlaceholderValues.ivEHR);
-                    //finalFiles.push(file)
+                    finalFiles.push(file)
                 }
-                //console.log("after:"+decrypted)
             }
             
 
@@ -222,8 +219,9 @@ export default class EHRService{
     static async getEHR(patientID){
 
         // TODO: Look up correct CID with patientID
-        let cid = "bafybeiaghgh4wrgon7dk3yslq7aokkpc6s4rtn45oto3gqcd6mclvzshtq";
+        let cid = PlaceholderValues.ipfsCID;
 
+        console.log(cid)
         let apiToken = await EHRService.getWeb3StorageToken();
 
         let fs = new FileService(apiToken);
@@ -239,22 +237,22 @@ export default class EHRService{
 
         for (const file of fetchedFiles){
             let decrypted;
-            console.log("testing:"+file.name+" "+await file.text())
+            //console.log("testing:"+file.name+" "+await file.text())
+            let fileContent = await file.text();
+            console.log(fileContent)
+            let tag = fileContent.slice(0,24);
+            let iv = fileContent.slice(24,68);
+            let encrypted = fileContent.slice(68);
+            decrypted = await this.decrypt(encrypted, tag, iv);
             if(file.name == "prescriptions.json"){
-                // Decrypt
-                decrypted = await this.decrypt(await file.text());
                 // Parse
                 EHR.prescriptions = EHR.prescriptions.concat(await this.parseIntoArray(decrypted));
             }
             else if(file.name == "diagnoses.json"){
-                // Decrypt
-                decrypted = await this.decrypt(await file.text());
                 // Parse
                 EHR.diagnoses = EHR.diagnoses.concat(await this.parseIntoArray(decrypted));
             }
             else{
-                // Decrypt
-                decrypted = await this.decrypt(await file.text());
                 // Parse
                 EHR.journals = EHR.journals.concat(await this.parseIntoArray(decrypted));
             }
@@ -304,8 +302,11 @@ export default class EHRService{
         console.log("IV:"+x.iv.toString("base64"));
         console.log("Data:"+x.encryptedData);
         console.log("----------------------------------")
-        return x.encryptedData;
+
+        let result = "";
+        result = result.concat(x.Tag.toString("base64"),x.iv.toString("base64"),x.encryptedData);
         
+        return result;
         
     }
     /**

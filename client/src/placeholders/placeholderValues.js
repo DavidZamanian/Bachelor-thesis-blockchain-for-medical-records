@@ -4,16 +4,16 @@ export class PlaceholderValues{
 
 
   
-  static ipfsCID = "bafybeic2n6soaty4gjmhsnw2rywrxf2h6xdde4iupmlt5s5j7m67pvnfwa"
+  static ipfsCID = "bafybeib2w4dqgqzf57utwznbla3wt4sn7ounxkblehgrt4ov5uiboj66pq"
+  
+  static tagEHR           = "v0F4M64Xcw+HHJo5Xow70Q==";
+  static ivEHR =  "szZVrAUdUMo1XEdmGU0jOshALYYJ1bZGl8YpX4WYtKw=";
+                  "1dTkXS9xQBQxgqoMtmenEQ7vbFxnGTvhEIiyp9qr0c8d"
+  static tagPrescriptions = "mcU8ffB8ZybbUHNiPBAUKA==";
+  static ivPrescriptions = "Y5LA1ThHV6hsPGxWWR6VfGjwzJXxWLHWY88NgHX2Dx4=";
 
-  static tagEHR= "jnMCY+0ZKlHJdiAosx8lYQ==";
-  static ivEHR = "LY9Mrp3+GUagOweft09KM6CCkcs7FOxmuBtIs3jivP4=";
-
-  static tagPrescriptions = "ESJunxZldPBEV42HyZ8AgA==";
-  static ivPrescriptions = "RyAzlXYE9IL2Mv0QifOmZDxezTd7i7cXP/pqpX+61Ps=";
-
-  static tagDiagnoses = "ZEemAXGR33z/qEnbuEcHjA==";
-  static ivDiagnoses = "N1lnPOao8AKuHgLPfb0dUql2eVOc/15HCQyULxmzeww=";
+  static tagDiagnoses = "oso6cFFJxmT55WjbOzozag==";
+  static ivDiagnoses = "GFvkkz2Fkc9fi2RrpIi/jVMVath+MAvTjVUTipqqfHE=";
   
 
   static privateKey = `-----BEGIN PRIVATE KEY-----

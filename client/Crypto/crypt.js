@@ -25,12 +25,12 @@ function encryptEHR(record_key, EHR, medPers_privKey) {
     iv
   );
 
-  let encryptedEHR = cipher.update(Buffer.from(EHR, "base64"));
+  let encryptedEHR = cipher.update(Buffer.from(EHR, "utf8"));
   encryptedEHR = Buffer.concat([encryptedEHR, cipher.final()]);
 
   return {
     iv: iv.toString("base64"),
-    encryptedData: encryptedEHR.toString("base64"),
+    encryptedData: encryptedEHR.toString("hex"),
     Tag: cipher.getAuthTag(),
   };
 }
@@ -49,7 +49,7 @@ function decryptEHR(record_key, EHR, privateKey) {
   const decrypted_record_key = decryptRecordKey(record_key, privateKey);
   //console.log("###########After")
   let iv = Buffer.from(EHR.iv, "base64");
-  let encryptedEHR = Buffer.from(EHR.encryptedData, "base64");
+  let encryptedEHR = Buffer.from(EHR.encryptedData, "hex");
 
   let decipher = crypto.createDecipheriv(
     algorithm,
@@ -59,11 +59,11 @@ function decryptEHR(record_key, EHR, privateKey) {
   decipher.setAuthTag(EHR.Tag);
 
   // Updating encrypted text
-  let decryptedEHR = decipher.update(encryptedEHR, "base64");
+  let decryptedEHR = decipher.update(encryptedEHR);
   decryptedEHR = Buffer.concat([decryptedEHR, decipher.final()]);
   
   // returns data after decryption
-  return decryptedEHR.toString("base64").toString("utf-8");
+  return decryptedEHR.toString();
 }
 
 /**
