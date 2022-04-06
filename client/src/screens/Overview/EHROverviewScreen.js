@@ -224,13 +224,13 @@ export function EHROverviewScreen(props) {
     // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass. 
     const res = await connection.hasPermission("9801011111");
     // TESTING getPermissionedRegions - set your account to Account 10 for this to pass. 
-    //const res = await connection.getPermissionedRegions("9801011111");
+    // const res = await connection.getPermissionedRegions("9801011111");
     // TESTING getEHRCid - set your account to Account 2 or 3 for this to pass. 
-    //await connection.updateEHR("9801011111", "CID NR 1");
-    //const res = await connection.getEHRCid("9801011111"); //may have to run this separate from updateEHR
+    // await connection.updateEHR("9801011111", "CID NR 1");
+    // const res = await connection.getEHRCid("9801011111"); //may have to run this separate from updateEHR
     // TESTING setting new permissions - set your account to Account 10 for this to pass. 
-    //await connection.setPermissions("9801011111", ["1", "3"]);
-    //const res = await connection.getPermissionedRegions("9801011111"); //may have to run this separate from setPermissions
+    // await connection.setPermissions("9801011111", ["1", "3"]);
+    // const res = await connection.getPermissionedRegions("9801011111"); //may have to run this separate from setPermissions
     console.log(res);
     // ================
     console.log("Done discarding.");
