@@ -6,6 +6,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { AuthStackNavigator } from "./src/Navigation/AuthStackNavigator";
 import { MainStackNavigator } from "./src/Navigation/MainStackNavigator";
 import { SubmitContext } from "./contexts/SubmitContext";
+import { ChainConnectionContext } from "./contexts/ChainConnectionContext";
+import ChainConnectionFactory from "./src/chainConnection/chainConnectionFactory";
 import { RoleContext } from "./contexts/RoleContext";
 
 const RootStack = createStackNavigator(); //Contains all of our application
@@ -13,6 +15,12 @@ const RootStack = createStackNavigator(); //Contains all of our application
 function App() {
   const [data, setData] = React.useState(null);
   const { authentication, user, updateInfo } = apiService();
+
+  // set the single chainConnection instance to be used throughout the entire app. 
+  const [chainConnection] = React.useState({
+    chainConnection: ChainConnectionFactory.getChainConnection(),
+  });
+
   const [role, setRole] = useState("");
   const [userSSN, setUserSSN] = useState("");
   const [institution, setInstitution] = useState("");
@@ -26,6 +34,7 @@ function App() {
       .then((data) => setData(data.message));
   }, []);
   */
+
   /**
    * AuthContext makes the authentication methods reachable throughout the entire application
    *
@@ -36,7 +45,8 @@ function App() {
    */
 
   return (
-    <AuthContext.Provider value={authentication}>
+    <ChainConnectionContext.Provider value={chainConnection}>
+      <AuthContext.Provider value={authentication}>
       <RoleContext.Provider value={value}>
         <NavigationContainer>
           <RootStack.Navigator>
@@ -66,6 +76,7 @@ function App() {
         </NavigationContainer>
       </RoleContext.Provider>
     </AuthContext.Provider>
+    </ChainConnectionContext.Provider>
   );
 }
 

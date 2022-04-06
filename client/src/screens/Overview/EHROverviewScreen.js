@@ -8,12 +8,12 @@ import ThemeButton from "../../components/themeButton";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/Ionicons";
 import theme from "../../theme.style";
-
 import { database, ref, onValue } from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext";
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { RoleContext } from "../../../contexts/RoleContext";
 import EHRService from "../../Helpers/ehrService";
+import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
 
 
 export function EHROverviewScreen(props) {
@@ -25,6 +25,7 @@ export function EHROverviewScreen(props) {
   const route = useRoute();
   const navigation = useNavigation();
 
+  const { chainConnection } = React.useContext(ChainConnectionContext);
 
   const [state, setState] = useState({
     doctorRole: (role == "doctor"),
@@ -212,7 +213,26 @@ export function EHROverviewScreen(props) {
     setPhoneNr(state.patientInfo.phoneNr);
   };
 
-  const discardContactInfo = () => {
+  const discardContactInfo = async () => {
+    //TODO REMOVE ALL LINES UP UNTIL ...
+    console.log("Discarding..."); //TODO REMOVE
+    const connection = await chainConnection;
+    console.log(connection); //print the connection object to inspect things such as address used
+    // ====== TESTS: comment out all but the one you want to try and see result in your console =====
+    // TESTING hasPermission - set your account to either Account 2 or Account 10 for this to pass. 
+    const res = await connection.hasPermission("p_gbg");
+    // TESTING getPermissionedRegions - set your account to Account 10 for this to pass. 
+    //const res = await connection.getPermissionedRegions("p_gbg");
+    // TESTING getEHRCid - set your account to Account 1 for this to pass. 
+    //await connection.updateEHR("p_gbg", "CID NR 1");
+    //const res = await connection.getEHRCid("p_gbg"); //may have to run this separate from updateEHR
+    // TESTING setting new permissions - set your account to Account 10 for this to pass. 
+    //await connection.setPermissions("p_boras", ["boras", "gbg"]);
+    //const res = await connection.getPermissionedRegions("p_boras"); //may have to run this separate from setPermissions
+    console.log(res);
+    // ================
+    console.log("Done discarding.");
+    // UNTIL HERE
     toggleEditingContactInfo(false);
   };
 

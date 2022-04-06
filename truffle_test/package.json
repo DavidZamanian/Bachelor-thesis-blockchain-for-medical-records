@@ -1,0 +1,14 @@
+{
+    "name": "react-node-app",
+    "version": "1.0.0",
+    "description": "",
+    "type": "commonjs",
+    "main": "echo \"Error: no main specified\" && exit 1",
+    "scripts": {
+      "test": "mocha",
+      "start": "echo \"Error: no start specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+  }

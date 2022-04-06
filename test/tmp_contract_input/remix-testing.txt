@@ -1,0 +1,48 @@
+doc_addr = 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
+doc2_addr = 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db
+pat_addr = 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2
+no_doc_addr = 0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB
+
+addHealtcareInstitution(
+    inst, ostra, gbg
+)
+
+addHealtcareInstitution(
+    inst_in_skovde, some_name, skovde
+)
+
+addHealtcareInstitution(
+    no_inst, vastra, no_permission_region
+)
+
+addMedicalPersonnel(
+    0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, doc, inst
+)
+
+addMedicalPersonnel(
+    0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db, doc2, inst_in_skovde
+)
+
+addMedicalPersonnel(
+    0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB, no_doc, no_inst
+)
+
+addPatient(
+    0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, pat, ["gbg", "boras"]
+)
+
+// must be done by doc (no other account has permission)
+updateEHR(
+    pat, <cid>
+)
+
+//must be done by pat (no other account has permission)
+updatePermissions(
+    pat, skovde
+)
+
+// can only be called by pat or doc
+// returns <cid>
+getEHRCid(
+    pat
+)

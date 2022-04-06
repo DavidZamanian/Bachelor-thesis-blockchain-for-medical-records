@@ -20,6 +20,7 @@
     "react-native": "https://github.com/expo/react-native/archive/sdk-44.0.0.tar.gz",
     "react-native-vector-icons": "^9.1.0",
     "react-native-web": "^0.17.6",
+    "web3": "^1.7.1",
     "web3.storage": "^4.0.0"
   },
   "devDependencies": {
