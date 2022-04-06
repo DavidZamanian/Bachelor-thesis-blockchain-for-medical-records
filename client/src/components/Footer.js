@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     footer : {
         position: 'fixed',
         bottom: 0,
-        height: 40,
+        height: theme.FOOTER_HEIGHT,
         width: '100%',
         backgroundColor: theme.SECONDARY_COLOR,
         textAlign: 'center',

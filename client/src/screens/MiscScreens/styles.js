@@ -3,6 +3,7 @@ import theme from "../../theme.style";
 
 const styles = StyleSheet.create({
     content:{
+        top:theme.NAVBAR_HEIGHT,
         padding:50,
         width:"100%",
         height:"100%",

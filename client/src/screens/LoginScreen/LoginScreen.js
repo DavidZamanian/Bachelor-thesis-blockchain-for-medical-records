@@ -31,7 +31,7 @@ export function LoginScreen() {
 
   return (
     <View style={styles.main}>
-      <Header />
+      
       <View style={styles.content}>
         <View style={styles.splitContainer}>
           <View
@@ -107,6 +107,7 @@ export function LoginScreen() {
           </View>
         </View>
       </View>
+      <Header />
       <Footer />
     </View>
   );

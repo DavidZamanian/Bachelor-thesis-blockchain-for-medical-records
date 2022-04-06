@@ -281,7 +281,7 @@ export function EHROverviewScreen(props) {
 
   return (
     <View>
-      <Header />
+      
       <View style={styles.content}>
         <Modal
           animationType="none"
@@ -681,6 +681,7 @@ export function EHROverviewScreen(props) {
         </View>
       </View>
       <Footer />
+      <Header />
     </View>
   );
 }
