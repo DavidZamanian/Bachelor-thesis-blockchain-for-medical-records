@@ -45,9 +45,9 @@ function encryptEHR(record_key, EHR, medPers_privKey) {
  * @returns The decrypted EHR in string.
  */
 function decryptEHR(record_key, EHR, privateKey) {
-  console.log("###########Before")
+  //console.log("###########Before")
   const decrypted_record_key = decryptRecordKey(record_key, privateKey);
-  console.log("###########After")
+  //console.log("###########After")
   let iv = Buffer.from(EHR.iv, "base64");
   let encryptedEHR = Buffer.from(EHR.encryptedData, "base64");
 

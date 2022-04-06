@@ -121,9 +121,9 @@ export default class EHRService{
 
             // FETCH OLD FILES
             let oldCID = PlaceholderValues.ipfsCID;
-            console.log("testb4")
+            console.log("Attempting Fetch")
             let fetchedFiles = await fs.fetchEHRFiles(oldCID);
-            console.log("test")
+            console.log("Fetch success, found "+fetchedFiles.length+" files!")
 
             let oldFiles = [];
 
@@ -132,7 +132,7 @@ export default class EHRService{
             
             for (const file of fetchedFiles){
                 let decrypted;
-                console.log(file.name+"before:"+await file.text())
+                console.log("Fetched: "+file.name)
                 if(file.name == "prescriptions.json"){
                     // Decrypt
                     
@@ -152,7 +152,7 @@ export default class EHRService{
                     decrypted = await this.decrypt(await file.text(), PlaceholderValues.tagEHR, PlaceholderValues.ivEHR);
                     //finalFiles.push(file)
                 }
-                console.log("after:"+decrypted)
+                //console.log("after:"+decrypted)
             }
             
 
