@@ -11,7 +11,8 @@ export default class ChainConnectionFactory {
      * Initializes a ChainConnection instance and sets all state variables iff
      * no instance has been previously initialized. Else returns the previously
      * initialized instance. 
-     * @returns {ChainConnection} instance with state variables set. 
+     * @returns {Promise<ChainConnection>} instance with state variables set. 
+     * @throws {ChainConnectionError} if the web3 provider, contract or accounts were not loaded correctly. 
      */
     static async getChainConnection() {
         // singleton ChainConnection object. Do not init if already initialized.
@@ -19,7 +20,7 @@ export default class ChainConnectionFactory {
             console.log("Initializing ChainConnection...");
             this._chainConnection = new ChainConnection();
             await this._chainConnection.init();
-            console.log("ChainConnectin Initialized.");
+            console.log("ChainConnection Initialized.");
             return this._chainConnection;
         }
     }
