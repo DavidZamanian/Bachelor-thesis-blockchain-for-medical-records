@@ -147,17 +147,17 @@ export default class EHRService{
             let prescriptionsFile = await FileService.createJSONFile(encryptedPrescriptions,"prescriptions");
             let diagnosesFile = await FileService.createJSONFile(encryptedDiagnoses,"diagnoses");
 
-            // Put JSON files into list and upload
+            // Put files into list and upload
             finalFiles.push(ehrFile,prescriptionsFile,diagnosesFile);
 
-            // Retrieve CID and return it
+            // Retrieve CID
             let cid = await fs.uploadFiles(finalFiles);
             
             // TESTING ONLY
             // Testing if the cid and the files were uploaded
             console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n"+`https://${cid}.ipfs.dweb.link/`)
             for (const file of finalFiles){
-            console.log(file.name+": "+(await file.text()).toString("base64"));
+                console.log(file.name+": "+(await file.text()).toString("base64"));
             }
 
             return "Success";
@@ -177,6 +177,7 @@ export default class EHRService{
     }
 
     /**
+     * Method for downloading, decrypting and parsing files from IPFS.
      * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
      * @returns {Promise<{ 
      * prescriptions: Array<string>, 
@@ -185,17 +186,20 @@ export default class EHRService{
      * encryptedEHRFiles: Array<File>,
      * nextIndex: number
      * }>}
-     * If keepEHRencrypted is true, decryptedEHRs will be empty. If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
+     * If keepEHRencrypted is true, decryptedEHRs will be empty. 
+     * If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
+     * @author Christopher Molin
      */
     static async getFiles(keepEHRencrypted){
+
+        let apiToken = await EHRService.getWeb3StorageToken()
+        let fs = new FileService(apiToken);
 
         let prescriptions = []
         let diagnoses = []
         let decryptedEHRs = []
         let encryptedEHRFiles = []
-
-        let apiToken = await EHRService.getWeb3StorageToken()
-        let fs = new FileService(apiToken);
+        
         let cid = PlaceholderValues.ipfsCID
         let filesAndIndex = await fs.fetchEHRFiles(cid, keepEHRencrypted);
             
