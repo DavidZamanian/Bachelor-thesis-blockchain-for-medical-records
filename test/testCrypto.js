@@ -14,6 +14,7 @@ const example_directory = "./test/json_examples";
 var record_key = crypto.KeyObject;
 let privateKey;
 let publicKey;
+var derivedKey;
 
 describe("Test crypto", function () {
   // Generate keys
@@ -25,12 +26,31 @@ describe("Test crypto", function () {
     var salt =
       "4E635266556A586E3272357538782F413F4428472D4B6150645367566B5970337336763979244226452948404D6251655468576D5A7134743777217A25432A46";
     var password = "password123";
-    var derivedKey;
+    
 
     // check if a key can be derived from the password
     assert.doesNotThrow(() => {
       derivedKey = crypt.derivePrivateKeyFromPassword(password, salt);
+      
     });
+    console.log("DerivedKey:\n"+derivedKey)
+    console.log("private:\n"+privateKey)
+
+    console.log("REAL Derived: "+derivedKey.toString().length)
+    console.log("Hardcoded privatekey: "+privateKey.toString().length)
+    
+
+
+    //fs.writeFileSync("derived_key", derivedKey);
+    var publicKey;
+
+    //console.log("Public key: " + crypt.extractPublicKeyFromPrivateKey(privateKey));
+    // check if a publicKey can be derived from a privateKey
+    assert.doesNotThrow(() => {
+      publicKey = crypt.extractPublicKeyFromPrivateKey(derivedKey);
+    });
+    console.log("DerivedPublic:\n"+publicKey)
+    
   });
 
   //Test key derivation function
@@ -159,6 +179,6 @@ HHivzD+EFv2LcyWtUwIDAQAB
 -----END PUBLIC KEY-----
 `;
 
-  console.log(publicKey)
-  console.log(privateKey)
+  //console.log(publicKey)
+  //console.log(privateKey)
 }
