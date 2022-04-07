@@ -221,18 +221,18 @@ export function EHROverviewScreen(props) {
     const connection = await chainConnection;
     console.log(connection); //print the connection object to inspect things such as address used
     // ====== TESTS: comment out all but the one you want to try and see result in your console =====
-    // ACCOUNT 10: Patient p_gbg's account. 
-    // ACCOUNT 2: account of Doctor dy (in gbg) with access to p_gbg. 
-    // TESTING hasPermission - set your account to either Account 2 or Account 10 for this to pass. 
-    const res = await connection.hasPermission("p_gbg");
+    // ACCOUNT 10: Patient 9801011111 account. 
+    // ACCOUNT 2, 3: account of a doctor in region 1 with access to 9801011111. 
+    // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass. 
+    const res = await connection.hasPermission("9801011111");
     // TESTING getPermissionedRegions - set your account to Account 10 for this to pass. 
-    //const res = await connection.getPermissionedRegions("p_gbg");
-    // TESTING getEHRCid - set your account to Account 2 for this to pass. 
-    //await connection.updateEHR("p_gbg", "CID NR 1");
-    //const res = await connection.getEHRCid("p_gbg"); //may have to run this separate from updateEHR
+    // const res = await connection.getPermissionedRegions("9801011111");
+    // TESTING getEHRCid - set your account to Account 2 or 3 for this to pass. 
+    // await connection.updateEHR("9801011111", "CID NR 1");
+    // const res = await connection.getEHRCid("9801011111"); //may have to run this separate from updateEHR
     // TESTING setting new permissions - set your account to Account 10 for this to pass. 
-    //await connection.setPermissions("p_boras", ["boras", "gbg"]);
-    //const res = await connection.getPermissionedRegions("p_boras"); //may have to run this separate from setPermissions
+    // await connection.setPermissions("9801011111", ["1", "3"]);
+    // const res = await connection.getPermissionedRegions("9801011111"); //may have to run this separate from setPermissions
     console.log(res);
     // ================
     console.log("Done discarding.");
