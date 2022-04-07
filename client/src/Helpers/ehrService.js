@@ -178,13 +178,13 @@ export default class EHRService{
 
     /**
      * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
-     * @returns {{ 
+     * @returns {Promise<{ 
      * prescriptions: Array<string>, 
      * diagnoses: Array<string>,
      * decryptedEHRs: Array<object>,
      * encryptedEHRFiles: Array<File>,
      * nextIndex: number
-     * }}
+     * }>}
      * If keepEHRencrypted is true, decryptedEHRs will be empty. If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
      */
     static async getFiles(keepEHRencrypted){
