@@ -109,7 +109,7 @@ function decryptRecordKey(recordKey, privateKey) {
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
   var iterations = 10000;
-  var outputBitLen = 512;
+  var outputBitLen = 632;
   var hashAlgo = "sha512";
 
   hexKey = crypto.pbkdf2Sync(
@@ -119,7 +119,18 @@ function derivePrivateKeyFromPassword(password, salt) {
     outputBitLen,
     hashAlgo
   );
-  return hexKey.toString("base64");
+  
+
+
+  let key = `-----BEGIN PRIVATE KEY-----\n`;
+  for (var i = 0; i < 14; i++){
+    let row = hexKey.toString("base64").slice(64*i,(64*i+64))
+    key = key.concat(row+"\n")
+  }
+  key = key.concat(`-----END PRIVATE KEY-----\n`);
+
+
+  return key.toString("base64")//hexKey.toString("base64")
 }
 /**
  * Creates a publicKey from a given privateKey
