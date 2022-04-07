@@ -104,11 +104,11 @@ function decryptRecordKey(recordKey, privateKey) {
  *
  * @param {*} password The password of the user login
  * @param {*} salt The salt used in the hasing. This should be stored in database (can be public)
- * @returns The privateKey that has been derived from the password
+ * @returns {Promise<string>} The privateKey that has been derived from the password
  */
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
-  var iterations = 100000;
+  var iterations = 10000;
   var outputBitLen = 512;
   var hashAlgo = "sha512";
 

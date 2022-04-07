@@ -10,6 +10,7 @@ import {
 } from "@firebase/auth";
 import { ref, update, onValue } from "firebase/database";
 import { UserDataContext } from "../contexts/UserDataContext";
+import { derivePrivateKeyFromPassword } from "../Crypto/crypt";
 
 /**
  * All the methods contacting firebase. Maybe add methods to contact backend aswell,
@@ -21,7 +22,7 @@ import { UserDataContext } from "../contexts/UserDataContext";
 export function apiService() {
   const [user, setUser] = useState();
   const auth = getAuth();
-  const { setRole, setUserSSN, setInstitution } = React.useContext(UserDataContext);
+  const { setRole, setUserSSN, setInstitution, setPrivateKey } = React.useContext(UserDataContext);
 
   //Keeps track if user is logged in or not
   React.useEffect(() => {
@@ -48,6 +49,25 @@ export function apiService() {
     });
     return subscriber;
   }, []);
+
+  const getSalt = async () => {
+    console.log("attempting fetch:"+auth.currentUser.uid)
+    try{
+      
+      let dbRef = ref(database);
+      const salt = await get(child(dbRef, 'mapUser/' + auth.currentUser.uid+"/salt"))
+      if (salt.val()){
+        return salt.val()
+      }
+      else{
+        console.log("error")
+        return "error";
+      }
+    }
+    catch(e){
+      console.log(e)
+    }
+  }
 
   const updateInfo = React.useMemo(
     () => ({
@@ -96,15 +116,27 @@ export function apiService() {
   const authentication = React.useMemo(
     () => ({
       login: async (email, password) => {
-        return new Promise(function (resolve, reject) {
+        
+        let x = await new Promise(function (resolve, reject) {
           signInWithEmailAndPassword(auth, email, password)
-            .then(() => {
+            .then( async () => {
               resolve("Sign In Success");
             })
             .catch((error) => {
               reject(error);
             });
         });
+
+        console.log("getting salt")
+          
+        let salt = await getSalt();
+        console.log("got salt:"+salt)
+        
+        let privateKey = await derivePrivateKeyFromPassword(password, salt);
+        console.log("Password:"+password+"\nSalt:"+salt+"\nPrivateKey:"+privateKey)
+        setPrivateKey(privateKey)
+
+        return x;
       },
       logOut: async () => {
         return new Promise(function (resolve, reject) {

@@ -29,6 +29,14 @@ export function LoginScreen() {
     );
   };
 
+  const logIn = async () => {
+    try {
+      await login(email, password);
+    } catch (e) {
+      alert(e);
+    }
+  }
+
   return (
     <View style={styles.main}>
       
@@ -70,13 +78,7 @@ export function LoginScreen() {
                   iconName="key"
                   labelText="Login"
                   labelSize={25}
-                  onPress={async () => {
-                    try {
-                      await login(email, password);
-                    } catch (e) {
-                      alert(e);
-                    }
-                  }}
+                  onPress={logIn}
                 />
               </View>
             </View>
