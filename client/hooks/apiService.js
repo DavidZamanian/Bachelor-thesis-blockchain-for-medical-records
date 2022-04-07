@@ -10,7 +10,7 @@ import {
 } from "@firebase/auth";
 import { ref, update, onValue } from "firebase/database";
 import { UserDataContext } from "../contexts/UserDataContext";
-import { derivePrivateKeyFromPassword } from "../Crypto/crypt";
+import { derivePrivateKeyFromPassword, extractPublicKeyFromPrivateKey } from "../Crypto/crypt";
 
 /**
  * All the methods contacting firebase. Maybe add methods to contact backend aswell,
@@ -22,7 +22,7 @@ import { derivePrivateKeyFromPassword } from "../Crypto/crypt";
 export function apiService() {
   const [user, setUser] = useState();
   const auth = getAuth();
-  const { setRole, setUserSSN, setInstitution, setPrivateKey } = React.useContext(UserDataContext);
+  const { setRole, setUserSSN, setInstitution, setPrivateKey, setPublicKey } = React.useContext(UserDataContext);
 
   //Keeps track if user is logged in or not
   React.useEffect(() => {
@@ -135,7 +135,8 @@ export function apiService() {
         let privateKey = await derivePrivateKeyFromPassword(password, salt);
         console.log("Password:"+password+"\nSalt:"+salt+"\nPrivateKey:"+privateKey)
         setPrivateKey(privateKey)
-
+        let publicKey = await extractPublicKeyFromPrivateKey(privateKey);
+        setPublicKey(publicKey)
         return x;
       },
       logOut: async () => {

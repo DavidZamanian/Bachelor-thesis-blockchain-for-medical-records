@@ -21,6 +21,7 @@ function App() {
   });
 
   const [privateKey, setPrivateKey] = useState("");
+  const [publicKey, setPublicKey] = useState("");
 
   const [role, setRole] = useState("");
   const [userSSN, setUserSSN] = useState("");

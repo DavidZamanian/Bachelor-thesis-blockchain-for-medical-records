@@ -9,4 +9,6 @@ export const UserDataContext = createContext({
   setInstitution: () => {},
   privateKey: "",
   setPrivateKey: () => {},
+  publicKey: "",
+  setPublicKey: () => {},
 });
