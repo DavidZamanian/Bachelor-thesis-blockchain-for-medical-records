@@ -13,27 +13,27 @@ import { RoleContext } from "./contexts/RoleContext";
 const RootStack = createStackNavigator(); //Contains all of our application
 
 function App() {
-  const [data, setData] = React.useState(null);
   const { authentication, user, updateInfo } = apiService();
 
-  // set the single chainConnection instance to be used throughout the entire app. 
+  // set the single chainConnection instance to be used throughout the entire app.
   const [chainConnection] = React.useState({
     chainConnection: ChainConnectionFactory.getChainConnection(),
   });
 
+  const [privateKey, setPrivateKey] = useState("");
   const [role, setRole] = useState("");
   const [userSSN, setUserSSN] = useState("");
   const [institution, setInstitution] = useState("");
-  const value = { role, setRole, userSSN, setUserSSN, institution, setInstitution };
-
-  //For testing only
-  /*
-  React.useEffect(() => {
-    fetch("http://localhost:4000/api")
-      .then((res) => res.json())
-      .then((data) => setData(data.message));
-  }, []);
-  */
+  const value = {
+    role,
+    setRole,
+    userSSN,
+    setUserSSN,
+    institution,
+    setInstitution,
+    privateKey,
+    setPrivateKey,
+  };
 
   /**
    * AuthContext makes the authentication methods reachable throughout the entire application
@@ -47,35 +47,35 @@ function App() {
   return (
     <ChainConnectionContext.Provider value={chainConnection}>
       <AuthContext.Provider value={authentication}>
-      <RoleContext.Provider value={value}>
-        <NavigationContainer>
-          <RootStack.Navigator>
-            {user && role != ""? (
-              <RootStack.Screen
-                options={{
-                  headerShown: false,
-                }}
-                name="MainStack"
-              >
-                {() => (
-                  <SubmitContext.Provider value={updateInfo}>
-                    <MainStackNavigator />
-                  </SubmitContext.Provider>
-                )}
-              </RootStack.Screen>
-            ) : (
-              <RootStack.Screen
-                options={{
-                  headerShown: false,
-                }}
-                name="AuthStack"
-                component={AuthStackNavigator}
-              />
-            )}
-          </RootStack.Navigator>
-        </NavigationContainer>
-      </RoleContext.Provider>
-    </AuthContext.Provider>
+        <RoleContext.Provider value={value}>
+          <NavigationContainer>
+            <RootStack.Navigator>
+              {user && role != "" ? (
+                <RootStack.Screen
+                  options={{
+                    headerShown: false,
+                  }}
+                  name="MainStack"
+                >
+                  {() => (
+                    <SubmitContext.Provider value={updateInfo}>
+                      <MainStackNavigator />
+                    </SubmitContext.Provider>
+                  )}
+                </RootStack.Screen>
+              ) : (
+                <RootStack.Screen
+                  options={{
+                    headerShown: false,
+                  }}
+                  name="AuthStack"
+                  component={AuthStackNavigator}
+                />
+              )}
+            </RootStack.Navigator>
+          </NavigationContainer>
+        </RoleContext.Provider>
+      </AuthContext.Provider>
     </ChainConnectionContext.Provider>
   );
 }
