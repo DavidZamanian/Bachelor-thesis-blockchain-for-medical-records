@@ -10,7 +10,7 @@ import styles from "../../../styles";
 import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
 import EHRService from "../../../Helpers/ehrService";
-import { RoleContext } from "../../../../contexts/RoleContext";
+import { UserDataContext } from "../../../../contexts/UserDataContext";
 
 
 export function NewEntryScreen(props) {
@@ -18,7 +18,7 @@ export function NewEntryScreen(props) {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const { role, userSSN, institution } = React.useContext(RoleContext);
+  const { role, userSSN, institution } = React.useContext(UserDataContext);
 
   if (role != "doctor"){
     alert("WARNING: NOT A DOCTOR");

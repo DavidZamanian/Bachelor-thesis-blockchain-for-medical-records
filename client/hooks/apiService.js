@@ -9,7 +9,7 @@ import {
   onAuthStateChanged,
 } from "@firebase/auth";
 import { ref, update, onValue } from "firebase/database";
-import { RoleContext } from "../contexts/RoleContext";
+import { UserDataContext } from "../contexts/UserDataContext";
 
 /**
  * All the methods contacting firebase. Maybe add methods to contact backend aswell,
@@ -21,7 +21,7 @@ import { RoleContext } from "../contexts/RoleContext";
 export function apiService() {
   const [user, setUser] = useState();
   const auth = getAuth();
-  const { setRole, setUserSSN, setInstitution } = React.useContext(RoleContext);
+  const { setRole, setUserSSN, setInstitution } = React.useContext(UserDataContext);
 
   //Keeps track if user is logged in or not
   React.useEffect(() => {

@@ -6,14 +6,14 @@ import { apiService } from "../../../hooks/apiService";
 import { useNavigation } from "@react-navigation/native";
 import NavbarButton from "../navbarButton";
 import theme from "../../theme.style";
-import { RoleContext } from "../../../contexts/RoleContext";
+import { UserDataContext } from "../../../contexts/UserDataContext";
 
 
 const Header = () => {
   const { authentication, user } = apiService();
   const { logOut } = React.useContext(AuthContext);
 
-  const { role } = React.useContext(RoleContext);
+  const { role } = React.useContext(UserDataContext);
 
   const navigation = useNavigation();
   const onPressContact = () => {

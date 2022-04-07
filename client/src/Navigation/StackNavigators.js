@@ -5,7 +5,7 @@ import { NewEntryScreen } from "../screens/StaffScreens/NewEntryScreen/NewEntryS
 import { PatientSearchScreen } from "../screens/StaffScreens/PatientSearchScreen/PatientSearchScreen";
 import { AboutScreen } from "../screens/MiscScreens/AboutScreen";
 import { ContactScreen } from "../screens/MiscScreens/ContactScreen";
-import { RoleContext } from "../../contexts/RoleContext";
+import { UserDataContext } from "../../contexts/UserDataContext";
 
 const Stack = createStackNavigator();
 
@@ -22,7 +22,7 @@ const Stack = createStackNavigator();
 //every screen right now. Might come up with a better solution in the future.
 const StackNavigators = () => {
 
-  const { role } = React.useContext(RoleContext);
+  const { role } = React.useContext(UserDataContext);
 
   return (
     <Stack.Navigator initialRouteName={role == "doctor" ? "PatientSearchScreen" : "EHROverview"}>

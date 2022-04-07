@@ -11,7 +11,7 @@ import theme from "../../theme.style";
 import { database, ref, onValue } from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext";
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
-import { RoleContext } from "../../../contexts/RoleContext";
+import { UserDataContext } from "../../../contexts/UserDataContext";
 import EHRService from "../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
 
@@ -21,7 +21,7 @@ export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
-  const { role, userSSN } = React.useContext(RoleContext);
+  const { role, userSSN } = React.useContext(UserDataContext);
   const route = useRoute();
   const navigation = useNavigation();
 

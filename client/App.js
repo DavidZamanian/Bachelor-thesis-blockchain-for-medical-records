@@ -8,7 +8,7 @@ import { MainStackNavigator } from "./src/Navigation/MainStackNavigator";
 import { SubmitContext } from "./contexts/SubmitContext";
 import { ChainConnectionContext } from "./contexts/ChainConnectionContext";
 import ChainConnectionFactory from "./src/chainConnection/chainConnectionFactory";
-import { RoleContext } from "./contexts/RoleContext";
+import { UserDataContext } from "./contexts/UserDataContext";
 
 const RootStack = createStackNavigator(); //Contains all of our application
 
@@ -47,7 +47,7 @@ function App() {
   return (
     <ChainConnectionContext.Provider value={chainConnection}>
       <AuthContext.Provider value={authentication}>
-        <RoleContext.Provider value={value}>
+        <UserDataContext.Provider value={value}>
           <NavigationContainer>
             <RootStack.Navigator>
               {user && role != "" ? (
@@ -74,7 +74,7 @@ function App() {
               )}
             </RootStack.Navigator>
           </NavigationContainer>
-        </RoleContext.Provider>
+        </UserDataContext.Provider>
       </AuthContext.Provider>
     </ChainConnectionContext.Provider>
   );
