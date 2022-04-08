@@ -42,6 +42,7 @@ export function EHROverviewScreen(props) {
     showWarning: false,
     regionSnapshot: [],
     isLoading: true,
+    allIsChecked: false,
   });
 
 
@@ -197,6 +198,21 @@ export function EHROverviewScreen(props) {
     }));
   };
 
+  const toggleAllCheckbox = () => {
+    let updated = [];
+    let newEnabled = !state.allIsChecked;
+    for (let region of state.regions){
+      updated.push({ name: region.name, enabled: newEnabled, id: region.id })
+    }
+    
+
+    setState((prevState) => ({
+      ...prevState,
+      allIsChecked: newEnabled,
+      regions: updated,
+    }));
+  };
+
   /*
     Method for redirecting to NewEntryScreen to make a new EHR entry
     Possibly check privilege before proceeding?
@@ -346,6 +362,16 @@ export function EHROverviewScreen(props) {
                   checking the corresponding box. Regions you currently have
                   given permission to are pre-filled.
                 </Text>
+                  <View style={[styles.regionContainer,{width:"100%",justifyContent:"center", borderColor:"black",borderWidth:1}]}>
+                    <TouchableOpacity style={[styles.checkbox,{backgroundColor: state.allIsChecked? theme.PRIMARY_COLOR: "white",},]}
+                      onPress={() => toggleAllCheckbox()}
+                    >
+                      {state.allIsChecked && (
+                        <Icon name="checkmark-outline" size={20}color="white"/>
+                      )}
+                    </TouchableOpacity>
+                    <Text style={styles.regionLabel}>Toggle all regions On or Off</Text>
+                  </View>
                 <FlatList
                   style={styles.regionList}
                   data={state.regions}
