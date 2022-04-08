@@ -120,13 +120,7 @@ export default class FileService{
             }
         } while(keepSearching)
 
-        if (getNextEHRIndex){
-            return {files: results, index: index};
-        }
-        else{
-            return {files: results, index: -1};
-        }
-        
+        return {files: results, index: (getNextEHRIndex ? index: -1)};  
     }
 
 
