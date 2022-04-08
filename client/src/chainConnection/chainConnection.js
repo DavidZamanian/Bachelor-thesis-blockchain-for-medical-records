@@ -1,6 +1,7 @@
 import Block4EHR from "../../../build/contracts/Block4EHR.json";
 import getWeb3 from "./getWeb3";
 import ChainOperationDeniedError from "./chainOperationDeniedError";
+import ChainConnectionError from "./chainConnectionError";
 
 /**
  * Handles the connection to the smart contract Block4EHR on the blockchain. 
@@ -157,6 +158,26 @@ export default class ChainConnection {
           .send({ from: accounts[0] });
     } catch (err) {
       throw new ChainOperationDeniedError(err.message);
+    }
+  }
+
+  /**
+   * Get the list of all regions on the chain.
+   * @returns {Array<Object>} Array of Region objects, with properties `id` and `name`. 
+   * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
+   *  due to a network error. 
+   * @author Hampus Jernkrook
+   */
+  async getAllRegions() {
+    try {
+      const { accounts, contract } = this.state;
+      const regions = await contract.methods
+        .getRegions()
+        .call({ from: accounts[0] });
+      return regions;
+    } catch (err) {
+      throw new ChainConnectionError(`Could not get regions from the chain.`+
+        `Error thrown with message: ${err.message}`);
     }
   }
 }
