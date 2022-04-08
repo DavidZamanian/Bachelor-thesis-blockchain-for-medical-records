@@ -26,6 +26,23 @@ module.exports = function (deployer, network, accounts) {
     await instance.addRegion("1", "Stockholm");
     await instance.addRegion("2", "Uppsala");
     await instance.addRegion("3", "Sörmland");
+    await instance.addRegion("4", "Östergötland");
+    await instance.addRegion("5", "Jönköping");
+    await instance.addRegion("6", "Kalmar");
+    await instance.addRegion("7", "Gotland");
+    await instance.addRegion("8", "Blekinge");
+    await instance.addRegion("9", "Skåne");
+    await instance.addRegion("10", "Halland");
+    await instance.addRegion("11", "Västra Götaland");
+    await instance.addRegion("12", "Värmland");
+    await instance.addRegion("13", "Örebro");
+    await instance.addRegion("14", "Västmanland");
+    await instance.addRegion("15", "Dalarna");
+    await instance.addRegion("16", "Gävleborg");
+    await instance.addRegion("17", "Västernorrland");
+    await instance.addRegion("18", "Jämtland Härjedalen");
+    await instance.addRegion("19", "Västerbotten");
+    await instance.addRegion("20", "Norrbotten");
 
     // ==== ADDING INSTITUTIONS ====
     // FORM: <id, name, region_id>
