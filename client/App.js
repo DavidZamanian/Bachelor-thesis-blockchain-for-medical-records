@@ -17,6 +17,7 @@ function App() {
   const { authentication, user, updateInfo } = apiService();
 
   // set the single chainConnection instance to be used throughout the entire app. 
+  // This is async, so chainConnection will need to be awaited wherever used. 
   const [chainConnection] = React.useState({
     chainConnection: ChainConnectionFactory.getChainConnection(),
   });
