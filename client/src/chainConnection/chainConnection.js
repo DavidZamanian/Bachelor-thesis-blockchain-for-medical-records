@@ -52,18 +52,10 @@ export default class ChainConnection {
       this.setState({ web3, accounts, contract: instance });
     } catch (error) {
       alert(`FATAL: Failed to connect to the blockchain system.\n`+
-        `- If not already connected, please connect your Metamask account.\n`+
-        `- Thereafter, click OK below, and the page will reload and allow you to log in.`
+        `- If not already connected, you need to allow Metamask to connect to the site.\n` + 
+        `- Click OK below to reload the page. Metamask will prompt you to connect.`
       );
-      window.location.reload();
-
-      /*
-      // Catch any errors for any of the above operations.
-      alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`
-      ); //TODO: change this to something more user friendly and ask user to reload the page and allow metamask to connect. 
-      throw new ChainConnectionError(`Failed to load web3, accounts, or contract. Error thrown with message:\n ${error.message}`);
-    */
+      window.location.reload(); // reload the page. 
     }
     console.log("Done init()");
   }
