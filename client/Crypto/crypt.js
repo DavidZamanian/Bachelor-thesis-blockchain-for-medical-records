@@ -108,7 +108,7 @@ function decryptRecordKey(recordKey, privateKey) {
  */
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
-  var iterations = 10000;
+  var iterations = 100;
   var outputBitLen = 632;
   var hashAlgo = "sha512";
 
