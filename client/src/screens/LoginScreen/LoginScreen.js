@@ -110,7 +110,7 @@ export function LoginScreen() {
             />
             <BulletPoint
               labelText=" Take control of your data"
-              descText=" - decide who can access your data"
+              descText=" - decide who can access your data!"
               iconName="lock-closed"
             />
           </View>
