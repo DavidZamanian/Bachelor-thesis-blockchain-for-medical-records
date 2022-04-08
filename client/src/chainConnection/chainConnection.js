@@ -163,7 +163,7 @@ export default class ChainConnection {
 
   /**
    * Get the list of all regions on the chain.
-   * @returns {Array<Object>} Array of Region objects, with properties `id` and `name`. 
+   * @returns {Promise<Array<Array<string>>>} Array of Region objects, with properties `id` and `name`. 
    * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
    *  due to a network error. 
    * @author Hampus Jernkrook

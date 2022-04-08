@@ -73,7 +73,9 @@ export function EHROverviewScreen(props) {
           
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
 
-          const allRegions = await EHRService.getRegions();
+          let connection = await chainConnection;
+          let allRegions = await connection.getAllRegions();
+          //const allRegions = await EHRService.getRegions();
           const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 
           let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
@@ -86,18 +88,26 @@ export function EHROverviewScreen(props) {
           patientJournals.forEach(() => journalIndexes.push(false));
 
           let regionIndexes = [];
+
           allRegions.forEach((reg) =>
-            regionIndexes.push({ name: reg, enabled: false })
+            {
+              //console.log(reg)
+              regionIndexes.push({ id: reg[0], name: reg[1], enabled: false })
+            }
           );
           patientPermittedRegions.forEach(
             (reg) => (regionIndexes.find((r) => r.name === reg).enabled = true)
           );
+
+          //console.log(regionIndexes)
 
           setState((prevState) => ({
             ...prevState,
             isLoading: false,
             patientID: state.doctorRole ? props.route.params : userSSN,
             journalExpanded: journalIndexes,
+            regions: [...regionIndexes],
+            regionSnapshot: [...regionIndexes],
             patientInfo: {
               id: state.doctorRole ? props.route.params : userSSN,
               firstName: snapshot.val().firstName,
@@ -114,8 +124,6 @@ export function EHROverviewScreen(props) {
               permittedRegions: patientPermittedRegions,
               journals: patientJournals,
             },
-            regions: [...regionIndexes],
-            regionSnapshot: [...regionIndexes],
           }));
         }
       });
@@ -152,9 +160,20 @@ export function EHROverviewScreen(props) {
   const submitData = () => {
     alert("Submitting settings...");
     const regStrings = state.regions.map(function (item) {
-      return item["name"] + " " + item["enabled"] + "\n";
+      return item["id"]+" "+item["name"] + " " + item["enabled"] + "\n";
     });
     alert(regStrings.toString());
+
+    let newPermittedRegions = [];
+    for (let region of state.regions){
+      if (region["enabled"]){
+        newPermittedRegions.push(region["id"])
+      }
+    }
+
+    alert(newPermittedRegions);
+
+    // TODO: Upload newPermittedRegions to the blockchain
 
     togglePopup(false);
   };
@@ -167,9 +186,10 @@ export function EHROverviewScreen(props) {
   const toggleCheckbox = (index) => {
     let enabled = state.regions[index].enabled;
     let name = state.regions[index].name;
+    let id = state.regions[index].id;
     let updated = state.regions;
 
-    updated.splice(index, 1, { name: name, enabled: !enabled });
+    updated.splice(index, 1, { name: name, enabled: !enabled, id: id });
 
     setState((prevState) => ({
       ...prevState,
