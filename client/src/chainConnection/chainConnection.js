@@ -1,6 +1,5 @@
 import Block4EHR from "../../../build/contracts/Block4EHR.json";
 import getWeb3 from "./getWeb3";
-import ChainConnectionError from "./chainConnectionError";
 import ChainOperationDeniedError from "./chainOperationDeniedError";
 
 /**
@@ -15,9 +14,9 @@ import ChainOperationDeniedError from "./chainOperationDeniedError";
 export default class ChainConnection {
   constructor() {
     this.state = {
-      web3: null,
-      accounts: null,
-      contract: null,
+      web3: null, // Web3 instance
+      accounts: null, // Array of ethereum accounts
+      contract: null, // Contract instance
     };
   }
 
@@ -25,6 +24,14 @@ export default class ChainConnection {
     this.state = state;
   }
 
+  /**
+   * Initializes the state variables of the `ChainConnection` instance. 
+   * This method is a slightly modified version of the client/src/App.js file
+   * provided by the truffle box "react". 
+   * @author Hampus Jernkrook
+   * 
+   * TODO: remove the console.log:s when done developing. 
+   */
   async init() {
     console.log("Starting init()");
     try {
@@ -60,7 +67,13 @@ export default class ChainConnection {
     console.log("Done init()");
   }
 
-  // TODO: add error handling if the state is not set correctly
+  /**
+   * Checks it the method invoker has permission to 
+   * access the given patient's EHR.
+   * @param {String} patientId The id of the patient to check permision against. 
+   * @returns {boolean} true iff the invoker is permissioned by the given patient. 
+   * @author Hampus Jernkrook
+   */
   async hasPermission(patientId) {
     const { accounts, contract } = this.state;
     const res = await contract.methods
@@ -69,6 +82,14 @@ export default class ChainConnection {
     return res;
   }
 
+  /**
+   * Get the list of permissioned regions, for the given patient. 
+   * @param {String} patientId The id of the patient to retrieve permissioned regions for. 
+   * @returns {Array<String>} The list of permissioned regions, in the form of region id:s.
+   * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
+   *  having permission to invoke it. 
+   * @author Hampus Jernkrook
+   */
   async getPermissionedRegions(patientId) {
     const { accounts, contract } = this.state;
     try {
@@ -81,6 +102,14 @@ export default class ChainConnection {
     }
   }
 
+  /**
+   * Get the CID of the given patient's EHR, stored on the chain. 
+   * @param {String} patientId The id of the patient to retrieve the CID of.
+   * @returns {String} The CID of the given patient's EHR. 
+   * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
+   *  having permission to invoke it. 
+   * @author Hampus Jernkrook
+   */
   async getEHRCid(patientId) {
     const { accounts, contract } = this.state;
     try {
@@ -93,6 +122,14 @@ export default class ChainConnection {
     }
   }
 
+  /**
+   * Set the CID of the given patient on the chain. 
+   * @param {String} patientId The id of the patient to set the CID for. 
+   * @param {String} cid The value of CID to be set.
+   * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
+   *  having permission to invoke it. 
+   * @author Hampus Jernkrook
+   */
   async updateEHR(patientId, cid) {
     try {
       const { accounts, contract } = this.state;
@@ -104,6 +141,14 @@ export default class ChainConnection {
     }
   }
 
+  /**
+   * Set the list of permissioned regions for the given patient. 
+   * @param {String} patientId The id of the patient to set the list of permissions for. 
+   * @param {Array<String>} regions Array of region id:s that the patient have authorized permission to. 
+   * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
+   *  having permission to invoke it. 
+   * @author Hampus Jernkrook 
+   */
   async setPermissions(patientId, regions) {
     try {
       const { accounts, contract } = this.state;
