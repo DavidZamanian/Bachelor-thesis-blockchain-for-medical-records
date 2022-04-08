@@ -224,7 +224,7 @@ export function EHROverviewScreen(props) {
     // ACCOUNT 10: Patient 9801011111 account. 
     // ACCOUNT 2, 3: account of a doctor in region 1 with access to 9801011111. 
     // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass. 
-    const res = await connection.hasPermission("9801011111");
+    // const res = await connection.hasPermission("9801011111");
     // TESTING getPermissionedRegions - set your account to Account 10 for this to pass. 
     // const res = await connection.getPermissionedRegions("9801011111");
     // TESTING getEHRCid - set your account to Account 2 or 3 for this to pass. 
@@ -233,6 +233,8 @@ export function EHROverviewScreen(props) {
     // TESTING setting new permissions - set your account to Account 10 for this to pass. 
     // await connection.setPermissions("9801011111", ["1", "3"]);
     // const res = await connection.getPermissionedRegions("9801011111"); //may have to run this separate from setPermissions
+    // TESTING get all regions - any account can be used for this. 
+    const res = await connection.getAllRegions();
     console.log(res);
     // ================
     console.log("Done discarding.");
