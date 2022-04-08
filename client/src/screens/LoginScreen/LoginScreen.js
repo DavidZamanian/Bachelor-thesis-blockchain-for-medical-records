@@ -105,7 +105,7 @@ export function LoginScreen() {
             />
             <BulletPoint
               labelText=" Authenticate once"
-              descText=" - continous checks are done automatically!"
+              descText=" - continuous checks are done automatically!"
               iconName="shield-checkmark"
             />
             <BulletPoint
