@@ -439,7 +439,7 @@ export function EHROverviewScreen(props) {
           horizontal={false}>
           <View style={styles.loadingOverlay}>
             <Image
-                source={{ uri: "https://i.imgur.com/AbCRays.png" }}
+                source={require("../../../assets/WhiteLogo.png")}
                 style={{ 
                   width: 50, 
                   height: 50, 

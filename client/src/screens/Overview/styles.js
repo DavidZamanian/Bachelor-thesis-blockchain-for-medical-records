@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
         height: "100%",
         backgroundColor: "white",
         alignItems: "center",
-        justifyContent:"center"
+        paddingTop:150
     },
     loadingText:{
         margin:10,

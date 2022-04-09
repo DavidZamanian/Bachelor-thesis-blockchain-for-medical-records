@@ -12,7 +12,7 @@ export function AboutScreen() {
       <View style={styles.content}>
         <View style={styles.container}>
         <Image
-          source={{ uri: "https://i.imgur.com/AbCRays.png" }}
+          source={require("../../../assets/WhiteLogo.png")}
           style={{ 
             width: 50, 
             height: 50, 

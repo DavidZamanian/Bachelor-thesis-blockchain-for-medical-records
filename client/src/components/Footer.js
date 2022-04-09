@@ -10,7 +10,7 @@ export default class Footer extends React.Component{
             <View style={styles.footer}>
                 <Text style={styles.footerText}>Group 58 Copyright {'\u00A9'} 2022</Text>
                 <Image
-                  source={{ uri: "https://i.imgur.com/kiqN0l8.png" }}
+                  source={require("../../assets/SecondaryLogo.png")}
                   style={{ 
                     width: 30, 
                     height: 30, 
