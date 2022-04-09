@@ -123,29 +123,13 @@ export default class EHRService{
             
             // FETCH OLD FILES
             console.log("Attempting Fetch")
-            let filesAndIndex = await fs.fetchEHRFiles(PlaceholderValues.ipfsCID, true);
-            let fetchedFiles = filesAndIndex.files
-            let index = filesAndIndex.index
-            console.log("Fetch success, found "+fetchedFiles.length+" files!")
-            
-            for (const file of fetchedFiles){
 
-                let fileContent = await file.text();
-                
-                let decryptedData = await this.decrypt(fileContent);
+            let patientEHR = await this.getFiles(true);
 
-                let parsedData = await this.parseIntoJSON(decryptedData);
-
-                if(file.name == "prescriptions.json"){
-                    prescriptions = prescriptions.concat(parsedData);
-                }
-                else if(file.name == "diagnoses.json"){
-                    diagnoses = diagnoses.concat(parsedData);
-                }
-                else{
-                    finalFiles.push(file)
-                }
-            }
+            prescriptions = prescriptions.concat(patientEHR.prescriptions);
+            diagnoses = diagnoses.concat(patientEHR.diagnoses);
+            finalFiles = finalFiles.concat(patientEHR.encryptedEHRFiles)
+            let index = patientEHR.nextIndex
 
             // Make into JSON objects
             let stringEHR = await this.stringify(objectEHR);
@@ -163,17 +147,17 @@ export default class EHRService{
             let prescriptionsFile = await FileService.createJSONFile(encryptedPrescriptions,"prescriptions");
             let diagnosesFile = await FileService.createJSONFile(encryptedDiagnoses,"diagnoses");
 
-            // Put JSON files into list and upload
+            // Put files into list and upload
             finalFiles.push(ehrFile,prescriptionsFile,diagnosesFile);
 
-            // Retrieve CID and return it
+            // Retrieve CID
             let cid = await fs.uploadFiles(finalFiles);
             
             // TESTING ONLY
             // Testing if the cid and the files were uploaded
             console.log("TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n"+`https://${cid}.ipfs.dweb.link/`)
             for (const file of finalFiles){
-            console.log(file.name+": "+(await file.text()).toString("base64"));
+                console.log(file.name+": "+(await file.text()).toString("base64"));
             }
 
             return "Success";
@@ -192,6 +176,60 @@ export default class EHRService{
         }
     }
 
+    /**
+     * Method for downloading, decrypting and parsing files from IPFS.
+     * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
+     * @returns {Promise<{ 
+     * prescriptions: Array<string>, 
+     * diagnoses: Array<string>,
+     * decryptedEHRs: Array<object>,
+     * encryptedEHRFiles: Array<File>,
+     * nextIndex: number
+     * }>}
+     * If keepEHRencrypted is true, decryptedEHRs will be empty. 
+     * If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
+     * @author Christopher Molin
+     */
+    static async getFiles(keepEHRencrypted){
+
+        let apiToken = await EHRService.getWeb3StorageToken()
+        let fs = new FileService(apiToken);
+
+        let prescriptions = []
+        let diagnoses = []
+        let decryptedEHRs = []
+        let encryptedEHRFiles = []
+        
+        let cid = PlaceholderValues.ipfsCID
+        let filesAndIndex = await fs.fetchEHRFiles(cid, keepEHRencrypted);
+            
+        for (const file of filesAndIndex.files){
+
+            if (keepEHRencrypted && file.name.search("EHR") != -1){
+                encryptedEHRFiles.push(file)
+            }
+            else{
+                let fileContent = await file.text();
+                let decryptedData = await this.decrypt(fileContent);
+                let parsedData = await this.parseIntoJSON(decryptedData);
+                if(file.name == "prescriptions.json"){
+                    prescriptions = prescriptions.concat(parsedData);
+                }
+                else if(file.name == "diagnoses.json"){
+                    diagnoses = diagnoses.concat(parsedData);
+                }
+                else if (file.name.search("EHR") != -1){
+                    decryptedEHRs = decryptedEHRs.concat(parsedData);
+                }
+            }
+        }
+        return {prescriptions: prescriptions, 
+                diagnoses: diagnoses, 
+                nextIndex: filesAndIndex.index,
+                encryptedEHRFiles: encryptedEHRFiles,
+                decryptedEHRs: decryptedEHRs}
+    }
+
 
     /**
      * Gets EHR-files and parses contents to an object containing:
@@ -202,40 +240,14 @@ export default class EHRService{
      */
     static async getEHR(patientID){
 
-        // TODO: Look up correct CID with patientID
-        let cid = PlaceholderValues.ipfsCID;
-
-        console.log(cid)
-        let apiToken = await EHRService.getWeb3StorageToken();
-
-        let fs = new FileService(apiToken);
-
-        let fetchedFiles = (await fs.fetchEHRFiles(cid)).files;
-
+        let patientEHR = await this.getFiles(false);
 
         let EHR = {
-            prescriptions: [],
-            diagnoses: [],
-            journals: []
+            prescriptions: patientEHR.prescriptions,
+            diagnoses: patientEHR.diagnoses,
+            journals: patientEHR.decryptedEHRs
         }
 
-
-        for (const file of fetchedFiles){
-
-            let fileContent = await file.text();
-            let decryptedData = await this.decrypt(fileContent);
-            let parsedData = await this.parseIntoJSON(decryptedData)
-            
-            if(file.name == "prescriptions.json"){
-                EHR.prescriptions = EHR.prescriptions.concat(parsedData);
-            }
-            else if(file.name == "diagnoses.json"){
-                EHR.diagnoses = EHR.diagnoses.concat(parsedData);
-            }
-            else{
-                EHR.journals = EHR.journals.concat(parsedData);
-            }
-        }
         return EHR;
     }
 
