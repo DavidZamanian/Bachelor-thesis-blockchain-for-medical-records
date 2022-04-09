@@ -1,6 +1,6 @@
 import React from "react";
 
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import theme from "../theme.style";
 import Icon from "react-native-vector-icons/Ionicons";
 
@@ -9,6 +9,15 @@ export default class Footer extends React.Component{
         return(
             <View style={styles.footer}>
                 <Text style={styles.footerText}>Group 58 Copyright {'\u00A9'} 2022</Text>
+                <Image
+                  source={{ uri: "https://i.imgur.com/kiqN0l8.png" }}
+                  style={{ 
+                    width: 30, 
+                    height: 30, 
+                    margin:5,
+                    alignSelf:"center"
+                  }}
+                />
                 <View style={{flexDirection:"row", alignItems:"center"}}>
                     <Text style={styles.footerText}>Powered by: </Text>
                     <Icon style={styles.footerIcon} name="logo-javascript" size={20}/>

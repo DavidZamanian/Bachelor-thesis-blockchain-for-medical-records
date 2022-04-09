@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, Image } from "react-native";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header/Header";
 import styles from "./styles";
@@ -11,6 +11,15 @@ export function AboutScreen() {
       <Header/>
       <View style={styles.content}>
         <View style={styles.container}>
+        <Image
+          source={{ uri: "https://i.imgur.com/AbCRays.png" }}
+          style={{ 
+            width: 50, 
+            height: 50, 
+            margin:10,
+            alignSelf:"center"
+          }}
+        />
           <Text style={styles.headingText}>About this project</Text>
           <Text style={[styles.mainText,styles.describeText]}>This is a web application is solely a prototype and was created as part of a Bachelor's Thesis project.</Text>
           <Text style={styles.mainText}>

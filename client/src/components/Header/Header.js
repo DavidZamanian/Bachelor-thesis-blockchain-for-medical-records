@@ -42,7 +42,7 @@ const Header = () => {
     <View style={styles.navbarContainer}>
       <TouchableOpacity style={styles.navbarHomeContainer} onPress={logIn}>
         <Image
-          source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
+          source={{ uri: "https://i.imgur.com/0rr056z.png" }}
           style={styles.navbarLogo}
         />
         <Text style={styles.navbarLogoName}>Bachelor Project</Text>

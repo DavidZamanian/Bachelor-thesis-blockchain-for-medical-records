@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Text, View, Modal, TextInput, ActivityIndicator } from "react-native";
+import { Text, View, Modal, TextInput, ActivityIndicator, Image } from "react-native";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header/Header";
 import styles from "./styles";
@@ -438,8 +438,17 @@ export function EHROverviewScreen(props) {
           visible={state.isLoading}
           horizontal={false}>
           <View style={styles.loadingOverlay}>
+            <Image
+                source={{ uri: "https://i.imgur.com/AbCRays.png" }}
+                style={{ 
+                  width: 50, 
+                  height: 50, 
+                  marginTop:10,
+                }}
+              />
             <Text style={styles.loadingText}>Loading patient data...</Text>
             <ActivityIndicator size="large" color={theme.PRIMARY_COLOR}/>
+            
           </View>
         </Modal>
         <Text style={styles.contentHeader}>Patient Overview</Text>
