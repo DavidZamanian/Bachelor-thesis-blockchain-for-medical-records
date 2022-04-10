@@ -1,3 +1,10 @@
+/**
+ * Error to be used upon operation being reverted on the blockchain. 
+ * Most likely, the invoker of the functin does not have permissions to invoke it,
+ * in that case.
+ * 
+ * @author Hampus Jernkrook
+ */
 export default class ChainOperationDeniedError extends Error {
     constructor(msg) {
         super(`\nOperation reverted.\n` +

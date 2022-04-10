@@ -4,7 +4,7 @@
  * Suggested by youtuber EatTheBlocks in https://www.youtube.com/watch?v=LzdMosLzj80
  * for integrating with metamask. 
  * 
- * TODO: remove the console.log:s with CAPSED TEXT
+ * TODO: remove the console.log:s
  * 
  * Copy-pasted and used by @author Hampus Jernkrook
  */

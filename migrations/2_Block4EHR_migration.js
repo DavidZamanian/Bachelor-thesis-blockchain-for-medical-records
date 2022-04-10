@@ -22,10 +22,32 @@ module.exports = function (deployer, network, accounts) {
     // We note down which region each object belongs to, to reason about 
     // who has what access permissions. 
 
+    // ==== ADDING REGIONS ====
+    await instance.addRegion("1", "Stockholm");
+    await instance.addRegion("2", "Uppsala");
+    await instance.addRegion("3", "Sörmland");
+    await instance.addRegion("4", "Östergötland");
+    await instance.addRegion("5", "Jönköping");
+    await instance.addRegion("6", "Kalmar");
+    await instance.addRegion("7", "Gotland");
+    await instance.addRegion("8", "Blekinge");
+    await instance.addRegion("9", "Skåne");
+    await instance.addRegion("10", "Halland");
+    await instance.addRegion("11", "Västra Götaland");
+    await instance.addRegion("12", "Värmland");
+    await instance.addRegion("13", "Örebro");
+    await instance.addRegion("14", "Västmanland");
+    await instance.addRegion("15", "Dalarna");
+    await instance.addRegion("16", "Gävleborg");
+    await instance.addRegion("17", "Västernorrland");
+    await instance.addRegion("18", "Jämtland Härjedalen");
+    await instance.addRegion("19", "Västerbotten");
+    await instance.addRegion("20", "Norrbotten");
+
     // ==== ADDING INSTITUTIONS ====
     // FORM: <id, name, region_id>
     // region 1
-    await instance.addHealthcareInst("2", 	"Liljeholmskajens vårdcentral", "1");
+    await instance.addHealthcareInst("2", "Liljeholmskajens vårdcentral", "1");
     await instance.addHealthcareInst("3", "Segeltorps vårdcentral", "1");
     // region 2
     await instance.addHealthcareInst("4", "Gränbystadens vårdcentral", "2");
@@ -71,4 +93,26 @@ instance.getPermissionedRegions("p_boras", {from: accounts[8]})
 
 // change account and this will be denied
 instance.setPermissions("p_gbg", [ 'gbg', 'kungalv', 'skovde' ], {from: accounts[9]})
+*/
+/* ILLUSTRATING HOW TO GET THE LIST OF REGIONS FROM THE CHAIN
+AND HOW TO ACCESS THEIR ID AND NAME:
+
+truffle(develop)> let instance = await Block4EHR.deployed();
+undefined
+truffle(develop)> let regions = await instance.getRegions();
+undefined
+truffle(develop)> regions
+[
+  [ '1', 'Stockholm', id: '1', name: 'Stockholm' ],
+  [ '2', 'Uppsala', id: '2', name: 'Uppsala' ],
+  [ '3', 'Sörmland', id: '3', name: 'Sörmland' ]
+]
+truffle(develop)> regions[0]
+[ '1', 'Stockholm', id: '1', name: 'Stockholm' ]
+truffle(develop)> regions[0].id
+'1'
+truffle(develop)> regions[0].name
+'Stockholm'
+truffle(develop)> 
+
 */
