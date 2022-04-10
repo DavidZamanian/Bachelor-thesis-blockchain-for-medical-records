@@ -9,6 +9,8 @@
 // ES6 version:
 import EhrEntry from "../server/jsonHandling/ehrEntry.js";
 import * as assert from "assert";
+import * as fc from 'fast-check';
+
 
 describe("set date", function() {
     it("sets the correct date in the ehrEntry", function() {
@@ -21,78 +23,74 @@ describe("set date", function() {
 
 describe("set patient id", function() {
     it("sets the correct patient id in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const id = "id_1"
-        ehrEntry.setPatientID(id);
-        assert.equal(ehrEntry.patientID, id);
-    })
+        fc.assert(
+            fc.property( fc.string({minLength: 1}), (id) => {
+                const ehrEntry = new EhrEntry();
+                ehrEntry.setPatientID(id);
+                assert.equal(ehrEntry.patientID, id);
+            })
+        );
+    });
 });
 
 describe("set healthcare institution", function() {
     it("sets the correct healthcare institution in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const inst = "Ostra sjukhuset";
-        ehrEntry.setHealthcareInstitution(inst);
-        assert.equal(ehrEntry.healthcareInstitution, inst);
-    })
+        fc.assert(
+            fc.property( fc.string({minLength: 1}), (inst) => {
+                const ehrEntry = new EhrEntry();
+                ehrEntry.setHealthcareInstitution(inst);
+                assert.equal(ehrEntry.healthcareInstitution, inst);
+            })
+        );
+    });
 });
 
 describe("set medical personnel", function() {
     it("sets the correct medical personnel in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const personnel = "Hans Andersson";
-        ehrEntry.setMedicalPersonnel(personnel);
-        assert.equal(ehrEntry.medicalPersonnel, personnel);
-    })
+        fc.assert(
+            fc.property( fc.string({minLength: 1}), (personnel) => {
+                const ehrEntry = new EhrEntry();
+                ehrEntry.setMedicalPersonnel(personnel);
+                assert.equal(ehrEntry.medicalPersonnel, personnel);
+            })
+        );
+    });
 });
 
 describe("set details", function() {
     it("sets the correct details in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const details = "stomach ache since ...";
-        ehrEntry.setDetails(details);
-        assert.equal(ehrEntry.details, details);
-    })
-});
-
-describe("set details", function() {
-    it("sets the correct details in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const details = "stomach ache since ...";
-        ehrEntry.setDetails(details);
-        assert.equal(ehrEntry.details, details);
-    })
+        fc.assert(
+            fc.property( fc.string(), (details) => {
+                const ehrEntry = new EhrEntry();
+                ehrEntry.setDetails(details);
+                assert.equal(ehrEntry.details, details);
+            })
+        );
+    });
 });
 
 describe("set diagnoses", function() {
-    it("sets the correct diagnoses in the ehrEntry, for non-empty diagnoses array", function() {
-        const ehrEntry = new EhrEntry();
-        const diagnoses = ["pollen allergy", "stomach ache"];
-        ehrEntry.setDiagnoses(diagnoses);
-        assert.equal(ehrEntry.diagnoses, diagnoses);
-    });
-
-    it("sets the correct diagnoses in the ehrEntry, for empty diagnoses array", function() {
-        const ehrEntry = new EhrEntry();
-        const diagnoses = [];
-        ehrEntry.setDiagnoses(diagnoses);
-        assert.equal(ehrEntry.diagnoses, diagnoses);
+    it("sets the correct diagnoses in the ehrEntry - including empty list", function() {
+        fc.assert(
+            fc.property( fc.array(fc.string()), (diagnoses) => {
+                const ehrEntry = new EhrEntry();
+                ehrEntry.setDiagnoses(diagnoses);            
+                assert.equal(ehrEntry.diagnoses, diagnoses);
+            })
+        );
     });
 });
 
 describe("set prescriptions", function() {
-    it("sets the correct prescriptions in the ehrEntry, for non-empty prescriptions array", function() {
-        const ehrEntry = new EhrEntry();
-        const prescriptions = ["pollen stopper", "stomach happy"];
-        ehrEntry.setPrescriptions(prescriptions);
-        assert.equal(ehrEntry.prescriptions, prescriptions);
-    });
-
-    it("sets the correct prescriptions in the ehrEntry, for empty prescriptions array", function() {
-        const ehrEntry = new EhrEntry();
-        const prescriptions = [];
-        ehrEntry.setPrescriptions(prescriptions);
-        assert.equal(ehrEntry.prescriptions, prescriptions);
+    it("sets the correct prescriptions in the ehrEntry - including empty list", function() {
+        fc.assert(
+            fc.property( fc.array(fc.string()), (prescriptions) => {
+                const ehrEntry = new EhrEntry();
+                ehrEntry.setPrescriptions(prescriptions);
+                console.log(ehrEntry.prescriptions)
+                assert.equal(ehrEntry.prescriptions, prescriptions);
+            })
+        );
     });
 });
 
