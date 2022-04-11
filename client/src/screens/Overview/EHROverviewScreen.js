@@ -153,12 +153,13 @@ export function EHROverviewScreen(props) {
     }));
   };
 
-  /* 
-    Submit new permitted regions
-
-    @Chrimle
-  */
-  const submitData = () => {
+  /**
+   * Submit new permitted regions to the blockchain. 
+   * TODO: clean up
+   * @author Christopher Molin
+   * @author Hampus Jernkrook
+   */
+  const submitData = async () => {
     alert("Submitting settings...");
     const regStrings = state.regions.map(function (item) {
       return item["id"]+" "+item["name"] + " " + item["enabled"] + "\n";
@@ -175,6 +176,8 @@ export function EHROverviewScreen(props) {
     alert(newPermittedRegions);
 
     // TODO: Upload newPermittedRegions to the blockchain
+    const connection = await chainConnection;
+    await connection.setPermissions(state.patientID, newPermittedRegions);
 
     togglePopup(false);
   };
