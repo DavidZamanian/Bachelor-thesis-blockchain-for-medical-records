@@ -72,7 +72,7 @@ export default class ChainConnection {
    * Checks it the method invoker has permission to 
    * access the given patient's EHR.
    * @param {String} patientId The id of the patient to check permision against. 
-   * @returns {boolean} true iff the invoker is permissioned by the given patient. 
+   * @returns {Promise<boolean>} true iff the invoker is permissioned by the given patient. 
    * @author Hampus Jernkrook
    */
   async hasPermission(patientId) {
@@ -86,7 +86,7 @@ export default class ChainConnection {
   /**
    * Get the list of permissioned regions, for the given patient. 
    * @param {String} patientId The id of the patient to retrieve permissioned regions for. 
-   * @returns {Array<String>} The list of permissioned regions, in the form of region id:s.
+   * @returns {Promise<Array<String>>} The list of permissioned regions, in the form of region id:s.
    * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
    *  having permission to invoke it. 
    * @author Hampus Jernkrook
@@ -106,7 +106,7 @@ export default class ChainConnection {
   /**
    * Get the CID of the given patient's EHR, stored on the chain. 
    * @param {String} patientId The id of the patient to retrieve the CID of.
-   * @returns {String} The CID of the given patient's EHR. 
+   * @returns {Promise<String>} The CID of the given patient's EHR. 
    * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
    *  having permission to invoke it. 
    * @author Hampus Jernkrook
