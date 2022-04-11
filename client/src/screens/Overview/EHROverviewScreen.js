@@ -155,7 +155,8 @@ export function EHROverviewScreen(props) {
 
   /**
    * Submit new permitted regions to the blockchain. 
-   * TODO: clean up
+   * TODO: clean up, error handling, make the new permitted regions be reflected right away without 
+   * needing to re-login. 
    * @author Christopher Molin
    * @author Hampus Jernkrook
    */
@@ -176,9 +177,17 @@ export function EHROverviewScreen(props) {
     alert(newPermittedRegions);
 
     // TODO: Upload newPermittedRegions to the blockchain
-    const connection = await chainConnection;
-    await connection.setPermissions(state.patientID, newPermittedRegions);
-
+    try {
+      const connection = await chainConnection;
+      await connection.setPermissions(state.patientID, newPermittedRegions);
+      // TODO: fetch the new set of permitted regions already here?
+      // get the new set of permitted regions and update the state
+      // state.patientInfo.permittedRegions = await ...
+      // setState(...)
+    } catch (err) {
+      //todo: something
+      console.log(`ERROR on submitting new permitted regions... ${err.message}`);
+    }
     togglePopup(false);
   };
 
