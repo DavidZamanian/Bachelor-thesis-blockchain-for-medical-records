@@ -68,7 +68,7 @@ function decryptEHR(recordKey, EHR, privateKey) {
  * Creating a function to encrypt string
  * @param {string} recordKey A generated symmetric record key.
  * @param {string} publicKey The public key used to encrypt the record key.
- * @returns {string} Encrypted record key.
+ * @returns {Promise<string>} Encrypted record key.
  */
 function encryptRecordKey(recordKey, publicKey) {
 
@@ -85,7 +85,7 @@ function encryptRecordKey(recordKey, publicKey) {
  * // Creating a function to decrypt string
  * @param {string} recordKey Encrypted record key.
  * @param {string} privateKey A users private key.
- * @returns {string} The decrypted record key.
+ * @returns {Promise<string>} The decrypted record key.
  */
 function decryptRecordKey(recordKey, privateKey) {
   //const privateKey = fs.readFileSync(privateKeyFile, "utf8");

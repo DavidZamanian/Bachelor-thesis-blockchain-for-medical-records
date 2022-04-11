@@ -122,10 +122,14 @@ describe("Test keys", async () => {
   });
 
   it("Decrypted Example Record key is equal to Original Example Record Key", async () => {
+    encryptedExampleRecordKey = await crypt.encryptRecordKey(exampleRecordKey, examplePublicKey);
+    decryptedExampleRecordKey = await crypt.decryptRecordKey(encryptedExampleRecordKey, examplePrivateKey);
     assert.equal(decryptedExampleRecordKey, exampleRecordKey)
   });
 
   it("Decrypted Record key is equal to Original Record Key", async () => {
+    encryptedRecordKey = await crypt.encryptRecordKey(newRecordKey, derivedPublicKey);
+    decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey, derivedPrivateKey);
     assert.equal(decryptedRecordKey.toString("base64"), newRecordKey.toString("base64"))
   });
 
