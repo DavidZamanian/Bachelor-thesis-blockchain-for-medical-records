@@ -8,9 +8,13 @@ import FetchFileContentError from "./Errors/FetchFileContentError";
 import { PlaceholderValues } from "../placeholders/placeholderValues";
 import  * as crypt from "../../Crypto/crypt";
 import crypto, { createPrivateKey } from "crypto";
+import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError"
+import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 
 
 export default class EHRService{
+
+    static chainConnection = ChainConnectionFactory.getChainConnection();
 
     /**
      * Fetches API-token to Web3Storage from Firebase
@@ -359,8 +363,20 @@ export default class EHRService{
      * @returns {Promise<Array<String>>}
      */
      static async getPatientRegions(patientID){
-        
-        let regions = PlaceholderValues.permittedRegions;
+        let connection = await this.chainConnection;
+        let regions;
+        try {
+            regions = await connection.getPermissionedRegions(patientID);
+        } catch (err) {
+            if (err instanceof ChainOperationDeniedError) {
+                //do something
+                console.log(`getPatientRegions failed due to operations denied.\n${err.message}`);
+            } else {
+                // do something else
+                console.log(`getPatientRegions failed for some unclear reason.\n${err.message}`);
+            }
+        }   
+        //let regions = PlaceholderValues.permittedRegions;
         
         return regions;
     }
