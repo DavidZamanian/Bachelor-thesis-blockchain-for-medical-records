@@ -369,15 +369,16 @@ export default class EHRService{
             regions = await connection.getPermissionedRegions(patientID);
         } catch (err) {
             if (err instanceof ChainOperationDeniedError) {
-                //do something
+                // do something. suggestion:
+                // throw new CouldNotLoadPermittedRegionsError();
+                // and display to the user that they should check that they are signed into the right account. 
+                // Then catch this in overview and abort login. 
                 console.log(`getPatientRegions failed due to operations denied.\n${err.message}`);
             } else {
-                // do something else
+                // do something else, e.g. throw the same error (?) and display a different message. 
                 console.log(`getPatientRegions failed for some unclear reason.\n${err.message}`);
             }
         }   
-        //let regions = PlaceholderValues.permittedRegions;
-        
         return regions;
     }
 
