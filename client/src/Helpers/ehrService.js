@@ -14,6 +14,7 @@ import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 
 export default class EHRService{
 
+    // the connection to the blockchain
     static chainConnection = ChainConnectionFactory.getChainConnection();
 
     /**
@@ -361,6 +362,7 @@ export default class EHRService{
      * Returns a list of region names.
      * @param {String} patientID
      * @returns {Promise<Array<String>>}
+     * @author Hampus Jernkrook
      */
      static async getPatientRegions(patientID){
         let connection = await this.chainConnection;
