@@ -87,13 +87,16 @@ describe("Test keys", async () => {
     assert.doesNotThrow( async () => {
       crypto.generateKey("aes", { length: 256 }, (err, key) => {
         if (err) throw err;
-        newRecordKey = key.export({type: "pkcs8"});
+        
+        newRecordKey = key.export().toString("base64")
+        console.log(newRecordKey)
       });
     });
     
   });
 
   it("New Record Key is of correct length", async () => {
+    //console.log(newRecordKey.toString("base64"))
     assert.equal(newRecordKey.length, exampleRecordKey.length)
   });
   
@@ -122,15 +125,18 @@ describe("Test keys", async () => {
   });
 
   it("Decrypted Example Record key is equal to Original Example Record Key", async () => {
-    encryptedExampleRecordKey = await crypt.encryptRecordKey(exampleRecordKey, examplePublicKey);
+    encryptedExampleRecordKey = await crypt.encryptRecordKey(newRecordKey, examplePublicKey);
     decryptedExampleRecordKey = await crypt.decryptRecordKey(encryptedExampleRecordKey, examplePrivateKey);
-    assert.equal(decryptedExampleRecordKey, exampleRecordKey)
+    assert.equal(decryptedExampleRecordKey, newRecordKey)
   });
 
   it("Decrypted Record key is equal to Original Record Key", async () => {
+    console.log(newRecordKey)
     encryptedRecordKey = await crypt.encryptRecordKey(newRecordKey, derivedPublicKey);
-    decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey, derivedPrivateKey);
-    assert.equal(decryptedRecordKey.toString("base64"), newRecordKey.toString("base64"))
+    console.log(encryptedRecordKey)
+    decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey, derivedPrivateKey);   
+    console.log(decryptedRecordKey)
+    assert.equal(decryptedRecordKey, newRecordKey)
   });
 
 });
@@ -139,6 +145,22 @@ describe("Test keys", async () => {
 
 describe("Test encryption of file content", () => {
   it("Encrypting and decrypting EHR with example keys", async () => {
+    fc.assert(
+      fc.property( fc.string({minLength: 1}), (originalData) => {
+  
+        let encryptedData = crypt.encryptEHR(exampleRecordKey, originalData, examplePrivateKey);
+  
+        let decryptedData = crypt.decryptEHR(exampleRecordKey, encryptedData,examplePrivateKey);
+  
+        assert.equal(originalData, decryptedData);
+      })
+    );
+  });
+  it("Encrypting and decrypting EHR with real keys", async () => {
+
+    let derivedPrivateKey = crypt.derivePrivateKeyFromPassword(password, salt);
+
+
     fc.assert(
       fc.property( fc.string({minLength: 1}), (originalData) => {
   
