@@ -89,7 +89,7 @@ describe("Test keys", async () => {
         if (err) throw err;
         
         newRecordKey = key.export().toString("base64")
-        console.log(newRecordKey)
+        //console.log(newRecordKey)
       });
     });
     
@@ -131,11 +131,11 @@ describe("Test keys", async () => {
   });
 
   it("Decrypted Record key is equal to Original Record Key", async () => {
-    console.log(newRecordKey)
+    //console.log(newRecordKey)
     encryptedRecordKey = await crypt.encryptRecordKey(newRecordKey, derivedPublicKey);
-    console.log(encryptedRecordKey)
+    //console.log(encryptedRecordKey)
     decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey, derivedPrivateKey);   
-    console.log(decryptedRecordKey)
+    //console.log(decryptedRecordKey)
     assert.equal(decryptedRecordKey, newRecordKey)
   });
 
@@ -157,16 +157,23 @@ describe("Test encryption of file content", () => {
     );
   });
   it("Encrypting and decrypting EHR with real keys", async () => {
-
+    const salt = "4E635266556A586E3272357538782F413F4428472D4B6150645367566B5970337336763979244226452948404D6251655468576D5A7134743777217A25432A46";
+    const password = "password123";
     let derivedPrivateKey = crypt.derivePrivateKeyFromPassword(password, salt);
-
+    let newRecordKey = "";
+    crypto.generateKey("aes", { length: 256 }, (err, key) => {
+      if (err) throw err;
+      
+      newRecordKey = key.export().toString("base64")
+      //console.log(newRecordKey)
+    });
 
     fc.assert(
       fc.property( fc.string({minLength: 1}), (originalData) => {
   
-        let encryptedData = crypt.encryptEHR(exampleRecordKey, originalData, examplePrivateKey);
+        let encryptedData = crypt.encryptEHR(newRecordKey, originalData, derivedPrivateKey);
   
-        let decryptedData = crypt.decryptEHR(exampleRecordKey, encryptedData,examplePrivateKey);
+        let decryptedData = crypt.decryptEHR(newRecordKey, encryptedData,derivedPrivateKey);
   
         assert.equal(originalData, decryptedData);
       })
