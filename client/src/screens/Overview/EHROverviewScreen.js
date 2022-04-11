@@ -97,7 +97,7 @@ export function EHROverviewScreen(props) {
             }
           );
           patientPermittedRegions.forEach(
-            (reg) => (regionIndexes.find((r) => r.name === reg).enabled = true)
+            (reg) => (regionIndexes.find((r) => r.id === reg).enabled = true)
           );
 
           //console.log(regionIndexes)
