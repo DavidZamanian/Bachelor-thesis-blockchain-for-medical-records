@@ -1,0 +1,150 @@
+import * as assert from "assert";
+import crypto from "crypto";
+import * as path from "path";
+import crypt from "../client/Crypto/crypt.js";
+import JSONService from "../server/jsonHandling/jsonService.js";
+import * as fc from 'fast-check';
+
+
+/**
+ * Methods for encrypting/decrypting EHR and record keys.
+ * @author Christopher Molin
+ */
+
+const example_directory = "./test/json_examples";
+
+const examplePublicKey = `-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUiAaS0DTviflRi0zum4QfpTup
+TqEcAnujT3I6r9a9M+hLt3hBX75IBqQsccGY6Y/FW/znwoCZAATZ+HnAUuI9ImIS
+M9AUuOtuGfhv+pBXMvzKlHlDj0lHiTDlnQh/LrI16pE7gfW09FjojZjzZtseaDj1
+HHivzD+EFv2LcyWtUwIDAQAB
+-----END PUBLIC KEY-----
+`;
+
+const examplePrivateKey = `-----BEGIN PRIVATE KEY-----
+MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBANSIBpLQNO+J+VGL
+TO6bhB+lO6lOoRwCe6NPcjqv1r0z6Eu3eEFfvkgGpCxxwZjpj8Vb/OfCgJkABNn4
+ecBS4j0iYhIz0BS4624Z+G/6kFcy/MqUeUOPSUeJMOWdCH8usjXqkTuB9bT0WOiN
+mPNm2x5oOPUceK/MP4QW/YtzJa1TAgMBAAECgYAtvPhtMBG0W2Ukf24XC7DrfovQ
+a/OQK5igFMDokF8OaNVdNibTKt+wcH10cybO2bTvLFTJK7qxMqfYoPjSwwOc8Bpb
+YzRsXgpanydspsUOvoCNXtHmEybSmZ1meP1URB2WD/Lt1fHl5x4PXfbetoqK+Da4
+m1GNnMbDI9gIwUdtQQJBAOuA3V+1LfYNOPPRQI9vQmzSZapty+KsCQADqZEl3JR7
+7xDUzucLv0owfJMaotISN65c+mTdkM3sdbeY47kO4PUCQQDnB1Ub1z4hkPIJOEAm
+ak+EsKPyC2DuKK8QOB+ddX1CCaienmgWfWuN6nImO5Rwmv0JsUYK6mMgOTX3gzXc
+WsgnAkB+yKdlKRMPTdsFV/fbwFgQYcydzfJfm6JUwaP+IlX4EiiH9SlWNXrMJAJM
+56AUW/5h/mhG+QlF8zEEoGiobhwpAkBFDe8FjFe45r9BvDuIf/xWuAm4/mexqB1z
+pqLkiMqw43wwNT79ge2VFL+b5/Edm2YI8KD0AE0yw4b6/ZAq1kO/AkAWUBHUxI1K
+bIq/ZkmEM0nbWOu8uU60hoos0oHKjuBF9KFN8p3dlodz0N02UAqLjjx1COiC341F
+HTPhtf3w2f2F
+-----END PRIVATE KEY-----
+`;
+
+const exampleRecordKey = "LhUjB3jms1JNWgHfmsNZcjrAgQWdRzITn49lZs+CHfSkWTWkqNNKY9/Qn/GdJh1jE1fmSOfnuRgE2BuwUl3TG25TDYIGqmFVG3ydSOyi5i5PqE5xWJSOTvn4g6zp/syPzzA8pr8zD//f8d2+C97Nvpypfh8DaUhG2HY2FyaHyIE=";
+
+
+describe("Test keys", async () => {
+
+  const salt = "4E635266556A586E3272357538782F413F4428472D4B6150645367566B5970337336763979244226452948404D6251655468576D5A7134743777217A25432A46";
+  const password = "password123";
+  let derivedPrivateKey = "";
+  let derivedPublicKey = "";
+
+
+  it("Derive PrivateKey from Password & Salt", async () => {
+    assert.doesNotThrow( async () => {
+      derivedPrivateKey = crypt.derivePrivateKeyFromPassword(password, salt);
+    });
+  });
+
+  it("Derived PrivateKey is of correct length", async () => {
+    assert.equal(derivedPrivateKey.length, examplePrivateKey.length);
+  });
+
+  it("Derive PublicKey from Example PrivateKey", async () => {
+    assert.doesNotThrow(async () => {
+      derivedPublicKey = crypt.extractPublicKeyFromPrivateKey(examplePrivateKey);
+    });
+  });
+
+  it("Derive PublicKey from Derived PrivateKey", async () => {
+    assert.doesNotThrow( async () => {
+      derivedPublicKey = crypt.extractPublicKeyFromPrivateKey(derivedPrivateKey);
+    });
+  });
+
+  it("Derived PublicKey is of correct length", async () => {
+    assert.equal(derivedPublicKey.length, examplePublicKey.length);
+  })
+
+  let newRecordKey = "";
+  let encryptedRecordKey = "";
+  let encryptedExampleRecordKey = "";
+  let decryptedRecordKey = "";
+  let decryptedExampleRecordKey = "";
+
+  it("Generate Record key", async () => {
+    
+    assert.doesNotThrow( async () => {
+      crypto.generateKey("aes", { length: 256 }, (err, key) => {
+        if (err) throw err;
+        newRecordKey = key.export({type: "pkcs8"});
+      });
+    });
+    
+  });
+
+  it("New Record Key is of correct length", async () => {
+    assert.equal(newRecordKey.length, exampleRecordKey.length)
+  });
+  
+  it("Encrypt Example Record Key with Example Public Key", () => {
+    assert.doesNotThrow( async () => {
+      encryptedExampleRecordKey = crypt.encryptRecordKey(exampleRecordKey, examplePublicKey);
+    });
+  });
+
+  it("Encrypt New Record Key with Derived Public Key", () => {
+    assert.doesNotThrow( async () => {
+      encryptedRecordKey = crypt.encryptRecordKey(newRecordKey, derivedPublicKey);
+    });
+  });
+  
+  it("Decrypt Example Record Key with Example Private Key", () => {
+    assert.doesNotThrow( async () => {
+      decryptedExampleRecordKey = crypt.decryptRecordKey(encryptedExampleRecordKey, examplePrivateKey);
+    });
+  });
+
+  it("Decrypt Record Key with Private Key", () => {
+    assert.doesNotThrow( async () => {
+      decryptedRecordKey = crypt.decryptRecordKey(encryptedRecordKey, derivedPrivateKey);
+    });
+  });
+
+  it("Decrypted Example Record key is equal to Original Example Record Key", async () => {
+    assert.equal(decryptedExampleRecordKey, exampleRecordKey)
+  });
+
+  it("Decrypted Record key is equal to Original Record Key", async () => {
+    assert.equal(decryptedRecordKey.toString("base64"), newRecordKey.toString("base64"))
+  });
+
+});
+
+
+
+describe("Test encryption of file content", () => {
+  it("Encrypting and decrypting EHR with example keys", async () => {
+    fc.assert(
+      fc.property( fc.string({minLength: 1}), (originalData) => {
+  
+        let encryptedData = crypt.encryptEHR(exampleRecordKey, originalData, examplePrivateKey);
+  
+        let decryptedData = crypt.decryptEHR(exampleRecordKey, encryptedData,examplePrivateKey);
+  
+        assert.equal(originalData, decryptedData);
+      })
+    );
+  });
+});
+

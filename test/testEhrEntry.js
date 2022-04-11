@@ -1,6 +1,6 @@
 /**
  * Tests for the class EhrEntry.
- * @author Hampus Jernkrook
+ * @author Hampus Jernkrook, Christopher Molin
  */
 
 // CommonJS version of imports:
