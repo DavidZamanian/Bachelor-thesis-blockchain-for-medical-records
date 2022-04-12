@@ -176,11 +176,14 @@ describe("Test encryption of file content", () => {
     //console.log(encryptedRecordKey.length)
     fc.assert(
       fc.property( fc.string({minLength: 1}), (originalData) => {
-  
+        console.log(encryptedRecordKey)
+        console.log(exampleRecordKey)
+        console.log(derivedPrivateKey)
+        // encryptEHR decrypts the encryptedRecordKey, this throws an error.
         let encryptedData = crypt.encryptEHR(encryptedRecordKey, originalData, derivedPrivateKey);
-  
+        console.log(originalData+" encrypted into: "+encryptedData)
         let decryptedData = crypt.decryptEHR(encryptedRecordKey, encryptedData, derivedPrivateKey);
-  
+        console.log(originalData == decryptedData+ ":\n"+originalData+"\n"+decryptedData)
         assert.equal(originalData, decryptedData);
       })
     );

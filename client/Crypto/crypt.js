@@ -146,7 +146,7 @@ HTPhtf3w2f2F
     let row = hexKey.toString("base64").slice(64*i,(64*i+64))
     key = key.concat(row+"\n")
   }
-  key = key.concat(`-----END PRIVATE KEY-----`);
+  key = key.concat(`-----END PRIVATE KEY-----\n`);
 
   // change to return key to manually include -----BEGIN ...
 
