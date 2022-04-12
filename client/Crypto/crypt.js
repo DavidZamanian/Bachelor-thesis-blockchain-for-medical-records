@@ -37,7 +37,7 @@ function encryptEHR(recordKey, EHR, privateKey) {
 /**
  * Decrypts the EHR using the record key.
  * @param {string} recordKey Encrypted record_key retrieved from DB.
- * @param {{iv: Buffer, Tag: Buffer, encryptedData: string}} EHR Contains the IV and encrypted EHR.
+ * @param {{iv: string, Tag: Buffer, encryptedData: string}} EHR Contains the IV and encrypted EHR.
  * @param {string} privateKey Permissioned private key used to decrypt the record key.
  * @returns {string} The decrypted EHR in string.
  */
@@ -108,9 +108,9 @@ function decryptRecordKey(recordKey, privateKey) {
  */
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
-  var iterations = 100;
-  var outputBitLen = 632;
-  var hashAlgo = "sha512";
+  var iterations = 1000;
+  var outputBitLen = 512; // this could be wrong
+  var hashAlgo = "sha512"; // this could be wrong
 
   hexKey = crypto.pbkdf2Sync(
     password,
@@ -122,20 +122,22 @@ function derivePrivateKeyFromPassword(password, salt) {
   
 
 
-  let key = `-----BEGIN PRIVATE KEY-----\n`;
+  let key = `\n-----BEGIN PRIVATE KEY-----\n`;
   for (var i = 0; i < 14; i++){
     let row = hexKey.toString("base64").slice(64*i,(64*i+64))
     key = key.concat(row+"\n")
   }
-  key = key.concat(`-----END PRIVATE KEY-----\n`);
+  key = key.concat(`-----END PRIVATE KEY-----`);
 
+  // change to return key to manually include -----BEGIN ...
 
-  return key.toString("base64")//hexKey.toString("base64")
+  //return key.toString("base64")
+  return hexKey.toString("base64")
 }
 /**
  * Creates a publicKey from a given privateKey
  * @param {*} privateKey The privateKey that has originally been derived from the user's password
- * @returns The publicKey that has been extracted
+ * @returns {Promise<string>} The publicKey that has been extracted
  */
 function extractPublicKeyFromPrivateKey(privateKey) {
   const pubKeyObject = crypto.createPublicKey({

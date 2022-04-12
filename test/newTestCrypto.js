@@ -52,9 +52,10 @@ describe("Test keys", async () => {
 
   it("Derive PrivateKey from Password & Salt", async () => {
     assert.doesNotThrow( async () => {
-      derivedPrivateKey = crypt.derivePrivateKeyFromPassword(password, salt);
+      derivedPrivateKey = await crypt.derivePrivateKeyFromPassword(password, salt);
+      //console.log(derivedPrivateKey)
     });
-  });
+  }).timeout(10000)
 
   it("Derived PrivateKey is of correct length", async () => {
     assert.equal(derivedPrivateKey.length, examplePrivateKey.length);
@@ -95,9 +96,10 @@ describe("Test keys", async () => {
     
   });
 
-  it("New Record Key is of correct length", async () => {
+  it("New Encrypted Record Key is of correct length", async () => {
     //console.log(newRecordKey.toString("base64"))
-    assert.equal(newRecordKey.length, exampleRecordKey.length)
+    encryptedRecordKey = crypt.encryptRecordKey(newRecordKey, examplePublicKey);
+    assert.equal(encryptedRecordKey.length, exampleRecordKey.length)
   });
   
   it("Encrypt Example Record Key with Example Public Key", () => {
@@ -131,9 +133,10 @@ describe("Test keys", async () => {
   });
 
   it("Decrypted Record key is equal to Original Record Key", async () => {
-    //console.log(newRecordKey)
+    //console.log(derivedPublicKey)
     encryptedRecordKey = await crypt.encryptRecordKey(newRecordKey, derivedPublicKey);
     //console.log(encryptedRecordKey)
+    //console.log(derivedPrivateKey)
     decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey, derivedPrivateKey);   
     //console.log(decryptedRecordKey)
     assert.equal(decryptedRecordKey, newRecordKey)
@@ -159,21 +162,24 @@ describe("Test encryption of file content", () => {
   it("Encrypting and decrypting EHR with real keys", async () => {
     const salt = "4E635266556A586E3272357538782F413F4428472D4B6150645367566B5970337336763979244226452948404D6251655468576D5A7134743777217A25432A46";
     const password = "password123";
-    let derivedPrivateKey = crypt.derivePrivateKeyFromPassword(password, salt);
+    let derivedPrivateKey = await crypt.derivePrivateKeyFromPassword(password, salt);
+    let derivedPublicKey = await crypt.extractPublicKeyFromPrivateKey(derivedPrivateKey);
     let newRecordKey = "";
     crypto.generateKey("aes", { length: 256 }, (err, key) => {
       if (err) throw err;
       
-      newRecordKey = key.export().toString("base64")
+      newRecordKey = key.export()
       //console.log(newRecordKey)
     });
 
+    let encryptedRecordKey = await crypt.encryptRecordKey(newRecordKey,derivedPublicKey);
+    //console.log(encryptedRecordKey.length)
     fc.assert(
       fc.property( fc.string({minLength: 1}), (originalData) => {
   
-        let encryptedData = crypt.encryptEHR(newRecordKey, originalData, derivedPrivateKey);
+        let encryptedData = crypt.encryptEHR(encryptedRecordKey, originalData, derivedPrivateKey);
   
-        let decryptedData = crypt.decryptEHR(newRecordKey, encryptedData,derivedPrivateKey);
+        let decryptedData = crypt.decryptEHR(encryptedRecordKey, encryptedData, derivedPrivateKey);
   
         assert.equal(originalData, decryptedData);
       })
