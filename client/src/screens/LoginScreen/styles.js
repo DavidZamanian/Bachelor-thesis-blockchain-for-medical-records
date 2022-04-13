@@ -35,6 +35,34 @@ const styles = StyleSheet.create({
       justifyContent: 'space-between',
       marginHorizontal: 15,
     },
+    langContainer: {
+      backgroundColor: 'white',
+      borderRadius: 25,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+      marginVertical:25,
+      marginHorizontal: 15,
+      flexDirection:"row"
+    },
+    langItem: {
+      margin:5,
+      padding:5,
+      backgroundColor:theme.SECONDARY_COLOR,
+      borderRadius:25,
+      width:75,
+      height:75,
+    },
+    langText: {
+      marginTop:5,
+      textAlign:"center",
+      color:theme.PRIMARY_COLOR,
+    },
     genericHeader: {
       fontSize: 32,
       color: theme.PRIMARY_COLOR,

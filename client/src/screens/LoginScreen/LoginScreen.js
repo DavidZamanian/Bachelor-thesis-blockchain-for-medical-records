@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, View, TextInput } from "react-native";
+import { Text, View, TextInput, FlatList, Image } from "react-native";
 import { AuthContext } from "../../../contexts/AuthContext";
 import Header from "../../components/Header/Header";
 import { apiService } from "../../../hooks/apiService";
@@ -9,6 +9,9 @@ import theme from "../../theme.style";
 import ThemeButton from "../../components/themeButton";
 import styles from "./styles";
 import { getAuth } from "@firebase/auth";
+import { LoginLocalisation } from "../../Localisation/Login";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+
 
 export function LoginScreen() {
   const { login } = React.useContext(AuthContext);
@@ -16,6 +19,9 @@ export function LoginScreen() {
   const [password, setPassword] = useState("");
   const auth = getAuth();
   const userUID = auth.currentUser;
+  const inter = LoginLocalisation.loc;
+  const langs = ["en","sv","de","pl"];
+  const [lang, setLang] = useState("en");
 
   const BulletPoint = (props) => {
     const { iconName, labelText, descText } = props;
@@ -23,10 +29,10 @@ export function LoginScreen() {
       <View style={styles.bulletpointContainer}>
         <Icon size={50} name={iconName} color={theme.PRIMARY_COLOR} />
         <View>
-          <Text style={{ color: theme.PRIMARY_COLOR, fontSize: 20 }}>
+          <Text style={{ color: theme.PRIMARY_COLOR, fontSize: 20, marginLeft:10}}>
             {labelText}
           </Text>
-          <Text style={{ color: theme.PRIMARY_COLOR, fontSize: 15 }}>
+          <Text style={{ color: theme.PRIMARY_COLOR, fontSize: 15, marginLeft:20}}>
             {descText}
           </Text>
         </View>
@@ -34,6 +40,11 @@ export function LoginScreen() {
       </View>
     );
   };
+
+  const changeLanguage = (newLang) => {
+    setLang(newLang)
+  };
+
 
   return (
     <View style={styles.main}>
@@ -44,29 +55,29 @@ export function LoginScreen() {
             style={{
               flex: "49",
               height: "100%",
-              justifyContent: "space-evenly",
+              justifyContent: "center",
               alignItems: "center",
             }}
           >
             <View style={styles.loginContainer}>
-              <Text style={styles.genericHeader}>Sign In</Text>
+              <Text style={styles.genericHeader}>{inter["sign-in"][lang]}</Text>
               <View>
-                <Text style={styles.inputHeader}>Email:</Text>
+                <Text style={styles.inputHeader}>{inter["email"][lang]}:</Text>
                 <TextInput
                   style={styles.largeTextInputForm}
                   onChangeText={setEmail}
                   value={email}
-                  placeholder="Email"
+                  placeholder={inter["email"][lang]}
                   placeholderTextColor="Black"
                   returnKeyType="done"
                   keyboardType="email-address"
                 />
-                <Text style={styles.inputHeader}>Password:</Text>
+                <Text style={styles.inputHeader}>{inter["password"][lang]}:</Text>
                 <TextInput
                   style={styles.largeTextInputForm}
                   onChangeText={setPassword}
                   value={password}
-                  placeholder="Password"
+                  placeholder={inter["password"][lang]}
                   placeholderTextColor="Black"
                   returnKeyType="done"
                   secureTextEntry
@@ -74,7 +85,7 @@ export function LoginScreen() {
                 <ThemeButton
                   iconSize={35}
                   iconName="key"
-                  labelText="Login"
+                  labelText={inter["sign-in"][lang]}
                   labelSize={25}
                   onPress={async () => {
                     try {
@@ -85,6 +96,26 @@ export function LoginScreen() {
                   }}
                 />
               </View>
+            </View>
+            <View style={styles.langContainer}>
+              <ScrollView>
+                <FlatList
+                horizontal={true}
+                data={langs}
+                keyExtractor={({ item, index }) => index}
+                renderItem={({ item, index }) => (
+                  <TouchableOpacity style={[styles.langItem,item == lang ?{}:{backgroundColor:"white"}]} onPress={() => {changeLanguage(item)}}>
+                    <Image source={require("../../../assets/flags/"+item+".png")}
+                    style={{ 
+                      width: 40, 
+                      height: 30, 
+                      marginTop:10,
+                      alignSelf:"center"
+                    }}/>
+                    <Text style={styles.langText}>{inter["langs"][item]}</Text>
+                  </TouchableOpacity>
+                )}/>
+              </ScrollView>
             </View>
           </View>
           <View
@@ -99,18 +130,18 @@ export function LoginScreen() {
             style={{ flex: "49", height: "100%", justifyContent: "center" }}
           >
             <BulletPoint
-              labelText=" Access your medical records"
-              descText=" - any time, any where!"
+              labelText={inter["label-access"][lang]}
+              descText={inter["desc-access"][lang]}
               iconName="clipboard"
             />
             <BulletPoint
-              labelText=" Authenticate once"
-              descText=" - continuous checks are done automatically!"
+              labelText={inter["label-auth"][lang]}
+              descText={inter["desc-auth"][lang]}
               iconName="shield-checkmark"
             />
             <BulletPoint
-              labelText=" Take control of your data"
-              descText=" - decide who can access your data!"
+              labelText={inter["label-control"][lang]}
+              descText={inter["desc-control"][lang]}
               iconName="lock-closed"
             />
           </View>
