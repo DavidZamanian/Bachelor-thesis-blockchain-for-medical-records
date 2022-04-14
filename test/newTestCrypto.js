@@ -54,7 +54,7 @@ describe("Test keys", async () => {
   it("Derive PrivateKey from Password & Salt", async () => {
     assert.doesNotThrow( async () => {
       derivedPrivateKey = await crypt.derivePrivateKeyFromPassword(password, salt);
-      //console.log(derivedPrivateKey)
+      console.log(derivedPrivateKey)
     });
   }).timeout(10000)
 
@@ -76,6 +76,7 @@ describe("Test keys", async () => {
 
   it("Derived PublicKey is of correct length", async () => {
     console.log(derivedPublicKey+"\n"+examplePublicKey)
+    derivedPublicKey = await crypt.extractPublicKeyFromPrivateKey(derivedPrivateKey);
     assert.equal(derivedPublicKey.length, derivedExamplePublicKey.length);
   })
 
@@ -135,13 +136,20 @@ describe("Test keys", async () => {
   });
 
   it("Decrypted Record key is equal to Original Record Key", async () => {
-    //console.log(derivedPublicKey)
-    encryptedRecordKey = await crypt.encryptRecordKey(newRecordKey, derivedPublicKey);
+    crypto.generateKey("aes", { length: 256 }, async (err, key) => {
+      if (err) throw err;
+      
+      newRecordKey = key.export().toString("base64")
+      encryptedRecordKey = await crypt.encryptRecordKey(newRecordKey, derivedPublicKey);
     //console.log(encryptedRecordKey)
     //console.log(derivedPrivateKey)
     decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey, derivedPrivateKey);   
     //console.log(decryptedRecordKey)
     assert.equal(decryptedRecordKey, newRecordKey)
+      //console.log(newRecordKey)
+    });
+    //console.log(derivedPublicKey)
+    
   });
 
 });

@@ -109,7 +109,7 @@ function decryptRecordKey(recordKey, privateKey) {
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
   var iterations = 1000;
-  var keylen = 512; // this could be wrong
+  var keylen = 632; // this could be wrong
   var digest = "sha512"; // this could be wrong
 
   hexKey = crypto.pbkdf2Sync(
@@ -138,27 +138,36 @@ HTPhtf3w2f2F
 -----END PRIVATE KEY-----
 `;
   
-  
+console.log(fakeKey.indexOf("M"))
+console.log(fakeKey.indexOf("T",28))
+console.log(fakeKey.indexOf("L",90))
+let magicCharacter = fakeKey[27]
+let magicNewLine = fakeKey[92]
 
-
-  let key = `-----BEGIN PRIVATE KEY-----\n`;
+  let key = fakeKey.slice(0,28);
   for (var i = 0; i < 14; i++){
     let row = hexKey.toString("base64").slice(64*i,(64*i+64))
-    key = key.concat(row+"\n")
+    key = key.concat(row+magicNewLine)
   }
-  key = key.concat(`-----END PRIVATE KEY-----\n`);
+  key = key.concat(`-----END PRIVATE KEY-----`+magicCharacter);
 
   // change to return key to manually include -----BEGIN ...
 
-  let privKey = crypto.createPrivateKey({
-    key: fakeKey,
+/*
+  const privKeyObject = crypto.createPrivateKey({
+    key: hexKey,
     format: "pem",
   });
 
+  const privateKey = privKeyObject.export({
+    format: "pem",
+    type: "pkcs8",
+  });
 
-  return privKey.export()
+*/
+  //return privateKey.toString("base64")
   //return fakeKey;
-  //return key.toString("base64")
+  return key.toString("base64")
   //return hexKey.toString("base64")
 }
 /**
