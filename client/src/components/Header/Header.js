@@ -7,13 +7,14 @@ import { useNavigation } from "@react-navigation/native";
 import NavbarButton from "../navbarButton";
 import theme from "../../theme.style";
 import { RoleContext } from "../../../contexts/RoleContext";
+import { HeaderLocalisation } from "../../Localisation/Header";
 
 
 const Header = () => {
   const { authentication, user } = apiService();
   const { logOut } = React.useContext(AuthContext);
 
-  const { role } = React.useContext(RoleContext);
+  const { role, language } = React.useContext(RoleContext);
 
   const navigation = useNavigation();
   const onPressContact = () => {
@@ -22,6 +23,8 @@ const Header = () => {
   const onPressAbout = () => {
     navigation.navigate("AboutScreen");
   };
+
+  const inter = HeaderLocalisation.loc;
 
   function logIn() {
     
@@ -48,13 +51,13 @@ const Header = () => {
         <Text style={styles.navbarLogoName}>Bachelor Project</Text>
       </TouchableOpacity>
       <View style={styles.navbarButtonContainer}>
-        <NavbarButton labelText="About" iconName="information-circle-outline" onPress={onPressAbout}/>
-        <NavbarButton labelText="Contact" iconName="mail-outline" onPress={onPressContact}/>
+        <NavbarButton labelText={inter["about-us"][language]} iconName="information-circle-outline" onPress={onPressAbout}/>
+        <NavbarButton labelText={inter["contact"][language]} iconName="mail-outline" onPress={onPressContact}/>
         {
           user ?
-          <NavbarButton labelText="Sign Out" iconName="log-out-outline" onPress={logOut}/>
+          <NavbarButton labelText={inter["sign-out"][language]} iconName="log-out-outline" onPress={logOut}/>
           :
-          <NavbarButton labelText="Sign In" iconName="log-in-outline" onPress={logIn}/>
+          <NavbarButton labelText={inter["sign-in"][language]} iconName="log-in-outline" onPress={logIn}/>
         }
       </View>
     </View>

@@ -11,17 +11,19 @@ import styles from "./styles";
 import { getAuth } from "@firebase/auth";
 import { LoginLocalisation } from "../../Localisation/Login";
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+import { RoleContext } from "../../../contexts/RoleContext";
 
 
 export function LoginScreen() {
   const { login } = React.useContext(AuthContext);
+  const { language, setLanguage } = React.useContext(RoleContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const auth = getAuth();
   const userUID = auth.currentUser;
   const inter = LoginLocalisation.loc;
   const langs = ["en","sv","de","pl"];
-  const [lang, setLang] = useState("en");
+
 
   const BulletPoint = (props) => {
     const { iconName, labelText, descText } = props;
@@ -42,7 +44,7 @@ export function LoginScreen() {
   };
 
   const changeLanguage = (newLang) => {
-    setLang(newLang)
+    setLanguage(newLang)
   };
 
 
@@ -60,24 +62,24 @@ export function LoginScreen() {
             }}
           >
             <View style={styles.loginContainer}>
-              <Text style={styles.genericHeader}>{inter["sign-in"][lang]}</Text>
+              <Text style={styles.genericHeader}>{inter["sign-in"][language]}</Text>
               <View>
-                <Text style={styles.inputHeader}>{inter["email"][lang]}:</Text>
+                <Text style={styles.inputHeader}>{inter["email"][language]}:</Text>
                 <TextInput
                   style={styles.largeTextInputForm}
                   onChangeText={setEmail}
                   value={email}
-                  placeholder={inter["email"][lang]}
+                  placeholder={inter["email"][language]}
                   placeholderTextColor="Black"
                   returnKeyType="done"
                   keyboardType="email-address"
                 />
-                <Text style={styles.inputHeader}>{inter["password"][lang]}:</Text>
+                <Text style={styles.inputHeader}>{inter["password"][language]}:</Text>
                 <TextInput
                   style={styles.largeTextInputForm}
                   onChangeText={setPassword}
                   value={password}
-                  placeholder={inter["password"][lang]}
+                  placeholder={inter["password"][language]}
                   placeholderTextColor="Black"
                   returnKeyType="done"
                   secureTextEntry
@@ -85,7 +87,7 @@ export function LoginScreen() {
                 <ThemeButton
                   iconSize={35}
                   iconName="key"
-                  labelText={inter["sign-in"][lang]}
+                  labelText={inter["sign-in"][language]}
                   labelSize={25}
                   onPress={async () => {
                     try {
@@ -104,7 +106,7 @@ export function LoginScreen() {
                 data={langs}
                 keyExtractor={({ item, index }) => index}
                 renderItem={({ item, index }) => (
-                  <TouchableOpacity style={[styles.langItem,item == lang ?{}:{backgroundColor:"white"}]} onPress={() => {changeLanguage(item)}}>
+                  <TouchableOpacity style={[styles.langItem,item == language ?{}:{backgroundColor:"white"}]} onPress={() => {changeLanguage(item)}}>
                     <Image source={require("../../../assets/flags/"+item+".png")}
                     style={{ 
                       width: 40, 
@@ -130,18 +132,18 @@ export function LoginScreen() {
             style={{ flex: "49", height: "100%", justifyContent: "center" }}
           >
             <BulletPoint
-              labelText={inter["label-access"][lang]}
-              descText={inter["desc-access"][lang]}
+              labelText={inter["label-access"][language]}
+              descText={inter["desc-access"][language]}
               iconName="clipboard"
             />
             <BulletPoint
-              labelText={inter["label-auth"][lang]}
-              descText={inter["desc-auth"][lang]}
+              labelText={inter["label-auth"][language]}
+              descText={inter["desc-auth"][language]}
               iconName="shield-checkmark"
             />
             <BulletPoint
-              labelText={inter["label-control"][lang]}
-              descText={inter["desc-control"][lang]}
+              labelText={inter["label-control"][language]}
+              descText={inter["desc-control"][language]}
               iconName="lock-closed"
             />
           </View>

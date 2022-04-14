@@ -22,10 +22,12 @@ function App() {
     chainConnection: ChainConnectionFactory.getChainConnection(),
   });
 
+  const [language, setLanguage] = useState("en");
+
   const [role, setRole] = useState("");
   const [userSSN, setUserSSN] = useState("");
   const [institution, setInstitution] = useState("");
-  const value = { role, setRole, userSSN, setUserSSN, institution, setInstitution };
+  const value = { role, setRole, userSSN, setUserSSN, institution, setInstitution, language, setLanguage };
 
   //For testing only
   /*
