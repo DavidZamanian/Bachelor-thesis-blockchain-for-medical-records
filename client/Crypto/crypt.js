@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-
+const pemtools = require("pemtools");
 /**
  * Methods for encrypting/decrypting EHR and record keys.
  * @author David Zamanian, Nils Johnsson, Wendy Pau, Christopher Molin
@@ -12,7 +12,7 @@ const algorithm = "aes-256-gcm";
  * @param {string} recordKey Encrypted record_key retrieved from DB.
  * @param {string} EHR The EHR text content to be encrypted.
  * @param {string} privateKey The medical personnels' private key that writes the EHR.
- * @returns {{iv: string, Tag: Buffer, encryptedData: string}} The IV for the encryption and the encrypted EHR.
+ * @returns {Promise<{iv: string, Tag: Buffer, encryptedData: string}>} The IV for the encryption and the encrypted EHR.
  */
 function encryptEHR(recordKey, EHR, privateKey) {
   const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
@@ -39,7 +39,7 @@ function encryptEHR(recordKey, EHR, privateKey) {
  * @param {string} recordKey Encrypted record_key retrieved from DB.
  * @param {{iv: string, Tag: Buffer, encryptedData: string}} EHR Contains the IV and encrypted EHR.
  * @param {string} privateKey Permissioned private key used to decrypt the record key.
- * @returns {string} The decrypted EHR in string.
+ * @returns {Promise<string>} The decrypted EHR in string.
  */
 function decryptEHR(recordKey, EHR, privateKey) {
 
@@ -109,7 +109,7 @@ function decryptRecordKey(recordKey, privateKey) {
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
   var iterations = 1000;
-  var keylen = 632; // this could be wrong
+  var keylen = 634; // this could be wrong
   var digest = "sha512"; // this could be wrong
 
   hexKey = crypto.pbkdf2Sync(
@@ -119,7 +119,11 @@ function derivePrivateKeyFromPassword(password, salt) {
     keylen,
     digest
   );
-  
+  console.log("BEFORE")
+  console.log(hexKey)
+  //hexKey = hexKey.toString("base64")
+  console.log("AFTER")
+  console.log(hexKey)
   let fakeKey = `-----BEGIN PRIVATE KEY-----
 MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBANSIBpLQNO+J+VGL
 TO6bhB+lO6lOoRwCe6NPcjqv1r0z6Eu3eEFfvkgGpCxxwZjpj8Vb/OfCgJkABNn4
@@ -138,9 +142,14 @@ HTPhtf3w2f2F
 -----END PRIVATE KEY-----
 `;
   
-console.log(fakeKey.indexOf("M"))
-console.log(fakeKey.indexOf("T",28))
-console.log(fakeKey.indexOf("L",90))
+let x = pemtools(hexKey,'PRIVATE KEY')
+
+console.log(x.pem)
+
+//console.log(fakeKey.indexOf("M"))
+//console.log(fakeKey.indexOf("T",28))
+//console.log(fakeKey.indexOf("L",90))
+//console.log(fakeKey.indexOf("F",880))
 let magicCharacter = fakeKey[27]
 let magicNewLine = fakeKey[92]
 
@@ -149,7 +158,7 @@ let magicNewLine = fakeKey[92]
     let row = hexKey.toString("base64").slice(64*i,(64*i+64))
     key = key.concat(row+magicNewLine)
   }
-  key = key.concat(`-----END PRIVATE KEY-----`+magicCharacter);
+  key = key.concat(fakeKey.slice(886));
 
   // change to return key to manually include -----BEGIN ...
 
@@ -165,17 +174,19 @@ let magicNewLine = fakeKey[92]
   });
 
 */
+return x.pem
   //return privateKey.toString("base64")
   //return fakeKey;
-  return key.toString("base64")
+  //return key.toString("base64")
   //return hexKey.toString("base64")
 }
 /**
  * Creates a publicKey from a given privateKey
- * @param {*} privateKey The privateKey that has originally been derived from the user's password
+ * @param {string} privateKey The privateKey that has originally been derived from the user's password
  * @returns {Promise<string>} The publicKey that has been extracted
  */
 function extractPublicKeyFromPrivateKey(privateKey) {
+  console.log(privateKey)
   const pubKeyObject = crypto.createPublicKey({
     key: privateKey,
     format: "pem",
