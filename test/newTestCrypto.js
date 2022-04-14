@@ -70,12 +70,13 @@ describe("Test keys", async () => {
 
   it("Derive PublicKey from Derived PrivateKey", async () => {
     assert.doesNotThrow( async () => {
-      derivedPublicKey = crypt.extractPublicKeyFromPrivateKey(derivedPrivateKey);
+      derivedPublicKey = await crypt.extractPublicKeyFromPrivateKey(derivedPrivateKey);
     });
   });
 
   it("Derived PublicKey is of correct length", async () => {
-    console.log(derivedPublicKey+"\n"+examplePublicKey)
+    //console.log(derivedPublicKey+"\n"+examplePublicKey)
+    derivedPrivateKey = await crypt.derivePrivateKeyFromPassword(password, salt);
     derivedPublicKey = await crypt.extractPublicKeyFromPrivateKey(derivedPrivateKey);
     assert.equal(derivedPublicKey.length, derivedExamplePublicKey.length);
   })
