@@ -14,14 +14,17 @@ import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { RoleContext } from "../../../contexts/RoleContext";
 import EHRService from "../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
+import { EHROverviewLocalisation } from "../../Localisation/EHROverview";
 
 
 export function EHROverviewScreen(props) {
 
+  const inter = EHROverviewLocalisation.loc;
+
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
-  const { role, userSSN } = React.useContext(RoleContext);
+  const { role, userSSN, language } = React.useContext(RoleContext);
   const route = useRoute();
   const navigation = useNavigation();
 
@@ -354,14 +357,10 @@ export function EHROverviewScreen(props) {
                   borderBottomWidth: 2,
                 }}
               >
-                <Text style={styles.contentHeader}>Configure Data Privacy</Text>
+                <Text style={styles.contentHeader}>{inter["label-configure-data-privacy"][language]}</Text>
               </View>
               <View style={{ flex: 7 }}>
-                <Text style={[styles.description, { padding: 10 }]}>
-                  Select which regions you allow to read your medical record, by
-                  checking the corresponding box. Regions you currently have
-                  given permission to are pre-filled.
-                </Text>
+                <Text style={[styles.description, { padding: 10 }]}>{inter["desc-configure-data-privacy"][language]}</Text>
                   <View style={[styles.regionContainer,{width:"100%",justifyContent:"center", borderColor:"black",borderWidth:1}]}>
                     <TouchableOpacity style={[styles.checkbox,{backgroundColor: state.allIsChecked? theme.PRIMARY_COLOR: "white",},]}
                       onPress={() => toggleAllCheckbox()}
@@ -370,7 +369,7 @@ export function EHROverviewScreen(props) {
                         <Icon name="checkmark-outline" size={20}color="white"/>
                       )}
                     </TouchableOpacity>
-                    <Text style={styles.regionLabel}>Toggle all regions On or Off</Text>
+                    <Text style={styles.regionLabel}>{inter["toggle-on-off"][language]}</Text>
                   </View>
                 <FlatList
                   style={styles.regionList}
@@ -420,13 +419,13 @@ export function EHROverviewScreen(props) {
                   onPress={() => togglePopup(false)}
                   style={[styles.popupButton, styles.greyButton]}
                 >
-                  <Text>Discard changes</Text>
+                  <Text>{inter["discard-changes"][language]}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => submitData()}
                   style={[styles.popupButton, styles.primaryButton]}
                 >
-                  <Text style={{ color: "white" }}>Submit changes</Text>
+                  <Text style={{ color: "white" }}>{inter["save-changes"][language]}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -438,30 +437,30 @@ export function EHROverviewScreen(props) {
           visible={state.isLoading}
           horizontal={false}>
           <View style={styles.loadingOverlay}>
-            <Text style={styles.loadingText}>Loading patient data...</Text>
+            <Text style={styles.loadingText}>{inter["loading"][language]}</Text>
             <ActivityIndicator size="large" color={theme.PRIMARY_COLOR}/>
           </View>
         </Modal>
         <Text style={styles.contentHeader}>Patient Overview</Text>
         <View style={styles.rowContainer}>
           <View style={styles.container}>
-            <Text style={styles.header}>Contact Info</Text>
+            <Text style={styles.header}>{inter["contact-info"][language]}</Text>
             <View>
               <View style={styles.contactItem}>
-                <Text style={styles.contactKey}>Full name: </Text>
+                <Text style={styles.contactKey}>{inter["full-name"][language]}:</Text>
                 <Text style={styles.contactValue}>
                   {state.patientInfo.lastName}, {state.patientInfo.firstName}
                 </Text>
               </View>
               <View style={styles.contactItem}>
-                <Text style={styles.contactKey}>Address: </Text>
+                <Text style={styles.contactKey}>{inter["address"][language]}:</Text>
                 {state.editingContactInfo ? (
                   <View style={styles.contactValue}>
                     <TextInput
                       style={styles.contactInput}
                       onChangeText={setAddress}
                       value={inputAddress}
-                      placeholder="Full address"
+                      placeholder={inter["address"][language]}
                       multiline={true}
                     />
                   </View>
@@ -472,14 +471,14 @@ export function EHROverviewScreen(props) {
                 )}
               </View>
               <View style={styles.contactItem}>
-                <Text style={styles.contactKey}>Phone: </Text>
+                <Text style={styles.contactKey}>{inter["phone"][language]}:</Text>
                 {state.editingContactInfo ? (
                   <View style={styles.contactValue}>
                     <TextInput
                       style={styles.contactInput}
                       onChangeText={setPhoneNr}
                       value={inputPhoneNr}
-                      placeholder="Phone number"
+                      placeholder={inter["phone"][language]}
                     />
                   </View>
                 ) : (
@@ -489,14 +488,14 @@ export function EHROverviewScreen(props) {
                 )}
               </View>
               <View style={styles.contactItem}>
-                <Text style={styles.contactKey}>Email: </Text>
+                <Text style={styles.contactKey}>{inter["email"][language]}:</Text>
                 {state.editingContactInfo ? (
                   <View style={styles.contactValue}>
                     <TextInput
                       style={styles.contactInput}
                       onChangeText={setEmail}
                       value={inputEmail}
-                      placeholder="Email address"
+                      placeholder={inter["email"][language]}
                       keyboardType="email-address"
                     />
                   </View>
@@ -519,7 +518,7 @@ export function EHROverviewScreen(props) {
                   {state.editingContactInfo ? (
                     <>
                       <ThemeButton
-                        labelText="Discard Changes"
+                        labelText={inter["discard-changes"][language]}
                         labelSize={15}
                         extraStyle={[
                           styles.detailButton,
@@ -529,7 +528,7 @@ export function EHROverviewScreen(props) {
                         onPress={() => discardContactInfo()}
                       />
                       <ThemeButton
-                        labelText="Save Changes"
+                        labelText={inter["save-changes"][language]}
                         labelSize={15}
                         extraStyle={[
                           styles.detailButton,
@@ -540,7 +539,7 @@ export function EHROverviewScreen(props) {
                     </>
                   ) : (
                     <ThemeButton
-                      labelText="Change contact info"
+                      labelText={inter["change-contact-info"][language]}
                       labelSize={15}
                       extraStyle={[styles.detailButton, styles.journalItemText]}
                       onPress={() => editContactInfo()}
@@ -571,13 +570,10 @@ export function EHROverviewScreen(props) {
           ) : (
             // Patient Version
             <View style={styles.container}>
-              <Text style={styles.header}>Data Privacy</Text>
-              <Text style={styles.description}>
-                Configure what regions can access and view your medical record.
-                You can change this at any time.
-              </Text>
+              <Text style={styles.header}>{inter["label-data-privacy"][language]}</Text>
+              <Text style={styles.description}>{inter["desc-data-privacy"][language]}</Text>
               <ThemeButton
-                labelText="Configure"
+                labelText={inter["configure"][language]}
                 labelSize={25}
                 iconName="eye-outline"
                 iconSize={30}
@@ -590,7 +586,7 @@ export function EHROverviewScreen(props) {
         </View>
         <View style={styles.rowContainer}>
           <View style={styles.container}>
-            <Text style={styles.header}>Prescriptions</Text>
+            <Text style={styles.header}>{inter["prescriptions"][language]}</Text>
             <FlatList
               data={state.patientInfo.prescriptions}
               keyExtractor={({ item, index }) => index}
@@ -604,7 +600,7 @@ export function EHROverviewScreen(props) {
             />
           </View>
           <View style={styles.container}>
-            <Text style={styles.header}>Diagnoses</Text>
+            <Text style={styles.header}>{inter["diagnoses"][language]}</Text>
             <FlatList
               data={state.patientInfo.diagnoses}
               keyExtractor={({ item, index }) => index}
@@ -620,7 +616,7 @@ export function EHROverviewScreen(props) {
         </View>
         <View style={styles.rowContainer}>
           <View style={[styles.container, styles.doubleContainer]}>
-            <Text style={styles.header}>Past record entries</Text>
+            <Text style={styles.header}>{inter["past-record-entries"][language]}</Text>
             <FlatList
               style={{ width: "100%" }}
               data={state.patientInfo.journals}
@@ -630,7 +626,7 @@ export function EHROverviewScreen(props) {
                   <Text
                     style={[styles.journalItemText, styles.journalListHeader]}
                   >
-                    Date
+                    {inter["date"][language]}
                   </Text>
                   <Text
                     style={[
@@ -639,7 +635,7 @@ export function EHROverviewScreen(props) {
                       { flex: 4 },
                     ]}
                   >
-                    Location
+                    {inter["location"][language]}
                   </Text>
                   <Text
                     style={[
@@ -648,7 +644,7 @@ export function EHROverviewScreen(props) {
                       { flex: 4 },
                     ]}
                   >
-                    Issued by
+                    {inter["issued-by"][language]}
                   </Text>
                   <Text
                     style={[
@@ -699,7 +695,7 @@ export function EHROverviewScreen(props) {
                       <View style={styles.journalExpandedRow}>
                         <View style={styles.journalDataBlock}>
                           <Text style={styles.journalDetailsHeader}>
-                            Details
+                          {inter["details"][language]}
                           </Text>
                           <Text style={styles.journalDetails}>
                             {item.details}
@@ -709,7 +705,7 @@ export function EHROverviewScreen(props) {
                       <View style={styles.journalExpandedRow}>
                         <View style={styles.journalDataBlock}>
                           <Text style={styles.journalDetailsHeader}>
-                            Prescriptions
+                          {inter["prescriptions"][language]}
                           </Text>
                           {item.prescriptions.map((txt) => {
                             return <Text key={txt}>{txt}</Text>;
@@ -717,7 +713,7 @@ export function EHROverviewScreen(props) {
                         </View>
                         <View style={styles.journalDataBlock}>
                           <Text style={styles.journalDetailsHeader}>
-                            Diagnoses
+                          {inter["diagnoses"][language]}
                           </Text>
                           {item.diagnoses.map((txt) => {
                             return <Text key={txt}>{txt}</Text>;
@@ -725,7 +721,7 @@ export function EHROverviewScreen(props) {
                         </View>
                         <View style={styles.journalDataBlock}>
                           <Text style={styles.journalDetailsHeader}>
-                            Written by
+                          {inter["issued-by"][language]}
                           </Text>
                           <Text style={styles.journalAuthor}>
                             {item.medicalPersonnel}

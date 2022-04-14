@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
         color:theme.PRIMARY_COLOR,
         fontSize:16,
         alignSelf:"center",
+        marginRight:5
     },
     contactValue:{
         textAlign:"left",
