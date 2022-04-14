@@ -138,10 +138,10 @@ HTPhtf3w2f2F
 -----END PRIVATE KEY-----
 `;
   
+  
 
 
-
-  let key = `\n-----BEGIN PRIVATE KEY-----\n`;
+  let key = `-----BEGIN PRIVATE KEY-----\n`;
   for (var i = 0; i < 14; i++){
     let row = hexKey.toString("base64").slice(64*i,(64*i+64))
     key = key.concat(row+"\n")
@@ -150,7 +150,14 @@ HTPhtf3w2f2F
 
   // change to return key to manually include -----BEGIN ...
 
-  return fakeKey;
+  let privKey = crypto.createPrivateKey({
+    key: fakeKey,
+    format: "pem",
+  });
+
+
+  return privKey.export()
+  //return fakeKey;
   //return key.toString("base64")
   //return hexKey.toString("base64")
 }

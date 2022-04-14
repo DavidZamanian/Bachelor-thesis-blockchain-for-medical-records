@@ -48,6 +48,7 @@ describe("Test keys", async () => {
   const password = "password123";
   let derivedPrivateKey = "";
   let derivedPublicKey = "";
+  let derivedExamplePublicKey = "";
 
 
   it("Derive PrivateKey from Password & Salt", async () => {
@@ -63,7 +64,7 @@ describe("Test keys", async () => {
 
   it("Derive PublicKey from Example PrivateKey", async () => {
     assert.doesNotThrow(async () => {
-      derivedPublicKey = crypt.extractPublicKeyFromPrivateKey(examplePrivateKey);
+      derivedExamplePublicKey = crypt.extractPublicKeyFromPrivateKey(examplePrivateKey);
     });
   });
 
@@ -74,7 +75,8 @@ describe("Test keys", async () => {
   });
 
   it("Derived PublicKey is of correct length", async () => {
-    assert.equal(derivedPublicKey.length, examplePublicKey.length);
+    console.log(derivedPublicKey+"\n"+examplePublicKey)
+    assert.equal(derivedPublicKey.length, derivedExamplePublicKey.length);
   })
 
   let newRecordKey = "";
@@ -173,12 +175,12 @@ describe("Test encryption of file content", () => {
     });
 
     let encryptedRecordKey = await crypt.encryptRecordKey(newRecordKey,derivedPublicKey);
-    //console.log(encryptedRecordKey.length)
+    console.log(encryptedRecordKey.length)
     fc.assert(
       fc.property( fc.string({minLength: 1}), (originalData) => {
-        console.log(encryptedRecordKey)
-        console.log(exampleRecordKey)
-        console.log(derivedPrivateKey)
+        //console.log(encryptedRecordKey)
+        //console.log(exampleRecordKey)
+        //console.log(derivedPrivateKey)
         // encryptEHR decrypts the encryptedRecordKey, this throws an error.
         let encryptedData = crypt.encryptEHR(encryptedRecordKey, originalData, derivedPrivateKey);
         console.log(originalData+" encrypted into: "+encryptedData)
