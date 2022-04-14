@@ -441,7 +441,7 @@ export function EHROverviewScreen(props) {
             <ActivityIndicator size="large" color={theme.PRIMARY_COLOR}/>
           </View>
         </Modal>
-        <Text style={styles.contentHeader}>Patient Overview</Text>
+        <Text style={styles.contentHeader}>{inter["patient-overview"][language]}</Text>
         <View style={styles.rowContainer}>
           <View style={styles.container}>
             <Text style={styles.header}>{inter["contact-info"][language]}</Text>
