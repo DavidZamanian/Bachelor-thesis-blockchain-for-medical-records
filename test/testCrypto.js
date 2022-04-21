@@ -159,6 +159,6 @@ HHivzD+EFv2LcyWtUwIDAQAB
 -----END PUBLIC KEY-----
 `;
 
-  console.log(publicKey)
-  console.log(privateKey)
+  //console.log(publicKey)
+  //console.log(privateKey)
 }

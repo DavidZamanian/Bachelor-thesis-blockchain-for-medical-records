@@ -42,7 +42,6 @@ function encryptEHR(recordKey, EHR, privateKey) {
  * @returns {Promise<string>} The decrypted EHR in string.
  */
 function decryptEHR(recordKey, EHR, privateKey) {
-
   const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
 
   let iv = Buffer.from(EHR.iv, "base64");
@@ -58,7 +57,7 @@ function decryptEHR(recordKey, EHR, privateKey) {
   // Updating encrypted text
   let decryptedEHR = decipher.update(encryptedEHR);
   decryptedEHR = Buffer.concat([decryptedEHR, decipher.final()]);
-  
+
   // returns data after decryption
   return decryptedEHR.toString();
 }
@@ -71,7 +70,6 @@ function decryptEHR(recordKey, EHR, privateKey) {
  * @returns {Promise<string>} Encrypted record key.
  */
 function encryptRecordKey(recordKey, publicKey) {
-
   // publicEncrypt() method with its parameters
   const encrypted = crypto.publicEncrypt(
     publicKey,
@@ -109,21 +107,14 @@ function decryptRecordKey(recordKey, privateKey) {
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
   var iterations = 1000;
-  var keylen = 634; // this could be wrong
+  var keylen = 912; // this could be wrong
   var digest = "sha512"; // this could be wrong
 
-  hexKey = crypto.pbkdf2Sync(
-    password,
-    salt,
-    iterations,
-    keylen,
-    digest
-  );
-  console.log("BEFORE")
-  console.log(hexKey)
+  hexKey = crypto.pbkdf2Sync(password, salt, iterations, keylen, digest);
+  //console.log(hexKey);
   //hexKey = hexKey.toString("base64")
-  console.log("AFTER")
-  console.log(hexKey)
+  //console.log("AFTER");
+  //console.log(hexKey);
   let fakeKey = `-----BEGIN PRIVATE KEY-----
 MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBANSIBpLQNO+J+VGL
 TO6bhB+lO6lOoRwCe6NPcjqv1r0z6Eu3eEFfvkgGpCxxwZjpj8Vb/OfCgJkABNn4
@@ -141,28 +132,28 @@ bIq/ZkmEM0nbWOu8uU60hoos0oHKjuBF9KFN8p3dlodz0N02UAqLjjx1COiC341F
 HTPhtf3w2f2F
 -----END PRIVATE KEY-----
 `;
-  
-let x = pemtools(hexKey,'PRIVATE KEY')
 
-console.log(x.pem)
+  let x = pemtools(hexKey, "PRIVATE KEY");
 
-//console.log(fakeKey.indexOf("M"))
-//console.log(fakeKey.indexOf("T",28))
-//console.log(fakeKey.indexOf("L",90))
-//console.log(fakeKey.indexOf("F",880))
-let magicCharacter = fakeKey[27]
-let magicNewLine = fakeKey[92]
+  //console.log(x.pem);
 
-  let key = fakeKey.slice(0,28);
-  for (var i = 0; i < 14; i++){
-    let row = hexKey.toString("base64").slice(64*i,(64*i+64))
-    key = key.concat(row+magicNewLine)
+  //console.log(fakeKey.indexOf("M"))
+  //console.log(fakeKey.indexOf("T",28))
+  //console.log(fakeKey.indexOf("L",90))
+  //console.log(fakeKey.indexOf("F",880))
+  let magicCharacter = fakeKey[27];
+  let magicNewLine = fakeKey[92];
+
+  let key = fakeKey.slice(0, 28);
+  for (var i = 0; i < 14; i++) {
+    let row = hexKey.toString("base64").slice(64 * i, 64 * i + 64);
+    key = key.concat(row + magicNewLine);
   }
   key = key.concat(fakeKey.slice(886));
 
   // change to return key to manually include -----BEGIN ...
 
-/*
+  /*
   const privKeyObject = crypto.createPrivateKey({
     key: hexKey,
     format: "pem",
@@ -174,7 +165,7 @@ let magicNewLine = fakeKey[92]
   });
 
 */
-return x.pem
+  return hexKey;
   //return privateKey.toString("base64")
   //return fakeKey;
   //return key.toString("base64")
@@ -186,7 +177,7 @@ return x.pem
  * @returns {Promise<string>} The publicKey that has been extracted
  */
 function extractPublicKeyFromPrivateKey(privateKey) {
-  console.log(privateKey)
+  console.log(privateKey);
   const pubKeyObject = crypto.createPublicKey({
     key: privateKey,
     format: "pem",
