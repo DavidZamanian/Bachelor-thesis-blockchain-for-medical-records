@@ -1,11 +1,37 @@
 const crypto = require("crypto");
-const pemtools = require("pemtools");
 /**
  * Methods for encrypting/decrypting EHR and record keys.
  * @author David Zamanian, Nils Johnsson, Wendy Pau, Christopher Molin
  */
 
 const algorithm = "aes-256-gcm";
+
+/**
+ * This method will only be used once per patient (the result will then be stored in the database)
+ * Symmetric
+ */
+
+function encryptPrivateKey(privateKey, symmetricKey) {
+  const iv = crypto.randomBytes(32);
+
+  let cipher = crypto.createCipheriv(
+    algorithm,
+    Buffer.from(symmetricKey, "base64"),
+    iv
+  );
+
+  let encryptedPrivateKey = cipher.update(Buffer.from(privateKey, "utf8"));
+  encryptedPrivateKey = Buffer.concat([encryptedPrivateKey, cipher.final()]);
+
+  let result = "";
+  result = iv + "IV" + encryptedPrivateKey;
+  console.log("Look here for IV: " + result);
+  return { result };
+}
+
+function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
+  let iv = encryptedPrivateKeyAndIV.slice(24, 68);
+}
 
 /**
  * Encrypts the EHR with the record key using the AES crypto algorithm.
@@ -111,67 +137,11 @@ function derivePrivateKeyFromPassword(password, salt) {
   var digest = "sha512"; // this could be wrong
 
   hexKey = crypto.pbkdf2Sync(password, salt, iterations, keylen, digest);
-  //console.log(hexKey);
-  //hexKey = hexKey.toString("base64")
-  //console.log("AFTER");
-  //console.log(hexKey);
-  let fakeKey = `-----BEGIN PRIVATE KEY-----
-MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBANSIBpLQNO+J+VGL
-TO6bhB+lO6lOoRwCe6NPcjqv1r0z6Eu3eEFfvkgGpCxxwZjpj8Vb/OfCgJkABNn4
-ecBS4j0iYhIz0BS4624Z+G/6kFcy/MqUeUOPSUeJMOWdCH8usjXqkTuB9bT0WOiN
-mPNm2x5oOPUceK/MP4QW/YtzJa1TAgMBAAECgYAtvPhtMBG0W2Ukf24XC7DrfovQ
-a/OQK5igFMDokF8OaNVdNibTKt+wcH10cybO2bTvLFTJK7qxMqfYoPjSwwOc8Bpb
-YzRsXgpanydspsUOvoCNXtHmEybSmZ1meP1URB2WD/Lt1fHl5x4PXfbetoqK+Da4
-m1GNnMbDI9gIwUdtQQJBAOuA3V+1LfYNOPPRQI9vQmzSZapty+KsCQADqZEl3JR7
-7xDUzucLv0owfJMaotISN65c+mTdkM3sdbeY47kO4PUCQQDnB1Ub1z4hkPIJOEAm
-ak+EsKPyC2DuKK8QOB+ddX1CCaienmgWfWuN6nImO5Rwmv0JsUYK6mMgOTX3gzXc
-WsgnAkB+yKdlKRMPTdsFV/fbwFgQYcydzfJfm6JUwaP+IlX4EiiH9SlWNXrMJAJM
-56AUW/5h/mhG+QlF8zEEoGiobhwpAkBFDe8FjFe45r9BvDuIf/xWuAm4/mexqB1z
-pqLkiMqw43wwNT79ge2VFL+b5/Edm2YI8KD0AE0yw4b6/ZAq1kO/AkAWUBHUxI1K
-bIq/ZkmEM0nbWOu8uU60hoos0oHKjuBF9KFN8p3dlodz0N02UAqLjjx1COiC341F
-HTPhtf3w2f2F
------END PRIVATE KEY-----
-`;
 
-  let x = pemtools(hexKey, "PRIVATE KEY");
-
-  //console.log(x.pem);
-
-  //console.log(fakeKey.indexOf("M"))
-  //console.log(fakeKey.indexOf("T",28))
-  //console.log(fakeKey.indexOf("L",90))
-  //console.log(fakeKey.indexOf("F",880))
-  let magicCharacter = fakeKey[27];
-  let magicNewLine = fakeKey[92];
-
-  let key = fakeKey.slice(0, 28);
-  for (var i = 0; i < 14; i++) {
-    let row = hexKey.toString("base64").slice(64 * i, 64 * i + 64);
-    key = key.concat(row + magicNewLine);
-  }
-  key = key.concat(fakeKey.slice(886));
-
-  // change to return key to manually include -----BEGIN ...
-
-  /*
-  const privKeyObject = crypto.createPrivateKey({
-    key: hexKey,
-    format: "pem",
-  });
-
-  const privateKey = privKeyObject.export({
-    format: "pem",
-    type: "pkcs8",
-  });
-
-*/
-  return hexKey.toString("base64");
-  //return privateKey.toString("base64")
-  //return fakeKey;
-  //return key.toString("base64")
-  //return hexKey.toString("base64")
+  return hexKey;
 }
-/**
+/**This would not be needed anymore
+ *
  * Creates a publicKey from a given privateKey
  * @param {string} privateKey The privateKey that has originally been derived from the user's password
  * @returns {Promise<string>} The publicKey that has been extracted
