@@ -6,9 +6,11 @@ const crypto = require("crypto");
 
 const algorithm = "aes-256-gcm";
 
-/**
- * This method will only be used once per patient (the result will then be stored in the database)
- * Symmetric
+/** This method will only be used once per patient (the result will then be stored in the database)
+ *
+ * @param {*} privateKey This will be pre-generated together with the public key.
+ * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
+ * @returns the iv concatenated with the encryptedPrivateKey (will be stored in database)
  */
 
 function encryptPrivateKey(privateKey, symmetricKey) {
@@ -29,8 +31,13 @@ function encryptPrivateKey(privateKey, symmetricKey) {
   return { result };
 }
 
+/** Not done yet. This will be called everytime user logs in to get the privateKey.
+ *
+ * @param {*} encryptedPrivateKeyAndIV Get this from the database
+ * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
+ */
 function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
-  let iv = encryptedPrivateKeyAndIV.slice(24, 68);
+  let iv = encryptedPrivateKeyAndIV.slice(0, 30); //Need to find the end of the IV (30 is not correct i dont think)
 }
 
 /**
@@ -140,7 +147,7 @@ function derivePrivateKeyFromPassword(password, salt) {
 
   return hexKey;
 }
-/**This would not be needed anymore
+/** This will not be needed anymore
  *
  * Creates a publicKey from a given privateKey
  * @param {string} privateKey The privateKey that has originally been derived from the user's password
