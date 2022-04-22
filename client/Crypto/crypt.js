@@ -165,7 +165,7 @@ HTPhtf3w2f2F
   });
 
 */
-  return hexKey;
+  return hexKey.toString("base64");
   //return privateKey.toString("base64")
   //return fakeKey;
   //return key.toString("base64")
@@ -177,7 +177,6 @@ HTPhtf3w2f2F
  * @returns {Promise<string>} The publicKey that has been extracted
  */
 function extractPublicKeyFromPrivateKey(privateKey) {
-  console.log(privateKey);
   const pubKeyObject = crypto.createPublicKey({
     key: privateKey,
     format: "pem",

@@ -83,14 +83,24 @@ describe("Test keys", async () => {
     });
   });
 
+  /**
+   * Here the problem begins. The derived publicKey is not the correct length, compared
+   * to a key we know works fine
+   *
+   *
+   */
+
   it("Derived PublicKey is of correct length", async () => {
     derivedPrivateKey = await crypt.derivePrivateKeyFromPassword(
       password,
       salt
     );
+    console.log("Derived private key:" + derivedPrivateKey);
     derivedPublicKey = await crypt.extractPublicKeyFromPrivateKey(
       derivedPrivateKey
     );
+    //console.log("Derived length: " + derivedPublicKey.length);
+    //console.log("Example length: " + derivedExamplePublicKey.length);
     assert.equal(derivedPublicKey.length, derivedExamplePublicKey.length);
   });
 
