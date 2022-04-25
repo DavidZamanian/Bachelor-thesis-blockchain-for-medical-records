@@ -16,19 +16,18 @@ const algorithm = "aes-256-gcm";
 function encryptPrivateKey(privateKey, symmetricKey) {
   const iv = crypto.randomBytes(32);
 
-  let cipher = crypto.createCipheriv(
-    algorithm,
-    Buffer.from(symmetricKey, "base64"),
-    iv
-  );
+  let cipher = crypto.createCipheriv(algorithm, symmetricKey, iv);
 
   let encryptedPrivateKey = cipher.update(Buffer.from(privateKey, "utf8"));
   encryptedPrivateKey = Buffer.concat([encryptedPrivateKey, cipher.final()]);
 
-  let result = "";
-  result = iv + "IV" + encryptedPrivateKey;
-  console.log("Look here for IV: " + result);
-  return { result };
+  //let result = "";
+  //result = iv.toString("base64") + encryptedPrivateKey.toString("hex");
+  //console.log("Look here for IV: " + result);
+  return {
+    iv: iv.toString("base64"),
+    encryptedData: encryptedPrivateKey.toString("hex"),
+  };
 }
 
 /** Not done yet. This will be called everytime user logs in to get the privateKey.
@@ -37,7 +36,23 @@ function encryptPrivateKey(privateKey, symmetricKey) {
  * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
  */
 function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
-  let iv = encryptedPrivateKeyAndIV.slice(0, 30); //Need to find the end of the IV (30 is not correct i dont think)
+  let iv = Buffer.from(encryptedPrivateKeyAndIV.iv, "base64"); //.slice(0, 44); //Need to find the end of the IV (30 is not correct i dont think)
+  let encryptedPrivateKey = Buffer.from(
+    encryptedPrivateKeyAndIV.encryptedData,
+    "hex"
+  ); //.slice(44);
+
+  let decipher = crypto.createDecipheriv(
+    algorithm,
+    Buffer.from(symmetricKey),
+    iv
+  );
+
+  // Updating encrypted text
+  let decryptedKey = decipher.update(encryptedPrivateKey);
+  //decryptedKey = Buffer.concat([decryptedKey, decipher.final()]);
+
+  return decryptedKey;
 }
 
 /**
@@ -120,12 +135,12 @@ function encryptRecordKey(recordKey, publicKey) {
  */
 function decryptRecordKey(recordKey, privateKey) {
   //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
-
   // privateDecrypt() method with its parameters
   const decrypted = crypto.privateDecrypt(
     privateKey,
     Buffer.from(recordKey, "base64")
   );
+
   return decrypted.toString("base64");
 }
 
@@ -140,7 +155,7 @@ function decryptRecordKey(recordKey, privateKey) {
 function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
   var iterations = 1000;
-  var keylen = 912; // this could be wrong
+  var keylen = 16; // this could be wrong
   var digest = "sha512"; // this could be wrong
 
   hexKey = crypto.pbkdf2Sync(password, salt, iterations, keylen, digest);
@@ -174,4 +189,6 @@ module.exports = {
   decryptEHR,
   derivePrivateKeyFromPassword,
   extractPublicKeyFromPrivateKey,
+  encryptPrivateKey,
+  decryptPrivateKey,
 };

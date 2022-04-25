@@ -52,11 +52,13 @@ export default class EHRService {
     return publicKey;
   }
 
-  static async getEncPrivateKey() {
+  static async getEncPrivateKeyAndIV() {
     let encryptedPrivateKey;
     const auth = getAuth();
     let dbRef = ref(database);
-    await get(child(dbRef, "mapUser/" + auth.currentUser.uid + "/privateKey/"))
+    await get(
+      child(dbRef, "mapUser/" + auth.currentUser.uid + "/IvAndPrivateKey/")
+    )
       .then((snapshot) => {
         if (snapshot.exists()) {
           encryptedPrivateKey = snapshot.val();
