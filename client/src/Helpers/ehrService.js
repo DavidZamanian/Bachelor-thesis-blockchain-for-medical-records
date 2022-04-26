@@ -358,8 +358,7 @@ export default class EHRService{
     }
 
     /**
-     * PLACEHOLDER: Gets all regions the given patient have granted permission.
-     * Returns a list of region names.
+     * Gets all regions the given patient has granted permission to.
      * @param {String} patientID
      * @returns {Promise<Array<String>>}
      * @author Hampus Jernkrook
