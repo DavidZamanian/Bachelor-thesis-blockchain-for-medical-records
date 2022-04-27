@@ -34,11 +34,16 @@ function encryptPrivateKey(privateKey, symmetricKey) {
  *
  * @param {*} encryptedPrivateKeyAndIV Get this from the database
  * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
+ * @returns {Promise<*>}
  */
-function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
-  let iv = Buffer.from(encryptedPrivateKeyAndIV.iv, "base64"); //.slice(0, 44); //Need to find the end of the IV (30 is not correct i dont think)
+ async function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
+
+
+
+
+  let iv = Buffer.from(encryptedPrivateKeyAndIV.slice(0, 44), "base64"); //; //Need to find the end of the IV (30 is not correct i dont think)
   let encryptedPrivateKey = Buffer.from(
-    encryptedPrivateKeyAndIV.encryptedData,
+    encryptedPrivateKeyAndIV.slice(44),
     "hex"
   ); //.slice(44);
 
@@ -52,18 +57,17 @@ function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
   let decryptedKey = decipher.update(encryptedPrivateKey);
   //decryptedKey = Buffer.concat([decryptedKey, decipher.final()]);
 
-  return decryptedKey;
+  return decryptedKey.toString("base64");
 }
 
 /**
  * Encrypts the EHR with the record key using the AES crypto algorithm.
  * @param {string} recordKey Encrypted record_key retrieved from DB.
  * @param {string} EHR The EHR text content to be encrypted.
- * @param {string} privateKey The medical personnels' private key that writes the EHR.
  * @returns {Promise<{iv: string, Tag: Buffer, encryptedData: string}>} The IV for the encryption and the encrypted EHR.
  */
-function encryptEHR(recordKey, EHR, privateKey) {
-  const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
+function encryptEHR(decryptedRecordKey, EHR) {
+  //const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
   const iv = crypto.randomBytes(32);
 
   let cipher = crypto.createCipheriv(
@@ -86,11 +90,10 @@ function encryptEHR(recordKey, EHR, privateKey) {
  * Decrypts the EHR using the record key.
  * @param {string} recordKey Encrypted record_key retrieved from DB.
  * @param {{iv: string, Tag: Buffer, encryptedData: string}} EHR Contains the IV and encrypted EHR.
- * @param {string} privateKey Permissioned private key used to decrypt the record key.
  * @returns {Promise<string>} The decrypted EHR in string.
  */
-function decryptEHR(recordKey, EHR, privateKey) {
-  const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
+function decryptEHR(decryptedRecordKey, EHR) {
+  //const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
 
   let iv = Buffer.from(EHR.iv, "base64");
   let encryptedEHR = Buffer.from(EHR.encryptedData, "hex");
@@ -161,7 +164,7 @@ function derivePrivateKeyFromPassword(password, salt) {
 
   hexKey = crypto.pbkdf2Sync(password, salt, iterations, outputBitLen, digest);
 
-  return hexKey;
+  return hexKey.toString("hex"); // MUST be HEX format!
 }
 /** This will not be needed anymore
  *

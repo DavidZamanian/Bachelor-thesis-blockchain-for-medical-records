@@ -18,7 +18,7 @@ export function NewEntryScreen(props) {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const { role, userSSN, institution } = React.useContext(UserDataContext);
+  const { role, userSSN, institution, privateKey } = React.useContext(UserDataContext);
 
   if (role != "doctor"){
     alert("WARNING: NOT A DOCTOR");
@@ -160,6 +160,9 @@ export function NewEntryScreen(props) {
 
     let healthcareInstitution = await EHRService.getInstitutionName(institution);
 
+
+    console.warn(""+privateKey);
+
     console.log(medicalPersonnel+institution+healthcareInstitution)
     try{
       let status =  await EHRService.packageAndUploadEHR(
@@ -168,7 +171,9 @@ export function NewEntryScreen(props) {
       healthcareInstitution,
       inputDetails,
       prescriptList,
-      diagnoseList)
+      diagnoseList,
+      privateKey
+      )
 
       return status;
     }

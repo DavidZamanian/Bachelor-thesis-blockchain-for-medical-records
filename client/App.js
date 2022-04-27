@@ -35,6 +35,8 @@ function App() {
     setInstitution,
     privateKey,
     setPrivateKey,
+    publicKey,
+    setPublicKey,
   };
 
   /**
