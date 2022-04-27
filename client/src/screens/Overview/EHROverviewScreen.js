@@ -14,6 +14,7 @@ import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { RoleContext } from "../../../contexts/RoleContext";
 import EHRService from "../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
+import CouldNotLoadPermittedRegionsError from "../../Helpers/Errors/couldNotLoadPermittedRegionsError";
 
 
 export function EHROverviewScreen(props) {
@@ -74,8 +75,11 @@ export function EHROverviewScreen(props) {
           
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND! //TODO REMOVE THIS COMMENT WHEN DONE
 
+          // establish the connection to the blockchain
           let connection = await chainConnection;
-          let allRegions = await connection.getAllRegions();
+          
+          // get all regions within the system
+          let allRegions = await EHRService.getRegions();
           // get the patient's permitted regions
           const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 
@@ -128,7 +132,13 @@ export function EHROverviewScreen(props) {
           }));
         }
       });
-    } catch (e) {}
+    } catch (err) {
+      if (err instanceof CouldNotLoadPermittedRegionsError) {
+        alert(`FATAL: Failed to fetch Permission Settings. Aborting login.\n` +
+          `Try to login anew. Contact Customer Service if the issue remains.`);
+        console.log("PERMITTED REGIONS FAILED!!!!")
+      } //TODO: handle other errors as well?
+    }
   };
 
   // To toggle editing of contact info

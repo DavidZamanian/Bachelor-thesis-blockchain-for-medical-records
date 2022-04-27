@@ -336,25 +336,11 @@ export default class EHRService{
     /**
      * Gets all regions from Firebase, and returns them as a list of region names.
      * @returns {Promise<Array<String>>}
-     * @async
-     * @author Christopher Molin
+     * @author Hampus Jernkrook
      */
     static async getRegions(){
-
-        let dbRef = ref(database);
-        let regions = [];
-        await get(child(dbRef, 'Regions/')).then((snapshot) => {
-        if (snapshot.exists()) {
-            let results = snapshot.val();
-            results.forEach((region) => {
-                regions.push(region.name)
-            })     
-        } else {
-            throw ("No data available");
-        }
-        }).catch((error) => {
-            throw (error);
-        });
+        let connection = await this.chainConnection;
+        let regions = await connection.getAllRegions();
         return regions;
     }
 
