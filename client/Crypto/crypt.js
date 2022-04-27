@@ -139,6 +139,11 @@ function encryptRecordKey(recordKey, publicKey) {
 function decryptRecordKey(recordKey, privateKey) {
   //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
   // privateDecrypt() method with its parameters
+
+  console.log("!!!!!PrivateKEy; "+privateKey)
+  
+  crypto.createPrivateKey()
+
   const decrypted = crypto.privateDecrypt(
     privateKey,
     Buffer.from(recordKey, "base64")
