@@ -86,6 +86,9 @@ yQIDAQAB
 const ericSalt =
   "3LZD1EHZUO3LZK65FKJDD1FQ44THRBE8K7ZTR2Y3RVJSMDQNW67K3Y75QUAEWWXY88CP8Z43SVJ6E3LKUR45Z3WOKY86RWIVIK31PY7R6J7IKCV5VDYB1FG4UN3ST8M3";
 
+const ericRecordKey = `KuM4sQeaBMXUN4Gpo1qRj1tUhyaAtDqpxXVyoMvgb9w=`
+const SlickRickRecordKey = `2BSPncgSPTVKNJ4/zvxCeX33M7oSUl6fOgjhTT6AxpQ=`
+
 const slickRickPrivateKey = `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDkoNh7Iw/XnGnH
 bQh1MtqDWL+h4gWfgwGvy9VZd5rTW68oBkuupR7YCMgYGhJA1GCkSJPYP5mxjOyu
@@ -175,6 +178,13 @@ describe("Test keys", async () => {
         if (err) throw err;
 
         newRecordKey = key.export().toString("base64");
+        //console.log("Record key: " + newRecordKey)
+
+
+        let EencryptedRecordKey = crypt.encryptRecordKey(ericRecordKey, ericAnderssonPublicKey);
+        let RencryptedRecordKey = crypt.encryptRecordKey(ericRecordKey, slickRickPublicKey);
+        console.log("Erics record_key: " + EencryptedRecordKey)
+        console.log("Ricks record_key: " + RencryptedRecordKey)
       });
     });
   });

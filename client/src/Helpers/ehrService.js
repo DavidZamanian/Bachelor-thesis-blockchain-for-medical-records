@@ -34,6 +34,12 @@ export default class EHRService {
     return apiToken;
   }
 
+  /**
+   *
+   * @returns returns the rencrypted record key of the currently logged in patient
+   * @author David Zamanian
+   */
+
   static async getPublicKey() {
     let publicKey;
     const auth = getAuth();
@@ -51,6 +57,12 @@ export default class EHRService {
       });
     return publicKey;
   }
+
+  /**
+   *
+   * @returns returns the rencrypted private key + IV of the currently logged in user
+   * @author David Zamanian
+   */
 
   static async getEncPrivateKeyAndIV() {
     let encryptedPrivateKey;
@@ -70,6 +82,63 @@ export default class EHRService {
         throw error;
       });
     return encryptedPrivateKey;
+  }
+
+  /**
+   *
+   * @param {*} patientID The SSN of the patient
+   * @returns The record key of the specified patient (if permission is granted)
+   * @author David Zamanian
+   */
+
+  static async getDoctorRecordKey(patientID) {
+    let encDoctorRecordKey;
+    const auth = getAuth();
+    let dbRef = ref(database);
+    await get(
+      child(
+        dbRef,
+        "DoctorToRecordKey/" + auth.currentUser.uid + "/recordKeys/" + patientID
+      )
+    )
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          encDoctorRecordKey = snapshot.val();
+        } else {
+          //Maybe do something else here
+          throw "Doctor does not have permission to view this patient's records";
+        }
+      })
+      .catch((error) => {
+        throw error;
+      });
+    return encDoctorRecordKey;
+  }
+  /**
+   *
+   * @returns The encrypted record key of the currently loggied in patient
+   * @author David Zamanian
+   */
+
+  static async getPatientRecordKey() {
+    let encPatientRecordKey;
+    const auth = getAuth();
+    let dbRef = ref(database);
+    await get(
+      child(dbRef, "PatientToRecordKey/" + auth.currentUser.uid + "/recordKey")
+    )
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          encPatientRecordKey = snapshot.val();
+        } else {
+          //Maybe do something else here
+          throw "Something went wrong";
+        }
+      })
+      .catch((error) => {
+        throw error;
+      });
+    return encPatientRecordKey;
   }
 
   /**
@@ -247,7 +316,8 @@ export default class EHRService {
     // TODO: Look up correct CID with patientID
     let cid = PlaceholderValues.ipfsCID;
     let pubKey = await EHRService.getPublicKey();
-    console.log("PUBLIC KEY: " + pubKey);
+    console.log("PUBLIC KEY: " + (await this.getPublicKey()));
+    console.log("RECORD KEY: " + (await this.getPatientRecordKey()));
     console.log(cid);
     let apiToken = await EHRService.getWeb3StorageToken();
 
