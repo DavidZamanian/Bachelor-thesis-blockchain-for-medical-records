@@ -176,7 +176,7 @@ export default class ChainConnection {
         .call({ from: accounts[0] });
       return regions;
     } catch (err) {
-      throw new ChainConnectionError(`Could not get regions from the chain.`+
+      throw new ChainConnectionError(`Could not get regions from the chain. `+
         `Error thrown with message: ${err.message}`);
     }
   }
