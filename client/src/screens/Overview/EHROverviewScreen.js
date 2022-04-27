@@ -72,11 +72,11 @@ export function EHROverviewScreen(props) {
           alert("ERROR: This patient does not exist:" + state.patientID+"\n"+patientRef);
         } else {
           
-          // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
+          // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND! //TODO REMOVE THIS COMMENT WHEN DONE
 
           let connection = await chainConnection;
           let allRegions = await connection.getAllRegions();
-          //const allRegions = await EHRService.getRegions();
+          // get the patient's permitted regions
           const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 
           let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
