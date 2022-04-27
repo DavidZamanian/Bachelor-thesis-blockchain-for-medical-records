@@ -10,6 +10,7 @@ import  * as crypt from "../../Crypto/crypt";
 import crypto, { createPrivateKey } from "crypto";
 import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError"
 import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
+import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
 
 
 export default class EHRService{
@@ -359,8 +360,10 @@ export default class EHRService{
 
     /**
      * Gets all regions the given patient has granted permission to.
-     * @param {String} patientID
-     * @returns {Promise<Array<String>>}
+     * @param {String} patientID The id of the patient to retrieve permissioned regions for. 
+     * @returns {Promise<Array<String>>} Array of regions authorised by the patient.
+     * @throws {CouldNotLoadPermittedRegionsError} If the operation failed, e.g. due to network error 
+     *  or that the caller is unauthorised to call this function. 
      * @author Hampus Jernkrook
      */
      static async getPatientRegions(patientID){
@@ -369,15 +372,13 @@ export default class EHRService{
         try {
             regions = await connection.getPermissionedRegions(patientID);
         } catch (err) {
+            msg = `Could not load permitted regions. Error thrown with message ${err.message}`;
             if (err instanceof ChainOperationDeniedError) {
-                // do something. suggestion:
-                // throw new CouldNotLoadPermittedRegionsError();
-                // and display to the user that they should check that they are signed into the right account. 
-                // Then catch this in overview and abort login. 
-                console.log(`getPatientRegions failed due to operations denied.\n${err.message}`);
+                // show that the operation was denied, followed by generic message. 
+                throw new CouldNotLoadPermittedRegionsError(`Operation denied: ${msg}`);
             } else {
-                // do something else, e.g. throw the same error (?) and display a different message. 
-                console.log(`getPatientRegions failed for some unclear reason.\n${err.message}`);
+                // show generic message.
+                throw new CouldNotLoadPermittedRegionsError(msg);
             }
         }   
         return regions;
