@@ -21,9 +21,9 @@ function encryptPrivateKey(privateKey, symmetricKey) {
   let encryptedPrivateKey = cipher.update(Buffer.from(privateKey, "utf8"));
   encryptedPrivateKey = Buffer.concat([encryptedPrivateKey, cipher.final()]);
 
-  //let result = "";
-  //result = iv.toString("base64") + encryptedPrivateKey.toString("hex");
-  //console.log("Look here for IV: " + result);
+  let result = "";
+  result = iv.toString("base64");
+  console.log("Look here for IV: " + result);
   return {
     iv: iv.toString("base64"),
     encryptedData: encryptedPrivateKey.toString("hex"),
@@ -56,6 +56,8 @@ function encryptPrivateKey(privateKey, symmetricKey) {
   // Updating encrypted text
   let decryptedKey = decipher.update(encryptedPrivateKey);
   //decryptedKey = Buffer.concat([decryptedKey, decipher.final()]);
+
+  console.error(decryptedKey.toString("base64"))
 
   return decryptedKey.toString("base64");
 }
@@ -142,7 +144,6 @@ function decryptRecordKey(recordKey, privateKey) {
 
   console.log("!!!!!PrivateKEy; "+privateKey)
   
-  crypto.createPrivateKey()
 
   const decrypted = crypto.privateDecrypt(
     privateKey,
