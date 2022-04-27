@@ -11,6 +11,8 @@ import crypto, { createPrivateKey } from "crypto";
 import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError"
 import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
+import ChainConnectionError from "../chainConnection/chainConnectionError";
+import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
 
 
 export default class EHRService{
@@ -340,8 +342,18 @@ export default class EHRService{
      */
     static async getRegions(){
         let connection = await this.chainConnection;
-        let regions = await connection.getAllRegions();
-        return regions;
+        let regions;
+        try {
+            regions = await connection.getAllRegions();
+        } catch (err) {
+            if (err instanceof ChainConnectionError) {
+                throw new CouldNotLoadRegionsError(`Could not load the regions from the blockchain. `+
+                `The connection failed. Error: ${err.message}`);
+            }
+            //TODO: either handle other errors as well here, or remove the generic 
+            //error handling from getPatientRegions. Don't know what's best...
+        }
+            return regions;
     }
 
     /**
