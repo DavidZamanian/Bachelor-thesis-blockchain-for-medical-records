@@ -14,6 +14,41 @@ import { getAuth } from "@firebase/auth";
 
 export default class EHRService {
 
+  static privateKey;
+  static publicKey;
+
+  static async setPrivateKey(newPrivateKey){
+    this.privateKey = newPrivateKey;
+  }
+
+  static async setPublicKey(newPublicKey){
+    this.publicKey = newPublicKey;
+  }
+
+  static async setKeys(password, salt){
+
+    let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
+
+    let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
+
+    let privKey = await crypt.decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey);
+    
+    this.setPrivateKey(privKey);
+        
+    let pubKey = await this.getPublicKey();
+
+    this.setPublicKey(pubKey);
+
+    this.setPrivateKey(privKey);
+        
+
+    console.warn(this.privateKey);
+    console.warn(this.publicKey);
+
+    console.log("Password:"+password+"\nSalt:"+salt+"\nSymmetric:"+symmetricKey);
+    console.log("Private:"+privKey+"\nPublic:"+pubKey);
+  }
+
 
   
   /**
@@ -92,7 +127,7 @@ export default class EHRService {
   /**
    *
    * @param {*} patientID The SSN of the patient
-   * @returns The record key of the specified patient (if permission is granted)
+   * @returns {*} The record key of the specified patient (if permission is granted)
    * @author David Zamanian
    */
 
@@ -199,7 +234,6 @@ export default class EHRService {
    * @param  {String} details
    * @param  {Array<String>} prescriptions
    * @param  {Array<String>} diagnoses
-   * @param {String} privateKey
    * @returns {Promise<String>} result -- A string to notify the frontend if it succeeded,
    * or why it failed
    * @author Christopher Molin
@@ -210,8 +244,7 @@ export default class EHRService {
     institution,
     details,
     prescriptions,
-    diagnoses,
-    privateKey
+    diagnoses
   ) {
     try {
       let apiToken = await EHRService.getWeb3StorageToken();
@@ -233,9 +266,9 @@ export default class EHRService {
 
 
       console.warn("encReckey: "+encryptedRecordKey)
-      console.warn("privKey: "+privateKey)
+      console.warn("privKey: "+this.privateKey)
 
-      let decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,privateKey);
+      let decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,await this.privateKey);
 
       let finalFiles = [];
 
@@ -335,7 +368,7 @@ export default class EHRService {
   static async getEHR(patientID) {
     // TODO: Look up correct CID with patientID
     
-    const {role, privateKey } = this.contextType;
+    
 
     
     let decryptedRecordKey = "";
@@ -344,12 +377,12 @@ export default class EHRService {
 
       let encryptedRecordKey = await this.getDoctorRecordKey(patientID);
 
-      decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,privateKey);
+      decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,this.privateKey);
     }
     else if(role == "patient"){
       let encryptedRecordKey = await this.getPatientRecordKey();
 
-      decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,privateKey);
+      decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,this.privateKey);
     }
     else{
       console.error("ERROR: missing role");

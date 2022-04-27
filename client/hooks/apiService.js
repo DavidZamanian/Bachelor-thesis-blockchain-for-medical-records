@@ -22,7 +22,7 @@ import EHRService from "../src/Helpers/ehrService";
 export function apiService() {
   const [user, setUser] = useState();
   const auth = getAuth();
-  const { setRole, setUserSSN, setInstitution, setPrivateKey, setPublicKey, publicKey, privateKey } = React.useContext(UserDataContext);
+  const { setRole, setUserSSN, setInstitution, setPrivateKey, setPublicKey, publicKey, privateKey, role} = React.useContext(UserDataContext);
 
   //Keeps track if user is logged in or not
   React.useEffect(() => {
@@ -127,33 +127,14 @@ export function apiService() {
             });
         });
 
-        console.log("getting salt");
+        //console.log("getting salt");
           
         let salt = await getSalt();
-        console.log("got salt:"+salt);
+        //console.log("got salt:"+salt);
         
-        let symmetricKey = await derivePrivateKeyFromPassword(password, salt);
-        console.log("Password:"+password+"\nSalt:"+salt+"\nSymmetric:"+symmetricKey);
-        
+        await EHRService.setKeys(password, salt);
 
-
-        let encryptedPrivateKeyAndIV = await EHRService.getEncPrivateKeyAndIV();
-
-        let privKey = await decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey);
-        privKey = "test. this is a test"
-        setPrivateKey(privKey);
-        
-        let pubKey = await EHRService.getPublicKey();
-
-        setPublicKey(pubKey);
-
-        console.warn(privateKey);
-        console.warn(publicKey);
-
-        console.log("Password:"+password+"\nSalt:"+salt+"\nSymmetric:"+symmetricKey);
-        console.log("Private:"+privKey+"\nPublic:"+pubKey);
-
-        
+        console.debug(EHRService.privateKey)
 
         return x;
       },
