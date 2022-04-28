@@ -21,9 +21,8 @@ function encryptPrivateKey(privateKey, symmetricKey) {
   let encryptedPrivateKey = cipher.update(Buffer.from(privateKey, "utf8"));
   encryptedPrivateKey = Buffer.concat([encryptedPrivateKey, cipher.final()]);
 
-  let result = "";
-  result = iv.toString("base64");
-  console.log("Look here for IV: " + result);
+  console.log("IV: " + iv.toString("base64"));
+  console.log("EncryptedPrivateKey: " + encryptedPrivateKey.toString("hex"));
   return {
     iv: iv.toString("base64"),
     encryptedData: encryptedPrivateKey.toString("hex"),
@@ -34,16 +33,12 @@ function encryptPrivateKey(privateKey, symmetricKey) {
  *
  * @param {*} encryptedPrivateKeyAndIV Get this from the database
  * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
- * @returns {Promise<*>}
+ * @returns
  */
- async function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
-
-
-
-
-  let iv = Buffer.from(encryptedPrivateKeyAndIV.slice(0, 44), "base64"); //; //Need to find the end of the IV (30 is not correct i dont think)
+function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
+  let iv = Buffer.from(encryptedPrivateKeyAndIV.iv, "base64"); //slice(0, 44); //Need to find the end of the IV (30 is not correct i dont think)
   let encryptedPrivateKey = Buffer.from(
-    encryptedPrivateKeyAndIV.slice(44),
+    encryptedPrivateKeyAndIV.encryptedData,
     "hex"
   ); //.slice(44);
 
@@ -57,9 +52,7 @@ function encryptPrivateKey(privateKey, symmetricKey) {
   let decryptedKey = decipher.update(encryptedPrivateKey);
   //decryptedKey = Buffer.concat([decryptedKey, decipher.final()]);
 
-  console.error(decryptedKey.toString("base64"))
-
-  return decryptedKey.toString("base64");
+  return decryptedKey; //.toString("base64");
 }
 
 /**
@@ -142,8 +135,7 @@ function decryptRecordKey(recordKey, privateKey) {
   //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
   // privateDecrypt() method with its parameters
 
-  console.log("!!!!!PrivateKEy; "+privateKey)
-  
+  console.log("!!!!!PrivateKEy; " + privateKey);
 
   const decrypted = crypto.privateDecrypt(
     privateKey,

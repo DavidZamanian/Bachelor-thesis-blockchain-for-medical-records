@@ -10,47 +10,45 @@ import { PlaceholderValues } from "../placeholders/placeholderValues";
 import * as crypt from "../../Crypto/crypt";
 import { getAuth } from "@firebase/auth";
 
-
-
 export default class EHRService {
-
   static privateKey;
   static publicKey;
 
-  static async setPrivateKey(newPrivateKey){
+  static async setPrivateKey(newPrivateKey) {
     this.privateKey = newPrivateKey;
   }
 
-  static async setPublicKey(newPublicKey){
+  static async setPublicKey(newPublicKey) {
     this.publicKey = newPublicKey;
   }
 
-  static async setKeys(password, salt){
-
+  static async setKeys(password, salt) {
     let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
 
     let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
 
-    let privKey = await crypt.decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey);
-    
+    let privKey = await crypt.decryptPrivateKey(
+      encryptedPrivateKeyAndIV,
+      symmetricKey
+    );
+
     this.setPrivateKey(privKey);
-        
+
     let pubKey = await this.getPublicKey();
 
     this.setPublicKey(pubKey);
 
     this.setPrivateKey(privKey);
-        
 
     console.warn(this.privateKey);
     console.warn(this.publicKey);
 
-    console.log("Password:"+password+"\nSalt:"+salt+"\nSymmetric:"+symmetricKey);
-    console.log("Private:"+privKey+"\nPublic:"+pubKey);
+    console.log(
+      "Password:" + password + "\nSalt:" + salt + "\nSymmetric:" + symmetricKey
+    );
+    console.log("Private:" + privKey + "\nPublic:" + pubKey);
   }
 
-
-  
   /**
    * Fetches API-token to Web3Storage from Firebase
    * @returns {Promise<String>} apiToken to Web3Storage
@@ -264,11 +262,13 @@ export default class EHRService {
       // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
       let encryptedRecordKey = await this.getDoctorRecordKey(id);
 
+      console.warn("encReckey: " + encryptedRecordKey);
+      console.warn("privKey: " + this.privateKey);
 
-      console.warn("encReckey: "+encryptedRecordKey)
-      console.warn("privKey: "+this.privateKey)
-
-      let decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,await this.privateKey);
+      let decryptedRecordKey = await crypt.decryptRecordKey(
+        encryptedRecordKey,
+        await this.privateKey
+      );
 
       let finalFiles = [];
 
@@ -310,8 +310,14 @@ export default class EHRService {
       console.log("Starting to encrypt files");
       // TODO: ENCRYPT THE 3 NEW FILES' CONTENT
       let encryptedEHR = await this.encrypt(stringEHR, decryptedRecordKey);
-      let encryptedPrescriptions = await this.encrypt(stringPrescriptions, decryptedRecordKey);
-      let encryptedDiagnoses = await this.encrypt(stringDiagnoses, decryptedRecordKey);
+      let encryptedPrescriptions = await this.encrypt(
+        stringPrescriptions,
+        decryptedRecordKey
+      );
+      let encryptedDiagnoses = await this.encrypt(
+        stringDiagnoses,
+        decryptedRecordKey
+      );
 
       // Create JSON files
       let ehrFile = await FileService.createJSONFile(
@@ -367,31 +373,26 @@ export default class EHRService {
    */
   static async getEHR(patientID) {
     // TODO: Look up correct CID with patientID
-    
-    
 
-    
     let decryptedRecordKey = "";
-    
-    if(role == "doctor"){
 
+    if (role == "doctor") {
       let encryptedRecordKey = await this.getDoctorRecordKey(patientID);
 
-      decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,this.privateKey);
-    }
-    else if(role == "patient"){
+      decryptedRecordKey = await crypt.decryptRecordKey(
+        encryptedRecordKey,
+        this.privateKey
+      );
+    } else if (role == "patient") {
       let encryptedRecordKey = await this.getPatientRecordKey();
 
-      decryptedRecordKey = await crypt.decryptRecordKey(encryptedRecordKey,this.privateKey);
-    }
-    else{
+      decryptedRecordKey = await crypt.decryptRecordKey(
+        encryptedRecordKey,
+        this.privateKey
+      );
+    } else {
       console.error("ERROR: missing role");
     }
-
-
-
-
-
 
     let cid = PlaceholderValues.ipfsCID;
     let pubKey = await EHRService.getPublicKey();
@@ -412,7 +413,7 @@ export default class EHRService {
 
     for (const file of fetchedFiles) {
       let fileContent = await file.text();
-      let decryptedData = await this.decrypt(fileContent,decryptedRecordKey);
+      let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
       let parsedData = await this.parseIntoJSON(decryptedData);
 
       if (file.name == "prescriptions.json") {
@@ -445,13 +446,7 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async encrypt(content, decryptedRecordKey) {
-
-
-    let x = crypt.encryptEHR(
-      decryptedRecordKey,
-      content
-    );
-
+    let x = crypt.encryptEHR(decryptedRecordKey, content);
 
     console.log("----------------------------------");
     console.log("Tag:" + x.Tag.toString("base64"));
@@ -507,7 +502,7 @@ export default class EHRService {
     return x;
   }
 
-/**
+  /**
    * Decrypts and returns the given file content
    * @param  {string} fileContent file content (including Tag and IV at the beginning)
    * @param {*} recordKey
@@ -515,43 +510,35 @@ export default class EHRService {
    * @returns {Promise<string>} The decrypted content data (Tag and IV excluded)
    * @author Christopher Molin
    */
- static async decrypt(fileContent, recordKey) {
-  let tag = fileContent.slice(0, 24);
-  let iv = fileContent.slice(24, 68);
-  let encrypted = fileContent.slice(68);
+  static async decrypt(fileContent, recordKey) {
+    let tag = fileContent.slice(0, 24);
+    let iv = fileContent.slice(24, 68);
+    let encrypted = fileContent.slice(68);
 
-  let ivBuffer = Buffer.from(iv, "base64");
-  let tagBuffer = Buffer.from(tag, "base64");
+    let ivBuffer = Buffer.from(iv, "base64");
+    let tagBuffer = Buffer.from(tag, "base64");
 
-  console.log("----------------");
-  console.log("ATTEMPTING DECRYPT");
-  console.log("DATA:");
-  console.log(encrypted);
-  console.log("IV:");
-  console.log(ivBuffer.toString("base64"));
-  console.log("TAG:");
-  console.log(tagBuffer.toString("base64"));
+    console.log("----------------");
+    console.log("ATTEMPTING DECRYPT");
+    console.log("DATA:");
+    console.log(encrypted);
+    console.log("IV:");
+    console.log(ivBuffer.toString("base64"));
+    console.log("TAG:");
+    console.log(tagBuffer.toString("base64"));
 
-  let EHR = {
-    iv: ivBuffer,
-    encryptedData: encrypted,
-    Tag: tagBuffer,
-  };
+    let EHR = {
+      iv: ivBuffer,
+      encryptedData: encrypted,
+      Tag: tagBuffer,
+    };
 
-  let x = crypt.decryptEHR(
-    recordKey,
-    EHR
-  );
+    let x = crypt.decryptEHR(recordKey, EHR);
 
-  console.log("DECRYPTED DATA:");
-  console.log(x);
-  return x;
-}
-
-
-
-
-
+    console.log("DECRYPTED DATA:");
+    console.log(x);
+    return x;
+  }
 
   /**
    * Gets all regions from Firebase, and returns them as a list of region names.

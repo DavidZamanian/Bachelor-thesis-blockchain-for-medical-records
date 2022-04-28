@@ -183,8 +183,8 @@ describe("Test keys", async () => {
 
         let EencryptedRecordKey = crypt.encryptRecordKey(ericRecordKey, ericAnderssonPublicKey);
         let RencryptedRecordKey = crypt.encryptRecordKey(ericRecordKey, slickRickPublicKey);
-        console.log("Erics record_key: " + EencryptedRecordKey)
-        console.log("Ricks record_key: " + RencryptedRecordKey)
+        //console.log("Erics record_key: " + EencryptedRecordKey)
+        //console.log("Ricks record_key: " + RencryptedRecordKey)
       });
     });
   });
@@ -258,7 +258,9 @@ describe("Test keys", async () => {
         encryptedRecordKey,
         derivedPrivateKey
       );
-
+        console.log("Private key: " + derivedPrivateKey)
+        console.log("Dec: " + decryptedRecordKey)
+        console.log("New: " + newRecordKey)
       assert.equal(decryptedRecordKey, newRecordKey);
     });
   });
@@ -282,14 +284,14 @@ describe("Test encryption of file content", () => {
           stringifiedData,
           derivedPrivateKey.toString("base64")
         );
-        console.log("encrypted data: " + encryptedData);
+        //console.log("encrypted data: " + encryptedData);
         let decryptedData = crypt.decryptEHR(
           exampleRecordKey,
           encryptedData,
           derivedPrivateKey.toString("base64")
         );
-        console.log("Stringi: " + stringifiedData);
-        console.log("Dec data: " + decryptedData);
+        //console.log("Stringi: " + stringifiedData);
+        //console.log("Dec data: " + decryptedData);
 
         assert.equal(stringifiedData, decryptedData);
       })
@@ -312,23 +314,23 @@ describe("Test encryption of file content", () => {
       ericAnderssonPrivateKey,
       ericSymKey.toString("hex")
     );
-    console.log("ERICS Enc privateKey: " + EencryptedPrivateKey.iv + EencryptedPrivateKey.encryptedData);
+    //.log("ERICS Enc privateKey: " + EencryptedPrivateKey.iv + EencryptedPrivateKey.encryptedData);
 
     let SencryptedPrivateKey = crypt.encryptPrivateKey(
       slickRickPrivateKey,
       rickSymKey.toString("hex")
     );
-    console.log("Ricks Enc privateKey: " + SencryptedPrivateKey.iv + SencryptedPrivateKey.encryptedData);
+    //console.log("Ricks Enc privateKey: " + SencryptedPrivateKey.iv + SencryptedPrivateKey.encryptedData);
 
-    let decryptedPrivateKey = crypt.decryptPrivateKey(
+    let decryptedPrivateKey = await crypt.decryptPrivateKey(
       EencryptedPrivateKey,
       ericSymKey.toString("hex")
     );
 
 
 
-    //console.log("1: " + ericAnderssonPrivateKey);
-    //console.log("2: " + decryptedPrivateKey);
+    console.log("1: " + ericAnderssonPrivateKey);
+    console.log("2: " + decryptedPrivateKey);
     assert.equal(ericAnderssonPrivateKey, decryptedPrivateKey);
   });
 
