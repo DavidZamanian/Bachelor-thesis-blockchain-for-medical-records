@@ -16,6 +16,7 @@ import EHRService from "../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
 import CouldNotLoadPermittedRegionsError from "../../Helpers/Errors/couldNotLoadPermittedRegionsError";
 import CouldNotLoadRegionsError from "../../Helpers/Errors/couldNotLoadRegionsError";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 
 export function EHROverviewScreen(props) {
@@ -28,6 +29,7 @@ export function EHROverviewScreen(props) {
   const navigation = useNavigation();
 
   const { chainConnection } = React.useContext(ChainConnectionContext);
+  const { logOut } = React.useContext(AuthContext); //TODO: remove if not usable here
 
   const [state, setState] = useState({
     doctorRole: (role == "doctor"),
@@ -73,14 +75,34 @@ export function EHROverviewScreen(props) {
         if (snapshot.val() === null) {
           alert("ERROR: This patient does not exist:" + state.patientID+"\n"+patientRef);
         } else {
-          //throw new Error("LOLOLOLOL"); //TODO REMOVE
-          
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND! //TODO REMOVE THIS COMMENT WHEN DONE
 
+          // TODO ADD THIS TO A GOOD SPOT...
+          let msg = (`Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`);
+
           // get all regions within the system
-          let allRegions = await EHRService.getRegions();
+          let allRegions;
+          try {
+            // throw new Error("GET ALL REGIONS FAILED VIA DUMMY ERROR"); //TODO REMOVE. Here for testing error handling.
+            allRegions = await EHRService.getRegions();
+          } catch (err) {
+            alert(`FATAL: Failed to fetch list of regions.\n${msg}`);
+            console.error(err.message);
+            await logOut();
+            return;
+          }
+          
           // get the patient's permitted regions
-          const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
+          let patientPermittedRegions;
+          try {
+            // throw new Error("GET PATIENT REGIONS FAILED VIA DUMMY ERROR"); //TODO REMOVE. Here for testing error handling.
+            patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ));
+          } catch (err) {
+            alert(`FATAL: Failed to Permission Settings.\n${msg}`);
+            console.error(err.message);
+            await logOut();
+            return;
+          }
 
           let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
 
@@ -131,20 +153,7 @@ export function EHROverviewScreen(props) {
           }));
         }
       });
-    } catch (err) { //TODO: should the error message only be printed to console? Or not at all?
-      console.log(`ERROR: ${err.message}`);
-      if (err instanceof CouldNotLoadRegionsError) {
-        alert(`FATAL: Failed to fetch list of regions. Aborting login.\n`+
-        `Try to login anew. Contact Customer Service if the issue remains.`)
-        console.error(err.message);
-      }
-      else if (err instanceof CouldNotLoadPermittedRegionsError) {
-        alert(`FATAL: Failed to fetch Permission Settings. Aborting login.\n` +
-          `Try to login anew. Contact Customer Service if the issue remains.`);
-        console.log("PERMITTED REGIONS FAILED!!!!"); //TODO REMOVE
-        console.error(err.message);
-      } //TODO: handle other errors as well?
-    }
+    } catch (err) {} //TODO REMOVE THIS TRY CATCH BLOCK??
   };
 
   // To toggle editing of contact info
