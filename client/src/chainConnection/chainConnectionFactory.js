@@ -19,8 +19,8 @@ export default class ChainConnectionFactory {
             console.log("Initializing ChainConnection...");
             this._chainConnection = new ChainConnection();
             await this._chainConnection.init();
+            console.log("ChainConnection Initialized.");
         }
-        console.log("ChainConnection Initialized.");
         return this._chainConnection;
     }
 }
