@@ -1,4 +1,3 @@
-import React from "react";
 import EhrEntry from "./ehrEntry";
 import CreateFileObjectError from "./Errors/createFileObjectError";
 import fetchFileContentError from "./Errors/FetchFileContentError";
@@ -26,11 +25,11 @@ export default class EHRService {
     let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
 
     let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
+    let encryptedData = encryptedPrivateKeyAndIV.slice(46);
+    let iv = encryptedPrivateKeyAndIV.slice(0, 44);
+    let keyAndIv = { encryptedData, iv };
 
-    let privKey = await crypt.decryptPrivateKey(
-      encryptedPrivateKeyAndIV,
-      symmetricKey
-    );
+    let privKey = await crypt.decryptPrivateKey(keyAndIv, symmetricKey);
 
     this.setPrivateKey(privKey);
 
@@ -270,6 +269,8 @@ export default class EHRService {
         await this.privateKey
       );
 
+      console.warn("Do we get here? (after decryptRecordKey)");
+
       let finalFiles = [];
 
       // FETCH OLD FILES
@@ -320,10 +321,7 @@ export default class EHRService {
       );
 
       // Create JSON files
-      let ehrFile = await FileService.createJSONFile(
-        encryptedEHR,
-        "EHR_" + index
-      );
+      let ehrFile = await FileService.createJSONFile(encryptedEHR, "EHR_");
       let prescriptionsFile = await FileService.createJSONFile(
         encryptedPrescriptions,
         "prescriptions"

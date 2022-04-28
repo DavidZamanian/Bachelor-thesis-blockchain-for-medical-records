@@ -248,19 +248,64 @@ describe("Test keys", async () => {
     crypto.generateKey("aes", { length: 256 }, async (err, key) => {
       if (err) throw err;
 
-      newRecordKey = key.export().toString("base64");
-      encryptedRecordKey = await crypt.encryptRecordKey(
-        newRecordKey,
-        derivedPublicKey
+//--------------------------------------------------
+
+      let ericSymKey = await crypt.derivePrivateKeyFromPassword(
+        universalPassword,
+        ericSalt
       );
 
-      decryptedRecordKey = await crypt.decryptRecordKey(
-        encryptedRecordKey,
-        derivedPrivateKey
+
+      let rickSymKey = await crypt.derivePrivateKeyFromPassword(
+        universalPassword,
+        rickSalt
       );
-        console.log("Private key: " + derivedPrivateKey)
-        console.log("Dec: " + decryptedRecordKey)
-        console.log("New: " + newRecordKey)
+
+      let ericSymKey2 = await crypt.derivePrivateKeyFromPassword(
+        universalPassword,
+        ericSalt
+      );
+
+let encryptedPrivateKeyAndIVERIC = crypt.encryptPrivateKey(ericAnderssonPrivateKey, ericSymKey)
+let encryptedPrivateKeyAndIVRICK = crypt.encryptPrivateKey(slickRickPrivateKey, rickSymKey)
+
+        //console.log("Private key: " + ericAnderssonPrivateKey)
+        //console.log("IV and Encrypted Private Key (eric): " + encryptedPrivateKeyAndIVERIC.iv + "IV" + encryptedPrivateKeyAndIVERIC.encryptedData);
+        //console.log("IV and Encrypted Private Key (rick): " + encryptedPrivateKeyAndIVRICK.iv + "IV" + encryptedPrivateKeyAndIVRICK.encryptedData);
+      
+        let concatKeyAndIV = ""
+        concatKeyAndIV = encryptedPrivateKeyAndIVERIC.iv + encryptedPrivateKeyAndIVERIC.encryptedData
+        let encryptedData =  concatKeyAndIV.slice(44)
+        let iv = concatKeyAndIV.slice(0, 44)
+        let keyAndIv = {encryptedData, iv}
+
+        let FINALdecryptedPrivateKey = await crypt.decryptPrivateKey(keyAndIv, ericSymKey2);
+        //console.log("Please let this be the right key: " + FINALdecryptedPrivateKey)
+
+        try{
+          let ERICencryptedRecordKey = await crypt.encryptRecordKey(ericRecordKey, ericAnderssonPublicKey)
+          let RICKencryptedRecordKey = await crypt.encryptRecordKey(ericRecordKey, slickRickPublicKey)
+          console.log("Erics encrypted recordKey: " + ERICencryptedRecordKey)
+          console.log("Ricks encrypted recordKey: " + RICKencryptedRecordKey)
+        }
+        catch (e){
+          console.log("error: " +e)
+        }
+
+
+        //----------------------------------------------------
+
+        newRecordKey = key.export().toString("base64");
+        encryptedRecordKey = await crypt.encryptRecordKey(
+          newRecordKey,
+          derivedPublicKey
+        );
+  
+        decryptedRecordKey = await crypt.decryptRecordKey(
+          encryptedRecordKey,
+          derivedPrivateKey
+        );
+
       assert.equal(decryptedRecordKey, newRecordKey);
     });
   });
@@ -329,8 +374,8 @@ describe("Test encryption of file content", () => {
 
 
 
-    console.log("1: " + ericAnderssonPrivateKey);
-    console.log("2: " + decryptedPrivateKey);
+    //console.log("1: " + ericAnderssonPrivateKey);
+    //console.log("2: " + decryptedPrivateKey);
     assert.equal(ericAnderssonPrivateKey, decryptedPrivateKey);
   });
 

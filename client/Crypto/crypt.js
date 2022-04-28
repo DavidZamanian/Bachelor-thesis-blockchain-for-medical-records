@@ -21,8 +21,8 @@ function encryptPrivateKey(privateKey, symmetricKey) {
   let encryptedPrivateKey = cipher.update(Buffer.from(privateKey, "utf8"));
   encryptedPrivateKey = Buffer.concat([encryptedPrivateKey, cipher.final()]);
 
-  console.log("IV: " + iv.toString("base64"));
-  console.log("EncryptedPrivateKey: " + encryptedPrivateKey.toString("hex"));
+  //console.log("IV: " + iv.toString("base64"));
+  //console.log("EncryptedPrivateKey: " + encryptedPrivateKey.toString("hex"));
   return {
     iv: iv.toString("base64"),
     encryptedData: encryptedPrivateKey.toString("hex"),
@@ -35,7 +35,7 @@ function encryptPrivateKey(privateKey, symmetricKey) {
  * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
  * @returns
  */
-function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
+async function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
   let iv = Buffer.from(encryptedPrivateKeyAndIV.iv, "base64"); //slice(0, 44); //Need to find the end of the IV (30 is not correct i dont think)
   let encryptedPrivateKey = Buffer.from(
     encryptedPrivateKeyAndIV.encryptedData,
@@ -115,12 +115,12 @@ function decryptEHR(decryptedRecordKey, EHR) {
  * @param {string} publicKey The public key used to encrypt the record key.
  * @returns {Promise<string>} Encrypted record key.
  */
-function encryptRecordKey(recordKey, publicKey) {
-  // publicEncrypt() method with its parameters
+async function encryptRecordKey(recordKey, publicKey) {
   const encrypted = crypto.publicEncrypt(
     publicKey,
     Buffer.from(recordKey, "base64")
   );
+  console.log("here?");
   return encrypted.toString("base64");
 }
 
@@ -135,7 +135,7 @@ function decryptRecordKey(recordKey, privateKey) {
   //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
   // privateDecrypt() method with its parameters
 
-  console.log("!!!!!PrivateKEy; " + privateKey);
+  // console.log("!!!!!PrivateKEy; " + privateKey);
 
   const decrypted = crypto.privateDecrypt(
     privateKey,
