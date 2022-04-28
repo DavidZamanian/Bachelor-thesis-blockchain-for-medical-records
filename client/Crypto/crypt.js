@@ -61,7 +61,7 @@ async function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
  * @param {string} EHR The EHR text content to be encrypted.
  * @returns {Promise<{iv: string, Tag: Buffer, encryptedData: string}>} The IV for the encryption and the encrypted EHR.
  */
-function encryptEHR(decryptedRecordKey, EHR) {
+async function encryptEHR(decryptedRecordKey, EHR) {
   //const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
   const iv = crypto.randomBytes(32);
 
@@ -87,7 +87,7 @@ function encryptEHR(decryptedRecordKey, EHR) {
  * @param {{iv: string, Tag: Buffer, encryptedData: string}} EHR Contains the IV and encrypted EHR.
  * @returns {Promise<string>} The decrypted EHR in string.
  */
-function decryptEHR(decryptedRecordKey, EHR) {
+async function decryptEHR(decryptedRecordKey, EHR) {
   //const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
 
   let iv = Buffer.from(EHR.iv, "base64");
@@ -120,7 +120,6 @@ async function encryptRecordKey(recordKey, publicKey) {
     publicKey,
     Buffer.from(recordKey, "base64")
   );
-  console.log("here?");
   return encrypted.toString("base64");
 }
 
@@ -131,7 +130,7 @@ async function encryptRecordKey(recordKey, publicKey) {
  * @param {string} privateKey A users private key.
  * @returns {Promise<string>} The decrypted record key.
  */
-function decryptRecordKey(recordKey, privateKey) {
+async function decryptRecordKey(recordKey, privateKey) {
   //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
   // privateDecrypt() method with its parameters
 
@@ -153,7 +152,7 @@ function decryptRecordKey(recordKey, privateKey) {
  * @param {*} salt The salt used in the hasing. This should be stored in database (can be public)
  * @returns {Promise<string>} The privateKey that has been derived from the password
  */
-function derivePrivateKeyFromPassword(password, salt) {
+async function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
 
   var iterations = 1000;

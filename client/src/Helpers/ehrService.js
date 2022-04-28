@@ -73,7 +73,7 @@ export default class EHRService {
 
   /**
    *
-   * @returns returns the rencrypted record key of the currently logged in patient
+   * @returns returns the encrypted record key of the currently logged in patient
    * @author David Zamanian
    */
 
@@ -97,7 +97,7 @@ export default class EHRService {
 
   /**
    *
-   * @returns returns the rencrypted private key + IV of the currently logged in user
+   * @returns returns the encrypted private key + IV of the currently logged in user
    * @author David Zamanian
    */
 
@@ -153,7 +153,7 @@ export default class EHRService {
   }
   /**
    *
-   * @returns The encrypted record key of the currently loggied in patient
+   * @returns The encrypted record key of the currently logged in patient
    * @author David Zamanian
    */
 
@@ -261,15 +261,13 @@ export default class EHRService {
       // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
       let encryptedRecordKey = await this.getDoctorRecordKey(id);
 
-      console.warn("encReckey: " + encryptedRecordKey);
-      console.warn("privKey: " + this.privateKey);
+      console.warn("Encrypted recordKey: " + encryptedRecordKey);
+      console.warn("PrivateKey: " + this.privateKey);
 
       let decryptedRecordKey = await crypt.decryptRecordKey(
         encryptedRecordKey,
         await this.privateKey
       );
-
-      console.warn("Do we get here? (after decryptRecordKey)");
 
       let finalFiles = [];
 
@@ -395,6 +393,7 @@ export default class EHRService {
       console.error("ERROR: missing role");
     }
 
+    //TODO Need real CID here
     let cid = PlaceholderValues.ipfsCID;
     let pubKey = await EHRService.getPublicKey();
     //console.log("PUBLIC KEY: " + (await this.getPublicKey()));
@@ -447,7 +446,7 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async encrypt(content, decryptedRecordKey) {
-    let x = crypt.encryptEHR(decryptedRecordKey, content);
+    let x = await crypt.encryptEHR(decryptedRecordKey, content);
 
     console.log("----------------------------------");
     console.log("Tag:" + x.Tag.toString("base64"));
@@ -492,7 +491,7 @@ export default class EHRService {
       Tag: tagBuffer,
     };
 
-    let x = crypt.decryptEHR(
+    let x = await crypt.decryptEHR(
       PlaceholderValues.recordKey,
       EHR,
       PlaceholderValues.medicPrivateKey
@@ -534,7 +533,7 @@ export default class EHRService {
       Tag: tagBuffer,
     };
 
-    let x = crypt.decryptEHR(recordKey, EHR);
+    let x = await crypt.decryptEHR(recordKey, EHR);
 
     console.log("DECRYPTED DATA:");
     console.log(x);
