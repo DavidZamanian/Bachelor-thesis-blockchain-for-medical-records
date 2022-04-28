@@ -162,7 +162,10 @@ export default class EHRService {
     const auth = getAuth();
     let dbRef = ref(database);
     await get(
-      child(dbRef, "PatientToRecordKey/" + auth.currentUser.uid + "/recordKey")
+      child(
+        dbRef,
+        "PatientToRecordKey/" + auth.currentUser.uid + "/decryptedRecordKey"
+      )
     )
       .then((snapshot) => {
         if (snapshot.exists()) {
@@ -261,7 +264,7 @@ export default class EHRService {
       // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
       let encryptedRecordKey = await this.getDoctorRecordKey(id);
 
-      console.warn("Encrypted recordKey: " + encryptedRecordKey);
+      console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
       console.warn("PrivateKey: " + this.privateKey);
 
       let decryptedRecordKey = await crypt.decryptRecordKey(
@@ -505,12 +508,12 @@ export default class EHRService {
   /**
    * Decrypts and returns the given file content
    * @param  {string} fileContent file content (including Tag and IV at the beginning)
-   * @param {*} recordKey
+   * @param {*} decryptedRecordKey
    * @param {*} privateKey
    * @returns {Promise<string>} The decrypted content data (Tag and IV excluded)
    * @author Christopher Molin
    */
-  static async decrypt(fileContent, recordKey) {
+  static async decrypt(fileContent, decryptedRecordKey) {
     let tag = fileContent.slice(0, 24);
     let iv = fileContent.slice(24, 68);
     let encrypted = fileContent.slice(68);
@@ -533,7 +536,7 @@ export default class EHRService {
       Tag: tagBuffer,
     };
 
-    let x = await crypt.decryptEHR(recordKey, EHR);
+    let x = await crypt.decryptEHR(decryptedRecordKey, EHR);
 
     console.log("DECRYPTED DATA:");
     console.log(x);
