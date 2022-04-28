@@ -201,14 +201,19 @@ export function EHROverviewScreen(props) {
 
     alert(newPermittedRegions);
 
-    // TODO: Upload newPermittedRegions to the blockchain
     try {
       const connection = await chainConnection;
       await connection.setPermissions(state.patientID, newPermittedRegions);
-      // TODO: fetch the new set of permitted regions already here?
-      // get the new set of permitted regions and update the state
-      // state.patientInfo.permittedRegions = await ...
-      // setState(...)
+      
+      // update the list of permitted regions held by the state
+      setState((prevState) => ({
+        ...prevState,
+        // patientInfo.permittedRegions = permittedRegions
+        patientInfo: {
+          ...prevState.patientInfo,
+          permittedRegions: newPermittedRegions,
+        },
+      }));
     } catch (err) {
       //todo: something
       console.log(`ERROR on submitting new permitted regions... ${err.message}`);
