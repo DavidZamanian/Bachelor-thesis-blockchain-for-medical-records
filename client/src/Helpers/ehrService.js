@@ -321,7 +321,10 @@ export default class EHRService {
       );
 
       // Create JSON files
-      let ehrFile = await FileService.createJSONFile(encryptedEHR, "EHR_");
+      let ehrFile = await FileService.createJSONFile(
+        encryptedEHR,
+        "EHR_" //+ INDEX HERE
+      );
       let prescriptionsFile = await FileService.createJSONFile(
         encryptedPrescriptions,
         "prescriptions"
