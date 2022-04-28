@@ -338,9 +338,10 @@ export default class EHRService{
     /**
      * Gets all regions from Firebase, and returns them as a list of region names.
      * @returns {Promise<Array<String>>}
+     * @throws {CouldNotLoadRegionsError} If the operation failed, e.g. due to network error. 
      * @author Hampus Jernkrook
      */
-    static async getRegions(){
+    static async getRegions() {
         let connection = await this.chainConnection;
         let regions;
         try {
@@ -350,10 +351,8 @@ export default class EHRService{
                 throw new CouldNotLoadRegionsError(`Could not load the regions from the blockchain. `+
                 `The connection failed. Error: ${err.message}`);
             }
-            //TODO: either handle other errors as well here, or remove the generic 
-            //error handling from getPatientRegions. Don't know what's best...
         }
-            return regions;
+        return regions;
     }
 
     /**
@@ -370,14 +369,11 @@ export default class EHRService{
         try {
             regions = await connection.getPermissionedRegions(patientID);
         } catch (err) {
-            msg = `Could not load permitted regions. Error thrown with message ${err.message}`;
             if (err instanceof ChainOperationDeniedError) {
                 // show that the operation was denied, followed by generic message. 
-                throw new CouldNotLoadPermittedRegionsError(`Operation denied: ${msg}`);
-            } else {
-                // show generic message.
-                throw new CouldNotLoadPermittedRegionsError(msg);
-            }
+                throw new CouldNotLoadPermittedRegionsError(`Operation denied:\n` +
+                `Could not load permitted regions. Error thrown with message ${err.message}`);
+            } 
         }   
         return regions;
     }
