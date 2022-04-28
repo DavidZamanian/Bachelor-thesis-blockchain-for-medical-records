@@ -13,7 +13,7 @@ const algorithm = "aes-256-gcm";
  * @returns the iv concatenated with the encryptedPrivateKey (will be stored in database)
  */
 
-function encryptPrivateKey(privateKey, symmetricKey) {
+async function encryptPrivateKey(privateKey, symmetricKey) {
   const iv = crypto.randomBytes(32);
 
   let cipher = crypto.createCipheriv(algorithm, symmetricKey, iv);
@@ -163,12 +163,14 @@ async function derivePrivateKeyFromPassword(password, salt) {
 
   return hexKey.toString("hex"); // MUST be HEX format!
 }
+
 /** This will not be needed anymore
  *
  * Creates a publicKey from a given privateKey
  * @param {string} privateKey The privateKey that has originally been derived from the user's password
  * @returns {Promise<string>} The publicKey that has been extracted
  */
+/*
 function extractPublicKeyFromPrivateKey(privateKey) {
   const pubKeyObject = crypto.createPublicKey({
     key: privateKey,
@@ -182,6 +184,7 @@ function extractPublicKeyFromPrivateKey(privateKey) {
 
   return publicKey.toString("base64");
 }
+*/
 
 module.exports = {
   encryptRecordKey,
@@ -189,7 +192,6 @@ module.exports = {
   encryptEHR,
   decryptEHR,
   derivePrivateKeyFromPassword,
-  extractPublicKeyFromPrivateKey,
   encryptPrivateKey,
   decryptPrivateKey,
 };

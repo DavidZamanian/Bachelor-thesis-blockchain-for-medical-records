@@ -7,37 +7,8 @@ import * as fc from "fast-check";
 
 /**
  * Methods for encrypting/decrypting EHR and record keys.
- * @author Christopher Molin, David Zamanian
+ * @author Christopher Molin, David Zamanian, Nils Johnsson, Wendy Pau
  */
-
-const example_directory = "./test/json_examples";
-/*
-const examplePublicKey = `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUiAaS0DTviflRi0zum4QfpTup
-TqEcAnujT3I6r9a9M+hLt3hBX75IBqQsccGY6Y/FW/znwoCZAATZ+HnAUuI9ImIS
-M9AUuOtuGfhv+pBXMvzKlHlDj0lHiTDlnQh/LrI16pE7gfW09FjojZjzZtseaDj1
-HHivzD+EFv2LcyWtUwIDAQAB
------END PUBLIC KEY-----
-`;
-
-const examplePrivateKey = `-----BEGIN PRIVATE KEY-----
-MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBANSIBpLQNO+J+VGL
-TO6bhB+lO6lOoRwCe6NPcjqv1r0z6Eu3eEFfvkgGpCxxwZjpj8Vb/OfCgJkABNn4
-ecBS4j0iYhIz0BS4624Z+G/6kFcy/MqUeUOPSUeJMOWdCH8usjXqkTuB9bT0WOiN
-mPNm2x5oOPUceK/MP4QW/YtzJa1TAgMBAAECgYAtvPhtMBG0W2Ukf24XC7DrfovQ
-a/OQK5igFMDokF8OaNVdNibTKt+wcH10cybO2bTvLFTJK7qxMqfYoPjSwwOc8Bpb
-YzRsXgpanydspsUOvoCNXtHmEybSmZ1meP1URB2WD/Lt1fHl5x4PXfbetoqK+Da4
-m1GNnMbDI9gIwUdtQQJBAOuA3V+1LfYNOPPRQI9vQmzSZapty+KsCQADqZEl3JR7
-7xDUzucLv0owfJMaotISN65c+mTdkM3sdbeY47kO4PUCQQDnB1Ub1z4hkPIJOEAm
-ak+EsKPyC2DuKK8QOB+ddX1CCaienmgWfWuN6nImO5Rwmv0JsUYK6mMgOTX3gzXc
-WsgnAkB+yKdlKRMPTdsFV/fbwFgQYcydzfJfm6JUwaP+IlX4EiiH9SlWNXrMJAJM
-56AUW/5h/mhG+QlF8zEEoGiobhwpAkBFDe8FjFe45r9BvDuIf/xWuAm4/mexqB1z
-pqLkiMqw43wwNT79ge2VFL+b5/Edm2YI8KD0AE0yw4b6/ZAq1kO/AkAWUBHUxI1K
-bIq/ZkmEM0nbWOu8uU60hoos0oHKjuBF9KFN8p3dlodz0N02UAqLjjx1COiC341F
-HTPhtf3w2f2F
------END PRIVATE KEY-----
-`;
-*/
 
 //DO NOT CHANGE THESE
 const universalPassword = "123456";
@@ -86,8 +57,8 @@ yQIDAQAB
 const ericSalt =
   "3LZD1EHZUO3LZK65FKJDD1FQ44THRBE8K7ZTR2Y3RVJSMDQNW67K3Y75QUAEWWXY88CP8Z43SVJ6E3LKUR45Z3WOKY86RWIVIK31PY7R6J7IKCV5VDYB1FG4UN3ST8M3";
 
-const ericRecordKey = `KuM4sQeaBMXUN4Gpo1qRj1tUhyaAtDqpxXVyoMvgb9w=`
-const SlickRickRecordKey = `2BSPncgSPTVKNJ4/zvxCeX33M7oSUl6fOgjhTT6AxpQ=`
+const ericRecordKey = `KuM4sQeaBMXUN4Gpo1qRj1tUhyaAtDqpxXVyoMvgb9w=`;
+const SlickRickRecordKey = `2BSPncgSPTVKNJ4/zvxCeX33M7oSUl6fOgjhTT6AxpQ=`;
 
 const slickRickPrivateKey = `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDkoNh7Iw/XnGnH
@@ -149,24 +120,10 @@ const keyPair = crypto.generateKeyPairSync("rsa", {
 let derivedPrivateKey = keyPair.privateKey;
 let derivedPublicKey = keyPair.publicKey;
 let newRecordKey = "";
+const salt =
+  "4E635266556A586E3272357538782F413F4428472D4B6150645367566B5970337336763979244226452948404D6251655468576D5A7134743777217A25432A46";
 
-describe("Test keys", async () => {
-  const salt =
-    "4E635266556A586E3272357538782F413F4428472D4B6150645367566B5970337336763979244226452948404D6251655468576D5A7134743777217A25432A46";
-
-  let derivedExamplePublicKey = "";
-  /*
-  it("Derive PrivateKey from Password & Salt", async () => {
-    assert.doesNotThrow(async () => {
-      derivedPrivateKey = await crypt.derivePrivateKeyFromPassword(
-        universalPassword,
-        ericSalt
-      );
-      //console.log(derivedPrivateKey);
-    });
-  }).timeout(10000);
-  */
-
+describe("Testing encryption/decryption of private, public and recordKey", async () => {
   let encryptedRecordKey = "";
   let encryptedExampleRecordKey = "";
   let decryptedRecordKey = "";
@@ -180,25 +137,32 @@ describe("Test keys", async () => {
         newRecordKey = key.export().toString("base64");
         //console.log("Record key: " + newRecordKey)
 
-
-        let EencryptedRecordKey = crypt.encryptRecordKey(ericRecordKey, ericAnderssonPublicKey);
-        let RencryptedRecordKey = crypt.encryptRecordKey(ericRecordKey, slickRickPublicKey);
+        //--------For testing-------
+        let EricencryptedRecordKey = crypt.encryptRecordKey(
+          ericRecordKey,
+          ericAnderssonPublicKey
+        );
+        let RickencryptedRecordKey = crypt.encryptRecordKey(
+          ericRecordKey,
+          slickRickPublicKey
+        );
         //console.log("Erics record_key: " + EencryptedRecordKey)
         //console.log("Ricks record_key: " + RencryptedRecordKey)
       });
     });
   });
 
-  //Not needed (i think)
   it("New Encrypted Record Key is of correct length", async () => {
-    encryptedRecordKey = crypt.encryptRecordKey(newRecordKey, derivedPublicKey);
+    encryptedRecordKey = await crypt.encryptRecordKey(
+      newRecordKey,
+      derivedPublicKey
+    );
     assert.equal(encryptedRecordKey.length, exampleRecordKey.length);
   });
 
-  //Not needed
   it("Encrypt Example Record Key with Example Public Key", () => {
     assert.doesNotThrow(async () => {
-      encryptedExampleRecordKey = crypt.encryptRecordKey(
+      encryptedExampleRecordKey = await crypt.encryptRecordKey(
         exampleRecordKey,
         examplePublicKey
       );
@@ -207,7 +171,7 @@ describe("Test keys", async () => {
 
   it("Encrypt New Record Key with Derived Public Key", () => {
     assert.doesNotThrow(async () => {
-      encryptedRecordKey = crypt.encryptRecordKey(
+      encryptedRecordKey = await crypt.encryptRecordKey(
         newRecordKey,
         derivedPublicKey
       );
@@ -216,7 +180,7 @@ describe("Test keys", async () => {
 
   it("Decrypt Example Record Key with Example Private Key", () => {
     assert.doesNotThrow(async () => {
-      decryptedExampleRecordKey = crypt.decryptRecordKey(
+      decryptedExampleRecordKey = await crypt.decryptRecordKey(
         encryptedExampleRecordKey,
         examplePrivateKey
       );
@@ -225,7 +189,7 @@ describe("Test keys", async () => {
 
   it("Decrypt Record Key with Private Key", () => {
     assert.doesNotThrow(async () => {
-      decryptedRecordKey = crypt.decryptRecordKey(
+      decryptedRecordKey = await crypt.decryptRecordKey(
         encryptedRecordKey,
         derivedPrivateKey
       );
@@ -245,73 +209,94 @@ describe("Test keys", async () => {
   });
 
   it("Decrypted Record key is equal to Original Record Key", async () => {
-    crypto.generateKey("aes", { length: 256 }, async (err, key) => {
-      if (err) throw err;
+    encryptedRecordKey = await crypt.encryptRecordKey(
+      newRecordKey,
+      derivedPublicKey
+    );
 
-//--------------------------------------------------
+    decryptedRecordKey = await crypt.decryptRecordKey(
+      encryptedRecordKey,
+      derivedPrivateKey
+    );
 
-      let ericSymKey = await crypt.derivePrivateKeyFromPassword(
-        universalPassword,
-        ericSalt
-      );
+    assert.equal(decryptedRecordKey, newRecordKey);
+  });
 
+  it("Encrypt and decrypt privateKey", async () => {
+    let symKey = await crypt.derivePrivateKeyFromPassword(
+      universalPassword,
+      salt
+    );
 
-      let rickSymKey = await crypt.derivePrivateKeyFromPassword(
-        universalPassword,
-        rickSalt
-      );
+    let encryptedPrivateKey = await crypt.encryptPrivateKey(
+      derivedPrivateKey,
+      symKey
+    );
 
-      let ericSymKey2 = await crypt.derivePrivateKeyFromPassword(
-        universalPassword,
-        ericSalt
-      );
+    let decryptedPrivateKey = await crypt.decryptPrivateKey(
+      encryptedPrivateKey,
+      symKey
+    );
 
-let encryptedPrivateKeyAndIVERIC = crypt.encryptPrivateKey(ericAnderssonPrivateKey, ericSymKey)
-let encryptedPrivateKeyAndIVRICK = crypt.encryptPrivateKey(slickRickPrivateKey, rickSymKey)
-
-        //console.log("Private key: " + ericAnderssonPrivateKey)
-        //console.log("IV and Encrypted Private Key (eric): " + encryptedPrivateKeyAndIVERIC.iv + "IV" + encryptedPrivateKeyAndIVERIC.encryptedData);
-        //console.log("IV and Encrypted Private Key (rick): " + encryptedPrivateKeyAndIVRICK.iv + "IV" + encryptedPrivateKeyAndIVRICK.encryptedData);
-      
-        let concatKeyAndIV = ""
-        concatKeyAndIV = encryptedPrivateKeyAndIVERIC.iv + encryptedPrivateKeyAndIVERIC.encryptedData
-        let encryptedData =  concatKeyAndIV.slice(44)
-        let iv = concatKeyAndIV.slice(0, 44)
-        let keyAndIv = {encryptedData, iv}
-
-        let FINALdecryptedPrivateKey = await crypt.decryptPrivateKey(keyAndIv, ericSymKey2);
-        //console.log("Please let this be the right key: " + FINALdecryptedPrivateKey)
-
-        try{
-          let ERICencryptedRecordKey = await crypt.encryptRecordKey(ericRecordKey, ericAnderssonPublicKey)
-          let RICKencryptedRecordKey = await crypt.encryptRecordKey(ericRecordKey, slickRickPublicKey)
-          console.log("Erics encrypted recordKey: " + ERICencryptedRecordKey)
-          console.log("Ricks encrypted recordKey: " + RICKencryptedRecordKey)
-        }
-        catch (e){
-          console.log("error: " +e)
-        }
-
-
-        //----------------------------------------------------
-
-        newRecordKey = key.export().toString("base64");
-        encryptedRecordKey = await crypt.encryptRecordKey(
-          newRecordKey,
-          derivedPublicKey
-        );
-  
-        decryptedRecordKey = await crypt.decryptRecordKey(
-          encryptedRecordKey,
-          derivedPrivateKey
-        );
-
-      assert.equal(decryptedRecordKey, newRecordKey);
-    });
+    assert.equal(derivedPrivateKey, decryptedPrivateKey);
   });
 });
 
-describe("Test encryption of file content", () => {
+it("FOR DERIVATION - Priting correct keys for users to put in firebase", async () => {
+  let ericSymKey = await crypt.derivePrivateKeyFromPassword(
+    universalPassword,
+    ericSalt
+  );
+
+  let rickSymKey = await crypt.derivePrivateKeyFromPassword(
+    universalPassword,
+    rickSalt
+  );
+
+  let encryptedPrivateKeyAndIVERIC = await crypt.encryptPrivateKey(
+    ericAnderssonPrivateKey,
+    ericSymKey
+  );
+  let encryptedPrivateKeyAndIVRICK = await crypt.encryptPrivateKey(
+    slickRickPrivateKey,
+    rickSymKey
+  );
+
+  //console.log("Private key: " + ericAnderssonPrivateKey)
+  //console.log("IV and Encrypted Private Key (eric): " + encryptedPrivateKeyAndIVERIC.iv + "IV" + encryptedPrivateKeyAndIVERIC.encryptedData);
+  //console.log("IV and Encrypted Private Key (rick): " + encryptedPrivateKeyAndIVRICK.iv + "IV" + encryptedPrivateKeyAndIVRICK.encryptedData);
+
+  //Not needed, just testing that slice-ing works
+  let concatKeyAndIV = "";
+  concatKeyAndIV =
+    encryptedPrivateKeyAndIVERIC.iv +
+    encryptedPrivateKeyAndIVERIC.encryptedData;
+  let encryptedData = concatKeyAndIV.slice(44);
+  let iv = concatKeyAndIV.slice(0, 44);
+  let keyAndIv = { encryptedData, iv };
+
+  let FINALdecryptedPrivateKey = await crypt.decryptPrivateKey(
+    keyAndIv,
+    ericSymKey
+  );
+
+  try {
+    let ERICencryptedRecordKey = await crypt.encryptRecordKey(
+      ericRecordKey,
+      ericAnderssonPublicKey
+    );
+    let RICKencryptedRecordKey = await crypt.encryptRecordKey(
+      ericRecordKey,
+      slickRickPublicKey
+    );
+    //console.log("Erics encrypted recordKey: " + ERICencryptedRecordKey);
+    //console.log("Ricks encrypted recordKey: " + RICKencryptedRecordKey);
+  } catch (e) {
+    console.log("error: " + e);
+  }
+});
+
+describe("NOT VALID TESTS - Test encryption of file content", () => {
   let newRecordKey = "";
   crypto.generateKey("aes", { length: 256 }, (err, key) => {
     if (err) throw err;
@@ -319,90 +304,45 @@ describe("Test encryption of file content", () => {
     newRecordKey = key.export().toString("base64");
   });
 
+  //This test is not valid. Everything works except the string " "
   it("Encrypting and decrypting EHR with example keys", async () => {
     fc.assert(
       fc.property(fc.string({ minLength: 1 }), (originalData) => {
-        //console.log("Key? : " + derivedPrivateKey.toString("base64"));
-        let stringifiedData = JSON.stringify("haskjdhaskd");
+        let stringifiedData = JSON.stringify(originalData);
+        //For some reason these two cant have await
         let encryptedData = crypt.encryptEHR(
           exampleRecordKey,
           stringifiedData,
           derivedPrivateKey.toString("base64")
         );
-        //console.log("encrypted data: " + encryptedData);
+
         let decryptedData = crypt.decryptEHR(
           exampleRecordKey,
           encryptedData,
           derivedPrivateKey.toString("base64")
         );
-        //console.log("Stringi: " + stringifiedData);
-        //console.log("Dec data: " + decryptedData);
 
         assert.equal(stringifiedData, decryptedData);
       })
     );
   });
 
-  it("New crypto works?", async () => {
-    let ericSymKey = await crypt.derivePrivateKeyFromPassword(
-      universalPassword,
-      ericSalt
-    );
-    let rickSymKey = await crypt.derivePrivateKeyFromPassword(
-      universalPassword,
-      rickSalt
-    );
-
-
-
-    let EencryptedPrivateKey = crypt.encryptPrivateKey(
-      ericAnderssonPrivateKey,
-      ericSymKey.toString("hex")
-    );
-    //.log("ERICS Enc privateKey: " + EencryptedPrivateKey.iv + EencryptedPrivateKey.encryptedData);
-
-    let SencryptedPrivateKey = crypt.encryptPrivateKey(
-      slickRickPrivateKey,
-      rickSymKey.toString("hex")
-    );
-    //console.log("Ricks Enc privateKey: " + SencryptedPrivateKey.iv + SencryptedPrivateKey.encryptedData);
-
-    let decryptedPrivateKey = await crypt.decryptPrivateKey(
-      EencryptedPrivateKey,
-      ericSymKey.toString("hex")
-    );
-
-
-
-    //console.log("1: " + ericAnderssonPrivateKey);
-    //console.log("2: " + decryptedPrivateKey);
-    assert.equal(ericAnderssonPrivateKey, decryptedPrivateKey);
-  });
-
   it("Encrypting and decrypting EHR with real keys", async () => {
-    const salt =
-      "4E635266556A586E3272357538782F413F4428472D4B6150645367566B5970337336763979244226452948404D6251655468576D5A7134743777217A25432A46";
-
-      const notContains = (text, pattern) => text.indexOf(pattern) = 0;
-
-      /**
-       * I want "text => notContains(text, " ")" in property but apparently not instance of Arbitrary..
-       * We will never encrypt en empty string so this test with always fail
-       * 
-       */
-
+    /**
+     * This test is not valid. Everything works except the string " "
+     *
+     * I want "text => notContains(text, " ")" in property but apparently not instance of Arbitrary..
+     * We will never encrypt en empty string so this test with always fail
+     *
+     */
     fc.assert(
-      fc.property(fc.string({ minLength: 1}), async (originalData) => {
-        //_______
-        // console.log("DO we get here??????");
-        //________
-
+      fc.property(fc.string({ minLength: 1 }), async (originalData) => {
         let encryptedRecordKey = await crypt.encryptRecordKey(
           newRecordKey,
           derivedPublicKey
         );
 
-        let stringifiedData = JSON.stringify("hej"); //JSON.stringify("Hej") //
+        let stringifiedData = JSON.stringify(originalData);
         //console.log(stringifiedData);
         // encryptEHR decrypts the encryptedRecordKey, this throws an error.
         let encryptedData = await crypt.encryptEHR(
