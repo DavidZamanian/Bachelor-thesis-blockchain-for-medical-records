@@ -355,18 +355,9 @@ export default class EHRService {
         console.log(file.name + ": " + (await file.text()).toString("base64"));
       }
 
-      return "Success";
+      return cid;
     } catch (e) {
-      if (e instanceof CreateFileObjectError) {
-        return "Error";
-      } else if (e instanceof UploadFileError) {
-        return "NoResponse";
-      } else if (e instanceof FetchFileContentError) {
-        return "Error";
-      } else {
-        console.log(e);
-        return "Error";
-      }
+      throw e;
     }
   }
 

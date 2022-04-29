@@ -11,6 +11,7 @@ import Footer from "../../../components/Footer";
 import ThemeButton from "../../../components/themeButton";
 import EHRService from "../../../Helpers/ehrService";
 import { UserDataContext } from "../../../../contexts/UserDataContext";
+import { ChainConnectionContext } from "../../../../contexts/ChainConnectionContext";
 
 
 export function NewEntryScreen(props) {
@@ -19,6 +20,7 @@ export function NewEntryScreen(props) {
   const navigation = useNavigation();
 
   const { role, userSSN, institution } = React.useContext(UserDataContext);
+  const { chainConnection } = React.useContext(ChainConnectionContext);
 
   if (role != "doctor"){
     alert("WARNING: NOT A DOCTOR");
@@ -133,7 +135,7 @@ export function NewEntryScreen(props) {
     
     let status = await submitEHR()
     updateSubmitStatus(status)
-    if (status == "Success"){
+    if (status){
       setTimeout(()=>{
         navigation.navigate("PatientSearchScreen");
         setModalVisible(false);
@@ -164,7 +166,7 @@ export function NewEntryScreen(props) {
 
     console.log(medicalPersonnel+institution+healthcareInstitution)
     try{
-      let status =  await EHRService.packageAndUploadEHR(
+      let cid =  await EHRService.packageAndUploadEHR(
       props.route.params.toString(),
       medicalPersonnel,
       healthcareInstitution,
@@ -173,7 +175,10 @@ export function NewEntryScreen(props) {
       diagnoseList
       )
 
-      return status;
+      //let connection = await chainConnection;
+      //await connection.updateEHR(props.route.params.toString(), cid);
+      
+      return true;
     }
     catch(e){
       updateSubmitStatus("Error")
