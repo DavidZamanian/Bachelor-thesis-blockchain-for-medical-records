@@ -45,7 +45,7 @@ const Header = () => {
           source={require("../../../assets/PrimaryLogo.png")}
           style={styles.navbarLogo}
         />
-        <Text style={styles.navbarLogoName}>Bachelor Project</Text>
+        <Text style={styles.navbarLogoName}>Bachelor's Project</Text>
       </TouchableOpacity>
       <View style={styles.navbarButtonContainer}>
         <NavbarButton labelText="About" iconName="information-circle-outline" onPress={onPressAbout}/>

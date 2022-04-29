@@ -8,8 +8,18 @@ import FetchFileContentError from "./Errors/FetchFileContentError";
 import { PlaceholderValues } from "../placeholders/placeholderValues";
 import * as crypt from "../../Crypto/crypt";
 import { getAuth } from "@firebase/auth";
+import crypto, { createPrivateKey } from "crypto";
+import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError"
+import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
+import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
+import ChainConnectionError from "../chainConnection/chainConnectionError";
+import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
+
 
 export default class EHRService {
+
+  static chainConnection = ChainConnectionFactory.getChainConnection();
+
   static privateKey;
   static publicKey;
 
@@ -340,7 +350,12 @@ export default class EHRService {
         console.log(file.name + ": " + (await file.text()).toString("base64"));
       }
 
-      return cid;
+      // TODO: Do something with the CID!
+      // cid
+
+
+
+      return "Success";
     } catch (e) {
       throw e;
     }
@@ -448,7 +463,6 @@ export default class EHRService {
       diagnoses: fetchedFiles.diagnoses,
       journals: fetchedFiles.decryptedEHRs,
     };
-
     
     return EHR;
     
@@ -568,42 +582,47 @@ export default class EHRService {
   }
 
   /**
-   * Gets all regions from Firebase, and returns them as a list of region names.
-   * @returns {Promise<Array<String>>}
-   * @async
-   * @author Christopher Molin
-   */
-  static async getRegions() {
-    let dbRef = ref(database);
-    let regions = [];
-    await get(child(dbRef, "Regions/"))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          let results = snapshot.val();
-          results.forEach((region) => {
-            regions.push(region.name);
-          });
-        } else {
-          throw "No data available";
+     * Gets all regions from Firebase, and returns them as a list of region names.
+     * @returns {Promise<Array<String>>}
+     * @throws {CouldNotLoadRegionsError} If the operation failed, e.g. due to network error. 
+     * @author Hampus Jernkrook
+     */
+    static async getRegions() {
+        let connection = await this.chainConnection;
+        let regions;
+        try {
+            regions = await connection.getAllRegions();
+        } catch (err) {
+            if (err instanceof ChainConnectionError) {
+                throw new CouldNotLoadRegionsError(`Could not load the regions from the blockchain. `+
+                `The connection failed. Error: ${err.message}`);
+            }
         }
-      })
-      .catch((error) => {
-        throw error;
-      });
-    return regions;
-  }
+        return regions;
+    }
 
   /**
-   * PLACEHOLDER: Gets all regions the given patient have granted permission.
-   * Returns a list of region names.
-   * @param {String} patientID
-   * @returns {Promise<Array<String>>}
-   */
-  static async getPatientRegions(patientID) {
-    let regions = PlaceholderValues.permittedRegions;
-
-    return regions;
-  }
+     * Gets all regions the given patient has granted permission to.
+     * @param {String} patientID The id of the patient to retrieve permissioned regions for. 
+     * @returns {Promise<Array<String>>} Array of regions authorised by the patient.
+     * @throws {CouldNotLoadPermittedRegionsError} If the operation failed, e.g. due to network error 
+     *  or that the caller is unauthorised to call this function. 
+     * @author Hampus Jernkrook
+     */
+     static async getPatientRegions(patientID){
+        let connection = await this.chainConnection;
+        let regions;
+        try {
+            regions = await connection.getPermissionedRegions(patientID);
+        } catch (err) {
+            if (err instanceof ChainOperationDeniedError) {
+                // show that the operation was denied, followed by generic message. 
+                throw new CouldNotLoadPermittedRegionsError(`Operation denied:\n` +
+                `Could not load permitted regions. Error thrown with message ${err.message}`);
+            } 
+        }   
+        return regions;
+    }
 
   /**
    * Fetches the doctor's full name from Firebase.

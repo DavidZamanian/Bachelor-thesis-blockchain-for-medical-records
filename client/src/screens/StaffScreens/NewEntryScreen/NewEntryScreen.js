@@ -134,7 +134,7 @@ export function NewEntryScreen(props) {
     updateSubmitStatus("Loading")
     
     let status = await submitEHR()
-    updateSubmitStatus(status)
+    
     if (status){
       setTimeout(()=>{
         navigation.navigate("PatientSearchScreen");
@@ -177,11 +177,11 @@ export function NewEntryScreen(props) {
 
       //let connection = await chainConnection;
       //await connection.updateEHR(props.route.params.toString(), cid);
-      
+      updateSubmitStatus("Success");
       return true;
     }
     catch(e){
-      updateSubmitStatus("Error")
+      updateSubmitStatus("Error");
       return false;
     }
     

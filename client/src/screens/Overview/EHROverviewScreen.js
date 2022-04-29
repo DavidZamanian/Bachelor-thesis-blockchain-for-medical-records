@@ -14,6 +14,10 @@ import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { UserDataContext } from "../../../contexts/UserDataContext";
 import EHRService from "../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
+import CouldNotLoadPermittedRegionsError from "../../Helpers/Errors/couldNotLoadPermittedRegionsError";
+import CouldNotLoadRegionsError from "../../Helpers/Errors/couldNotLoadRegionsError";
+import ChainOperationDeniedError from "../../chainConnection/chainOperationDeniedError";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
@@ -24,6 +28,7 @@ export function EHROverviewScreen(props) {
   const navigation = useNavigation();
 
   const { chainConnection } = React.useContext(ChainConnectionContext);
+  const { logOut } = React.useContext(AuthContext); //TODO: remove if not usable here
 
   const [state, setState] = useState({
     doctorRole: role == "doctor",
@@ -78,6 +83,9 @@ export function EHROverviewScreen(props) {
               patientRef
           );
         } else {
+/*
+          // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND! //TODO REMOVE THIS COMMENT WHEN DONE
+
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
 
 
@@ -85,6 +93,7 @@ export function EHROverviewScreen(props) {
           let allRegions = await connection.getAllRegions();
           //const allRegions = await EHRService.getRegions();
           const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
+*/
 
           let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ), role);
 
@@ -95,27 +104,91 @@ export function EHROverviewScreen(props) {
           let journalIndexes = [];
           patientJournals.forEach(() => journalIndexes.push(false));
 
-          let regionIndexes = [];
+          // ========= Only fetch regions for patients ==========
+          // TODO: clean this mess up and divide into functions!!!
+          if (!state.doctorRole) {
+            // TODO ADD THIS TO A GOOD SPOT...
+            let msg = (`Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`);
 
-          allRegions.forEach((reg) =>
-            {
-              //console.log(reg)
-              regionIndexes.push({ id: reg[0], name: reg[1], enabled: false })
+            // get all regions within the system
+            let allRegions = [];
+            
+            try {
+              allRegions = await EHRService.getRegions();
+            } catch (err) {
+              alert(`FATAL: Failed to fetch list of regions.\n${msg}`);
+              console.error(err.message);
+              await logOut();
+              return;
             }
-          );
-          patientPermittedRegions.forEach(
-            (reg) => (regionIndexes.find((r) => r.name === reg).enabled = true)
-          );
+            
+
+            // get the patient's id. May already be accessible but I could not see how /H. 
+            // TODO: access in some other way if it is already possible. Else use this but clean up the comments.
+            const _patientId = state.doctorRole ? JSON.stringify(props.route.params).substring(2,12) : userSSN;
+            
+            // get the patient's permitted regions
+            let patientPermittedRegions;
+            try {
+              patientPermittedRegions = await EHRService.getPatientRegions(_patientId);
+            } catch (err) {
+              alert(`FATAL: Failed to load Permission Settings.\n${msg}`);
+              console.error(err.message);
+              await logOut();
+              return;
+            }
+
+            let regionIndexes = [];
+
+            allRegions.forEach((reg) =>
+              {
+                //console.log(reg)
+                regionIndexes.push({ id: reg[0], name: reg[1], enabled: false })
+              }
+            );
+            patientPermittedRegions.forEach(
+              (reg) => (regionIndexes.find((r) => r.id === reg).enabled = true)
+            );
+
+            // THIS IS HOW THE STATE WILL BE SET FOR PATIENTS
+            setState((prevState) => ({
+              ...prevState,
+              isLoading: false,
+              patientID: state.doctorRole ? props.route.params : userSSN,
+              journalExpanded: journalIndexes,
+              regions: [...regionIndexes],
+              regionSnapshot: [...regionIndexes],
+              patientInfo: {
+                id: state.doctorRole ? props.route.params : userSSN,
+                firstName: snapshot.val().firstName,
+                lastName: snapshot.val().lastName,
+                email: snapshot.val().email,
+                address: snapshot.val().address,
+                phoneNr: snapshot.val().phoneNr,
+                // getPrescriptions
+                // getDiagnoses
+                // getPermittedRegions
+                // getJournals
+                prescriptions: patientPrescriptions,
+                diagnoses: patientDiagnoses,
+                permittedRegions: patientPermittedRegions,
+                journals: patientJournals,
+              },
+            }));
+          }
 
           //console.log(regionIndexes)
 
+
+          // THIS IS HOW THE STATE WILL BE SET FOR DOCTOR'S
+          // TODO: clean this mess up and divide into functions!!!
           setState((prevState) => ({
             ...prevState,
             isLoading: false,
             patientID: state.doctorRole ? props.route.params : userSSN,
             journalExpanded: journalIndexes,
-            regions: [...regionIndexes],
-            regionSnapshot: [...regionIndexes],
+            // regions: [...regionIndexes],
+            // regionSnapshot: [...regionIndexes],
             patientInfo: {
               id: state.doctorRole ? props.route.params : userSSN,
               firstName: snapshot.val().firstName,
@@ -129,13 +202,13 @@ export function EHROverviewScreen(props) {
               // getJournals
               prescriptions: patientPrescriptions,
               diagnoses: patientDiagnoses,
-              permittedRegions: patientPermittedRegions,
+              // permittedRegions: patientPermittedRegions,
               journals: patientJournals,
             },
           }));
         }
       });
-    } catch (e) {}
+    } catch (err) {} //TODO REMOVE THIS TRY CATCH BLOCK??
   };
 
   // To toggle editing of contact info
@@ -160,12 +233,14 @@ export function EHROverviewScreen(props) {
     }));
   };
 
-  /* 
-    Submit new permitted regions
-
-    @Chrimle
-  */
-  const submitData = () => {
+  /**
+   * Submit new permitted regions to the blockchain. 
+   * TODO: clean up, error handling, make the new permitted regions be reflected right away without 
+   * needing to re-login. 
+   * @author Christopher Molin
+   * @author Hampus Jernkrook
+   */
+  const submitData = async () => {
     alert("Submitting settings...");
     const regStrings = state.regions.map(function (item) {
       return item["id"]+" "+item["name"] + " " + item["enabled"] + "\n";
@@ -181,8 +256,26 @@ export function EHROverviewScreen(props) {
 
     alert(newPermittedRegions);
 
-    // TODO: Upload newPermittedRegions to the blockchain
-
+    try {
+      // TODO: decide whether to goa directly via chainconnection or via ehrService as with other region-functions...
+      const connection = await chainConnection;
+      await connection.setPermissions(state.patientID, newPermittedRegions);
+      
+      // update the list of permitted regions held by the state
+      setState((prevState) => ({
+        ...prevState,
+        patientInfo: {
+          ...prevState.patientInfo,
+          permittedRegions: newPermittedRegions,
+        },
+        //remember which regions that should be marked as selected in the UI
+        regionSnapshot: [...prevState.regions], 
+      }));
+    } catch (err) {
+      if (err instanceof ChainOperationDeniedError)
+      alert(`Error on submitting new permission settings. Please check that you are connected to MetaMask.\n`+
+        `Error message: ${err.message}`);
+    }
     togglePopup(false);
   };
 

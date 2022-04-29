@@ -20,7 +20,7 @@ export default class ChainConnectionFactory {
             this._chainConnection = new ChainConnection();
             await this._chainConnection.init();
             console.log("ChainConnection Initialized.");
-            return this._chainConnection;
         }
+        return this._chainConnection;
     }
 }

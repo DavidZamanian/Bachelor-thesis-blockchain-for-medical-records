@@ -57,18 +57,36 @@ module.exports = function (deployer, network, accounts) {
     // ==== ADDING MEDICAL PERSONNEL ====
     // FORM: <account, id, institution_id>
     // region 1
-    await instance.addMedicalPersonnel(accounts[1], "7403191234", "2"); // works for Liljeholmskajens vårdcentral
-    await instance.addMedicalPersonnel(accounts[2], "8701104455", "3"); // works for Segeltorps vårdcentral
+
+    // works for Liljeholmskajens vårdcentral
+    // mail: zoe.smith@hospital.mail.org
+    await instance.addMedicalPersonnel(accounts[1], "7403191234", "2"); 
+    // works for Segeltorps vårdcentral
+    // mail: test@gmail.com
+    await instance.addMedicalPersonnel(accounts[2], "8701104455", "3"); 
+    
     // region 2
-    await instance.addMedicalPersonnel(accounts[3], "9711021234", "4"); // works for Gränbystadens vårdcentral
+
+    // works for Gränbystadens vårdcentral
+    // mail: eric.anderson@hospital.mail.org
+    await instance.addMedicalPersonnel(accounts[3], "9711021234", "4"); 
+
     // no doctor at institution 5, region 3: jordbro vårdcentral.
 
     // ==== ADDING PATIENTS ====
     // FORM: <account, id, permissioned_regions>
+
     // region 1
-    await instance.addPatient(accounts[9], "9801011111", ["1"]); // doctors with accounts [1, 2] can access this one's EHR. 
+
+    // doctors with accounts [1, 2] can access this one's EHR
+    // mail: daddykane@gmail.com
+    await instance.addPatient(accounts[9], "9801011111", ["1"]);
+    
     // region 2
-    await instance.addPatient(accounts[8], "6503036767", ["2"]); // doctor with accounts [3] can access this one's EHR. 
+    
+    // doctor with account [3] can access this one's EHR.
+    // mail: slick.rick@gmail.com
+    await instance.addPatient(accounts[8], "6503036767", ["2"]);  
   });
 };
 
