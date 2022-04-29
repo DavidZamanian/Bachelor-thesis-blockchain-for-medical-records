@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Text, View, Modal, TextInput, ActivityIndicator } from "react-native";
+import { Text, View, Modal, TextInput, ActivityIndicator, Image } from "react-native";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header/Header";
 import styles from "./styles";
@@ -11,7 +11,7 @@ import theme from "../../theme.style";
 import { database, ref, onValue } from "../../../firebaseSetup";
 import { SubmitContext } from "../../../contexts/SubmitContext";
 import { PlaceholderValues } from "../../placeholders/placeholderValues";
-import { RoleContext } from "../../../contexts/RoleContext";
+import { UserDataContext } from "../../../contexts/UserDataContext";
 import EHRService from "../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
 import CouldNotLoadPermittedRegionsError from "../../Helpers/Errors/couldNotLoadPermittedRegionsError";
@@ -19,13 +19,11 @@ import CouldNotLoadRegionsError from "../../Helpers/Errors/couldNotLoadRegionsEr
 import ChainOperationDeniedError from "../../chainConnection/chainOperationDeniedError";
 import { AuthContext } from "../../../contexts/AuthContext";
 
-
 export function EHROverviewScreen(props) {
-
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
-  const { role, userSSN } = React.useContext(RoleContext);
+  const { role, userSSN } = React.useContext(UserDataContext);
   const route = useRoute();
   const navigation = useNavigation();
 
@@ -33,7 +31,7 @@ export function EHROverviewScreen(props) {
   const { logOut } = React.useContext(AuthContext); //TODO: remove if not usable here
 
   const [state, setState] = useState({
-    doctorRole: (role == "doctor"),
+    doctorRole: role == "doctor",
     regions: [],
     patientInfo: PlaceholderValues.patient,
     patientID: null,
@@ -50,7 +48,6 @@ export function EHROverviewScreen(props) {
     allIsChecked: false,
   });
 
-
   const wipePatientData = () => {
     setState((prevState) => ({
       ...prevState,
@@ -64,21 +61,41 @@ export function EHROverviewScreen(props) {
   */
 
   const fetchPatientData = () => {
-
     //alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
-    if ( (state.patientID != null && state.patientID == state.patientInfo.id) || (state.doctorRole && props.route.params == state.patientInfo.id)) {
+    if (
+      (state.patientID != null && state.patientID == state.patientInfo.id) ||
+      (state.doctorRole && props.route.params == state.patientInfo.id)
+    ) {
       return;
     }
-    const patientRef = ref(database, "Patients/" + (state.doctorRole ? props.route.params : userSSN ));
+    const patientRef = ref(
+      database,
+      "Patients/" + (state.doctorRole ? props.route.params : userSSN)
+    );
 
     try {
       onValue(patientRef, async (snapshot) => {
         if (snapshot.val() === null) {
-          alert("ERROR: This patient does not exist:" + state.patientID+"\n"+patientRef);
+          alert(
+            "ERROR: This patient does not exist:" +
+              state.patientID +
+              "\n" +
+              patientRef
+          );
         } else {
+/*
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND! //TODO REMOVE THIS COMMENT WHEN DONE
 
-          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
+          // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
+
+
+          let connection = await chainConnection;
+          let allRegions = await connection.getAllRegions();
+          //const allRegions = await EHRService.getRegions();
+          const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
+*/
+
+          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ), role);
 
           const patientPrescriptions = ehr.prescriptions
           const patientDiagnoses = ehr.diagnoses;
@@ -301,7 +318,6 @@ export function EHROverviewScreen(props) {
     @Chrimle
   */
   const requestAddEHR = () => {
-
     // CHECK PRIVILEGE?
 
     //wipePatientData();
@@ -338,16 +354,18 @@ export function EHROverviewScreen(props) {
     const connection = await chainConnection;
     console.log(connection); //print the connection object to inspect things such as address used
     // ====== TESTS: comment out all but the one you want to try and see result in your console =====
+    
     // ACCOUNT 10: Patient 9801011111 account. 
     // ACCOUNT 2, 3: account of a doctor in region 1 with access to 9801011111. 
     // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass. 
-    // const res = await connection.hasPermission("9801011111");
+    // --> This came from BeforeDisaster branch --> const res = await connection.hasPermission("9801011111");
     // TESTING getPermissionedRegions - set your account to Account 10 for this to pass. 
+
     // const res = await connection.getPermissionedRegions("9801011111");
-    // TESTING getEHRCid - set your account to Account 2 or 3 for this to pass. 
+    // TESTING getEHRCid - set your account to Account 2 or 3 for this to pass.
     // await connection.updateEHR("9801011111", "CID NR 1");
     // const res = await connection.getEHRCid("9801011111"); //may have to run this separate from updateEHR
-    // TESTING setting new permissions - set your account to Account 10 for this to pass. 
+    // TESTING setting new permissions - set your account to Account 10 for this to pass.
     // await connection.setPermissions("9801011111", ["1", "3"]);
     // const res = await connection.getPermissionedRegions("9801011111"); //may have to run this separate from setPermissions
     // TESTING get all regions - any account can be used for this. 
@@ -402,7 +420,6 @@ export function EHROverviewScreen(props) {
 
   return (
     <View>
-      
       <View style={styles.content}>
         <Modal
           animationType="none"
@@ -459,10 +476,15 @@ export function EHROverviewScreen(props) {
                   numColumns={3}
                   keyExtractor={({ item, index }) => index}
                   renderItem={({ item, index }) => (
-                    <View style={[styles.regionContainer,
-                      {
-                        backgroundColor:(index%2 ? "#FFFFFF" : "#F2F2F2")
-                      }]} key={item.toString()}>
+                    <View
+                      style={[
+                        styles.regionContainer,
+                        {
+                          backgroundColor: index % 2 ? "#FFFFFF" : "#F2F2F2",
+                        },
+                      ]}
+                      key={item.toString()}
+                    >
                       <TouchableOpacity
                         style={[
                           styles.checkbox,
@@ -517,8 +539,17 @@ export function EHROverviewScreen(props) {
           animationType="none"
           transparent={true}
           visible={state.isLoading}
-          horizontal={false}>
+          horizontal={false}
+        >
           <View style={styles.loadingOverlay}>
+            <Image
+                source={require("../../../assets/WhiteLogo.png")}
+                style={{ 
+                  width: 50, 
+                  height: 50, 
+                  marginTop:10,
+                }}
+              />
             <Text style={styles.loadingText}>Loading patient data...</Text>
             <ActivityIndicator size="large" color={theme.PRIMARY_COLOR}/>
           </View>
@@ -631,7 +662,7 @@ export function EHROverviewScreen(props) {
               )}
             </View>
           </View>
-          { state.doctorRole ? (
+          {state.doctorRole ? (
             // Doctor Version
             <View style={styles.container}>
               <Text style={styles.header}>Add EHR entry</Text>

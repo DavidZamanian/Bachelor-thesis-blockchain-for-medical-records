@@ -203,9 +203,10 @@ const styles = StyleSheet.create({
         height: "100%",
         backgroundColor: "white",
         alignItems: "center",
+        paddingTop:150
     },
     loadingText:{
-        marginTop:250,
+        margin:10,
         fontSize:36, 
         color:theme.PRIMARY_COLOR,
         textAlign:"center"

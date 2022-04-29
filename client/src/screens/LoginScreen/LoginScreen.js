@@ -18,16 +18,30 @@ export function LoginScreen() {
   const userUID = auth.currentUser;
 
   const BulletPoint = (props) => {
-    const { iconName, labelText } = props;
+    const { iconName, labelText, descText } = props;
     return (
       <View style={styles.bulletpointContainer}>
         <Icon size={50} name={iconName} color={theme.PRIMARY_COLOR} />
-        <Text style={{ color: theme.PRIMARY_COLOR, fontSize: 20 }}>
-          {labelText}
-        </Text>
+        <View>
+          <Text style={{ color: theme.PRIMARY_COLOR, fontSize: 20 }}>
+            {labelText}
+          </Text>
+          <Text style={{ color: theme.PRIMARY_COLOR, fontSize: 15 }}>
+            {descText}
+          </Text>
+        </View>
+        
       </View>
     );
   };
+
+  const logIn = async () => {
+    try {
+      await login(email, password);
+    } catch (e) {
+      alert(e);
+    }
+  }
 
   return (
     <View style={styles.main}>
@@ -70,13 +84,7 @@ export function LoginScreen() {
                   iconName="key"
                   labelText="Login"
                   labelSize={25}
-                  onPress={async () => {
-                    try {
-                      await login(email, password);
-                    } catch (e) {
-                      alert(e);
-                    }
-                  }}
+                  onPress={logIn}
                 />
               </View>
             </View>
@@ -93,15 +101,18 @@ export function LoginScreen() {
             style={{ flex: "49", height: "100%", justifyContent: "center" }}
           >
             <BulletPoint
-              labelText="Access your medical records any time, any where"
+              labelText=" Access your medical records"
+              descText=" - any time, any where!"
               iconName="clipboard"
             />
             <BulletPoint
-              labelText="Authenticate with BankID"
+              labelText=" Authenticate once"
+              descText=" - continuous checks are done automatically!"
               iconName="shield-checkmark"
             />
             <BulletPoint
-              labelText="Take control of your data"
+              labelText=" Take control of your data"
+              descText=" - decide who can access your data!"
               iconName="lock-closed"
             />
           </View>
