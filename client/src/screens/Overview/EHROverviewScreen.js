@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Text, View, Modal, TextInput, ActivityIndicator } from "react-native";
+import { Text, View, Modal, TextInput, ActivityIndicator, Image } from "react-native";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header/Header";
 import styles from "./styles";
@@ -40,6 +40,7 @@ export function EHROverviewScreen(props) {
     showWarning: false,
     regionSnapshot: [],
     isLoading: true,
+    allIsChecked: false,
   });
 
   const wipePatientData = () => {
@@ -79,10 +80,14 @@ export function EHROverviewScreen(props) {
         } else {
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
 
-          const allRegions = await EHRService.getRegions();
-          const patientPermittedRegions = await EHRService.getPatientRegions(
-            state.doctorRole ? props.route.params : userSSN
-          );
+
+          //const allRegions = await EHRService.getRegions();
+
+
+          let connection = await chainConnection;
+          let allRegions = await connection.getAllRegions();
+          //const allRegions = await EHRService.getRegions();
+          const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 
           //let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
 
@@ -94,18 +99,26 @@ export function EHROverviewScreen(props) {
           patientJournals.forEach(() => journalIndexes.push(false));
 
           let regionIndexes = [];
+
           allRegions.forEach((reg) =>
-            regionIndexes.push({ name: reg, enabled: false })
+            {
+              //console.log(reg)
+              regionIndexes.push({ id: reg[0], name: reg[1], enabled: false })
+            }
           );
           patientPermittedRegions.forEach(
             (reg) => (regionIndexes.find((r) => r.name === reg).enabled = true)
           );
+
+          //console.log(regionIndexes)
 
           setState((prevState) => ({
             ...prevState,
             isLoading: false,
             patientID: state.doctorRole ? props.route.params : userSSN,
             journalExpanded: journalIndexes,
+            regions: [...regionIndexes],
+            regionSnapshot: [...regionIndexes],
             patientInfo: {
               id: state.doctorRole ? props.route.params : userSSN,
               firstName: snapshot.val().firstName,
@@ -122,8 +135,6 @@ export function EHROverviewScreen(props) {
               permittedRegions: patientPermittedRegions,
               journals: patientJournals,
             },
-            regions: [...regionIndexes],
-            regionSnapshot: [...regionIndexes],
           }));
         }
       });
@@ -160,9 +171,20 @@ export function EHROverviewScreen(props) {
   const submitData = () => {
     alert("Submitting settings...");
     const regStrings = state.regions.map(function (item) {
-      return item["name"] + " " + item["enabled"] + "\n";
+      return item["id"]+" "+item["name"] + " " + item["enabled"] + "\n";
     });
     alert(regStrings.toString());
+
+    let newPermittedRegions = [];
+    for (let region of state.regions){
+      if (region["enabled"]){
+        newPermittedRegions.push(region["id"])
+      }
+    }
+
+    alert(newPermittedRegions);
+
+    // TODO: Upload newPermittedRegions to the blockchain
 
     togglePopup(false);
   };
@@ -175,12 +197,28 @@ export function EHROverviewScreen(props) {
   const toggleCheckbox = (index) => {
     let enabled = state.regions[index].enabled;
     let name = state.regions[index].name;
+    let id = state.regions[index].id;
     let updated = state.regions;
 
-    updated.splice(index, 1, { name: name, enabled: !enabled });
+    updated.splice(index, 1, { name: name, enabled: !enabled, id: id });
 
     setState((prevState) => ({
       ...prevState,
+      regions: updated,
+    }));
+  };
+
+  const toggleAllCheckbox = () => {
+    let updated = [];
+    let newEnabled = !state.allIsChecked;
+    for (let region of state.regions){
+      updated.push({ name: region.name, enabled: newEnabled, id: region.id })
+    }
+    
+
+    setState((prevState) => ({
+      ...prevState,
+      allIsChecked: newEnabled,
       regions: updated,
     }));
   };
@@ -228,11 +266,13 @@ export function EHROverviewScreen(props) {
     const connection = await chainConnection;
     console.log(connection); //print the connection object to inspect things such as address used
     // ====== TESTS: comment out all but the one you want to try and see result in your console =====
-    // ACCOUNT 10: Patient 9801011111 account.
-    // ACCOUNT 2, 3: account of a doctor in region 1 with access to 9801011111.
-    // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass.
-    const res = await connection.hasPermission("9801011111");
-    // TESTING getPermissionedRegions - set your account to Account 10 for this to pass.
+
+    // ACCOUNT 10: Patient 9801011111 account. 
+    // ACCOUNT 2, 3: account of a doctor in region 1 with access to 9801011111. 
+    // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass. 
+    // const res = await connection.hasPermission("9801011111");
+    // TESTING getPermissionedRegions - set your account to Account 10 for this to pass. 
+
     // const res = await connection.getPermissionedRegions("9801011111");
     // TESTING getEHRCid - set your account to Account 2 or 3 for this to pass.
     // await connection.updateEHR("9801011111", "CID NR 1");
@@ -240,6 +280,8 @@ export function EHROverviewScreen(props) {
     // TESTING setting new permissions - set your account to Account 10 for this to pass.
     // await connection.setPermissions("9801011111", ["1", "3"]);
     // const res = await connection.getPermissionedRegions("9801011111"); //may have to run this separate from setPermissions
+    // TESTING get all regions - any account can be used for this. 
+    const res = await connection.getAllRegions();
     console.log(res);
     // ================
     console.log("Done discarding.");
@@ -330,6 +372,16 @@ export function EHROverviewScreen(props) {
                   checking the corresponding box. Regions you currently have
                   given permission to are pre-filled.
                 </Text>
+                  <View style={[styles.regionContainer,{width:"100%",justifyContent:"center", borderColor:"black",borderWidth:1}]}>
+                    <TouchableOpacity style={[styles.checkbox,{backgroundColor: state.allIsChecked? theme.PRIMARY_COLOR: "white",},]}
+                      onPress={() => toggleAllCheckbox()}
+                    >
+                      {state.allIsChecked && (
+                        <Icon name="checkmark-outline" size={20}color="white"/>
+                      )}
+                    </TouchableOpacity>
+                    <Text style={styles.regionLabel}>Toggle all regions On or Off</Text>
+                  </View>
                 <FlatList
                   style={styles.regionList}
                   data={state.regions}
@@ -402,8 +454,16 @@ export function EHROverviewScreen(props) {
           horizontal={false}
         >
           <View style={styles.loadingOverlay}>
+            <Image
+                source={require("../../../assets/WhiteLogo.png")}
+                style={{ 
+                  width: 50, 
+                  height: 50, 
+                  marginTop:10,
+                }}
+              />
             <Text style={styles.loadingText}>Loading patient data...</Text>
-            <ActivityIndicator size="large" color={theme.PRIMARY_COLOR} />
+            <ActivityIndicator size="large" color={theme.PRIMARY_COLOR}/>
           </View>
         </Modal>
         <Text style={styles.contentHeader}>Patient Overview</Text>
