@@ -261,6 +261,7 @@ export default class EHRService {
         diagnoses
       );
 
+      //OUR BRANCH ->
       // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
       let encryptedRecordKey = await this.getDoctorRecordKey(id);
 
@@ -271,30 +272,28 @@ export default class EHRService {
         encryptedRecordKey,
         await this.privateKey
       );
+      //OUR BRANCH <-
 
       let finalFiles = [];
 
-
+      //OUR BRANCH ->
       //this is for testing
-      let oldCid = "bafybeienfqpxerm5iu46hdzcglka26gcgsnv5zagtkk7gubu5xfltekilq";
-
+      let oldCid =
+        "bafybeienfqpxerm5iu46hdzcglka26gcgsnv5zagtkk7gubu5xfltekilq";
+      //OUR BRANCH <-
       // FETCH OLD FILES
-      
+
       console.log("Attempting Fetch");
-      let filesAndIndex = await fs.fetchEHRFiles(
-        oldCid,
-        true
-      );
+      let filesAndIndex = await fs.fetchEHRFiles(oldCid, true);
       let fetchedFiles = filesAndIndex.files;
-      
+
       let index = filesAndIndex.index;
       console.log("Fetch success, found " + fetchedFiles.length + " files!");
 
-      
       for (const file of fetchedFiles) {
         let fileContent = await file.text();
 
-        let decryptedData = await this.decrypt(fileContent,decryptedRecordKey);
+        let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
 
         let parsedData = await this.parseIntoJSON(decryptedData);
 
@@ -306,7 +305,6 @@ export default class EHRService {
           finalFiles.push(file);
         }
       }
-      
 
       // Make into JSON objects
       let stringEHR = await this.stringify(objectEHR);
@@ -328,7 +326,7 @@ export default class EHRService {
       // Create JSON files
       let ehrFile = await FileService.createJSONFile(
         encryptedEHR,
-        "EHR_"+index
+        "EHR_" + index
       );
       let prescriptionsFile = await FileService.createJSONFile(
         encryptedPrescriptions,
