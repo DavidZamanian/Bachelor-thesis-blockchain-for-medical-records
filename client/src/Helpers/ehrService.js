@@ -164,7 +164,7 @@ export default class EHRService {
     await get(
       child(
         dbRef,
-        "PatientToRecordKey/" + auth.currentUser.uid + "/decryptedRecordKey"
+        "PatientToRecordKey/" + auth.currentUser.uid + "/recordKey"
       )
     )
       .then((snapshot) => {
@@ -172,6 +172,7 @@ export default class EHRService {
           encPatientRecordKey = snapshot.val();
         } else {
           //Maybe do something else here
+          console.error("GetPatientRecordKey Error: "+auth.currentUser.uid);
           throw "Something went wrong";
         }
       })
@@ -283,27 +284,14 @@ export default class EHRService {
       // FETCH OLD FILES
 
       console.log("Attempting Fetch");
-      let filesAndIndex = await fs.fetchEHRFiles(oldCid, true);
-      let fetchedFiles = filesAndIndex.files;
+      let patientEHR = await this.getFiles(oldCid, decryptedRecordKey, true);
+      
 
-      let index = filesAndIndex.index;
-      console.log("Fetch success, found " + fetchedFiles.length + " files!");
-
-      for (const file of fetchedFiles) {
-        let fileContent = await file.text();
-
-        let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
-
-        let parsedData = await this.parseIntoJSON(decryptedData);
-
-        if (file.name == "prescriptions.json") {
-          prescriptions = prescriptions.concat(parsedData);
-        } else if (file.name == "diagnoses.json") {
-          diagnoses = diagnoses.concat(parsedData);
-        } else {
-          finalFiles.push(file);
-        }
-      }
+      prescriptions = prescriptions.concat(patientEHR.prescriptions);
+      diagnoses = diagnoses.concat(patientEHR.diagnoses);
+      finalFiles = finalFiles.concat(patientEHR.encryptedEHRFiles);
+      let index = patientEHR.nextIndex;
+      
 
       // Make into JSON objects
       let stringEHR = await this.stringify(objectEHR);
@@ -358,15 +346,77 @@ export default class EHRService {
     }
   }
 
+ /**
+     * Method for downloading, decrypting and parsing files from IPFS.
+     * @param {string} cid
+     * @param {string} decryptedRecordKey
+     * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
+     * @returns {Promise<{ 
+  * prescriptions: Array<string>, 
+  * diagnoses: Array<string>,
+  * decryptedEHRs: Array<object>,
+  * encryptedEHRFiles: Array<File>,
+  * nextIndex: number
+  * }>}
+  * If keepEHRencrypted is true, decryptedEHRs will be empty. 
+  * If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
+  * @author Christopher Molin
+  */
+ static async getFiles(cid, decryptedRecordKey, keepEHRencrypted){
+
+     let apiToken = await EHRService.getWeb3StorageToken()
+     let fs = new FileService(apiToken);
+
+     let prescriptions = []
+     let diagnoses = []
+     let decryptedEHRs = []
+     let encryptedEHRFiles = []
+     
+     
+     let filesAndIndex = await fs.fetchEHRFiles(cid, keepEHRencrypted);
+         
+     for (const file of filesAndIndex.files){
+
+         if (keepEHRencrypted && file.name.search("EHR") != -1){
+             encryptedEHRFiles.push(file)
+         }
+         else{
+             let fileContent = await file.text();
+             let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
+             let parsedData = await this.parseIntoJSON(decryptedData);
+             if(file.name == "prescriptions.json"){
+                 prescriptions = prescriptions.concat(parsedData);
+             }
+             else if(file.name == "diagnoses.json"){
+                 diagnoses = diagnoses.concat(parsedData);
+             }
+             else if (file.name.search("EHR") != -1){
+                 decryptedEHRs = decryptedEHRs.concat(parsedData);
+             }
+         }
+     }
+     return {prescriptions: prescriptions, 
+             diagnoses: diagnoses, 
+             nextIndex: filesAndIndex.index,
+             encryptedEHRFiles: encryptedEHRFiles,
+             decryptedEHRs: decryptedEHRs}
+ }
+
+
+
+
+
+
   /**
    * Gets EHR-files and parses contents to an object containing:
    * prescriptions, diagnoses and journals.
    * @param  {string} patientID
+   * @param {string} role
    * @returns {Promise<object>}
    * @author Christopher Molin
    */
-  static async getEHR(patientID) {
-    // TODO: Look up correct CID with patientID
+  static async getEHR(patientID, role) {
+    // THIS IS ONLY CALLED BY OVERVIEW
 
     let decryptedRecordKey = "";
 
@@ -389,37 +439,19 @@ export default class EHRService {
     }
 
     //TODO Need real CID here
-    let cid = PlaceholderValues.ipfsCID;
-    let pubKey = await EHRService.getPublicKey();
-    //console.log("PUBLIC KEY: " + (await this.getPublicKey()));
-    //console.log("RECORD KEY: " + (await this.getPatientRecordKey()));
-    console.log(cid);
-    let apiToken = await EHRService.getWeb3StorageToken();
+    let cid = "bafybeienfqpxerm5iu46hdzcglka26gcgsnv5zagtkk7gubu5xfltekilq";
 
-    let fs = new FileService(apiToken);
-
-    let fetchedFiles = (await fs.fetchEHRFiles(cid)).files;
+    let fetchedFiles = await this.getFiles(cid, decryptedRecordKey, false);
 
     let EHR = {
-      prescriptions: [],
-      diagnoses: [],
-      journals: [],
+      prescriptions: fetchedFiles.prescriptions,
+      diagnoses: fetchedFiles.diagnoses,
+      journals: fetchedFiles.decryptedEHRs,
     };
 
-    for (const file of fetchedFiles) {
-      let fileContent = await file.text();
-      let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
-      let parsedData = await this.parseIntoJSON(decryptedData);
-
-      if (file.name == "prescriptions.json") {
-        EHR.prescriptions = EHR.prescriptions.concat(parsedData);
-      } else if (file.name == "diagnoses.json") {
-        EHR.diagnoses = EHR.diagnoses.concat(parsedData);
-      } else {
-        EHR.journals = EHR.journals.concat(parsedData);
-      }
-    }
+    
     return EHR;
+    
   }
 
   /**

@@ -295,7 +295,7 @@ it("FOR DERIVATION - Priting correct keys for users to put in firebase", async (
     console.log("error: " + e);
   }
 });
-
+/*
 describe("NOT VALID TESTS - Test encryption of file content", () => {
   let newRecordKey = "";
   crypto.generateKey("aes", { length: 256 }, (err, key) => {
@@ -308,18 +308,20 @@ describe("NOT VALID TESTS - Test encryption of file content", () => {
   it("Encrypting and decrypting EHR with example keys", async () => {
     fc.assert(
       fc.property(fc.string({ minLength: 1 }), (originalData) => {
+
+        
+
         let stringifiedData = JSON.stringify(originalData);
         //For some reason these two cant have await
         let encryptedData = crypt.encryptEHR(
           exampleRecordKey,
-          stringifiedData,
-          derivedPrivateKey.toString("base64")
+          stringifiedData
         );
 
         let decryptedData = crypt.decryptEHR(
           exampleRecordKey,
-          encryptedData,
-          derivedPrivateKey.toString("base64")
+          encryptedData
+
         );
 
         assert.equal(stringifiedData, decryptedData);
@@ -334,9 +336,12 @@ describe("NOT VALID TESTS - Test encryption of file content", () => {
      * I want "text => notContains(text, " ")" in property but apparently not instance of Arbitrary..
      * We will never encrypt en empty string so this test with always fail
      *
-     */
+     
     fc.assert(
       fc.property(fc.string({ minLength: 1 }), async (originalData) => {
+
+        
+
         let encryptedRecordKey = await crypt.encryptRecordKey(
           newRecordKey,
           derivedPublicKey
@@ -346,15 +351,13 @@ describe("NOT VALID TESTS - Test encryption of file content", () => {
         //console.log(stringifiedData);
         // encryptEHR decrypts the encryptedRecordKey, this throws an error.
         let encryptedData = await crypt.encryptEHR(
-          encryptedRecordKey,
-          stringifiedData,
-          derivedPrivateKey
+          newRecordKey,
+          stringifiedData
         );
         console.log("Encrypt Success" + encryptedData.encryptedData);
         let decryptedData = await crypt.decryptEHR(
-          encryptedRecordKey,
-          encryptedData,
-          derivedPrivateKey
+          newRecordKey,
+          encryptedData
         );
         console.log("Decrypt Success: " + decryptedData);
         console.log(stringifiedData == decryptedData);
@@ -363,4 +366,7 @@ describe("NOT VALID TESTS - Test encryption of file content", () => {
       })
     );
   }).timeout(10000);
+
+  
 });
+*/
