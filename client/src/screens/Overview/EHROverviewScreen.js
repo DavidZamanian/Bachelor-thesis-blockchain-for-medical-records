@@ -78,36 +78,6 @@ export function EHROverviewScreen(props) {
         } else {
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND! //TODO REMOVE THIS COMMENT WHEN DONE
 
-          // TODO ADD THIS TO A GOOD SPOT...
-          let msg = (`Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`);
-
-          // get all regions within the system
-          let allRegions;
-          try {
-            allRegions = await EHRService.getRegions();
-          } catch (err) {
-            alert(`FATAL: Failed to fetch list of regions.\n${msg}`);
-            console.error(err.message);
-            await logOut();
-            return;
-          }
-          
-          // get the patient's permitted regions
-          let patientPermittedRegions;
-          try {
-            const connection = await chainConnection;
-            const _patientId = props.route.params;
-            
-            if (connection.hasPermission(_patientId)) {
-              patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ));
-            }
-          } catch (err) {
-            alert(`FATAL: Failed to load Permission Settings.\n${msg}`);
-            console.error(err.message);
-            await logOut();
-            return;
-          }
-
           let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ))
 
           const patientPrescriptions = ehr.prescriptions
@@ -117,27 +87,89 @@ export function EHROverviewScreen(props) {
           let journalIndexes = [];
           patientJournals.forEach(() => journalIndexes.push(false));
 
-          let regionIndexes = [];
+          // ========= Only fetch regions for patients ==========
+          // TODO: clean this mess up and divide into functions!!!
+          if (!state.doctorRole) {
+            // TODO ADD THIS TO A GOOD SPOT...
+            let msg = (`Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`);
 
-          allRegions.forEach((reg) =>
-            {
-              //console.log(reg)
-              regionIndexes.push({ id: reg[0], name: reg[1], enabled: false })
+            // get all regions within the system
+            let allRegions;
+            try {
+              allRegions = await EHRService.getRegions();
+            } catch (err) {
+              alert(`FATAL: Failed to fetch list of regions.\n${msg}`);
+              console.error(err.message);
+              await logOut();
+              return;
             }
-          );
-          patientPermittedRegions.forEach(
-            (reg) => (regionIndexes.find((r) => r.id === reg).enabled = true)
-          );
+
+            // get the patient's id. May already be accessible but I could not see how /H. 
+            // TODO: access in some other way if it is already possible. Else use this but clean up the comments.
+            const _patientId = state.doctorRole ? JSON.stringify(props.route.params).substring(2,12) : userSSN;
+            
+            // get the patient's permitted regions
+            let patientPermittedRegions;
+            try {
+              patientPermittedRegions = await EHRService.getPatientRegions(_patientId);
+            } catch (err) {
+              alert(`FATAL: Failed to load Permission Settings.\n${msg}`);
+              console.error(err.message);
+              await logOut();
+              return;
+            }
+
+            let regionIndexes = [];
+
+            allRegions.forEach((reg) =>
+              {
+                //console.log(reg)
+                regionIndexes.push({ id: reg[0], name: reg[1], enabled: false })
+              }
+            );
+            patientPermittedRegions.forEach(
+              (reg) => (regionIndexes.find((r) => r.id === reg).enabled = true)
+            );
+
+            // THIS IS HOW THE STATE WILL BE SET FOR PATIENTS
+            setState((prevState) => ({
+              ...prevState,
+              isLoading: false,
+              patientID: state.doctorRole ? props.route.params : userSSN,
+              journalExpanded: journalIndexes,
+              regions: [...regionIndexes],
+              regionSnapshot: [...regionIndexes],
+              patientInfo: {
+                id: state.doctorRole ? props.route.params : userSSN,
+                firstName: snapshot.val().firstName,
+                lastName: snapshot.val().lastName,
+                email: snapshot.val().email,
+                address: snapshot.val().address,
+                phoneNr: snapshot.val().phoneNr,
+                // getPrescriptions
+                // getDiagnoses
+                // getPermittedRegions
+                // getJournals
+                prescriptions: patientPrescriptions,
+                diagnoses: patientDiagnoses,
+                permittedRegions: patientPermittedRegions,
+                journals: patientJournals,
+              },
+            }));
+          }
 
           //console.log(regionIndexes)
 
+
+          // THIS IS HOW THE STATE WILL BE SET FOR DOCTOR'S
+          // TODO: clean this mess up and divide into functions!!!
           setState((prevState) => ({
             ...prevState,
             isLoading: false,
             patientID: state.doctorRole ? props.route.params : userSSN,
             journalExpanded: journalIndexes,
-            regions: [...regionIndexes],
-            regionSnapshot: [...regionIndexes],
+            // regions: [...regionIndexes],
+            // regionSnapshot: [...regionIndexes],
             patientInfo: {
               id: state.doctorRole ? props.route.params : userSSN,
               firstName: snapshot.val().firstName,
@@ -151,7 +183,7 @@ export function EHROverviewScreen(props) {
               // getJournals
               prescriptions: patientPrescriptions,
               diagnoses: patientDiagnoses,
-              permittedRegions: patientPermittedRegions,
+              // permittedRegions: patientPermittedRegions,
               journals: patientJournals,
             },
           }));
