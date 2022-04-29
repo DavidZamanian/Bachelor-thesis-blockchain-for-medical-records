@@ -213,6 +213,7 @@ export function EHROverviewScreen(props) {
           ...prevState.patientInfo,
           permittedRegions: newPermittedRegions,
         },
+        regionSnapshot: [...prevState.regions], 
       }));
     } catch (err) {
       //todo: something
