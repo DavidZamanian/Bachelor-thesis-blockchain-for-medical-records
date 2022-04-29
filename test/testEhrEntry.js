@@ -1,6 +1,6 @@
 /**
  * Tests for the class EhrEntry.
- * @author Hampus Jernkrook
+ * @author Hampus Jernkrook, Christopher Molin
  */
 
 // CommonJS version of imports:
@@ -9,8 +9,10 @@
 // ES6 version:
 import EhrEntry from "../server/jsonHandling/ehrEntry.js";
 import * as assert from "assert";
+import * as fc from 'fast-check';
 
-describe("set date", function() {
+
+describe("Set date", function() {
     it("sets the correct date in the ehrEntry", function() {
         const ehrEntry = new EhrEntry();
         const date = new Date().toJSON();
@@ -19,80 +21,75 @@ describe("set date", function() {
     })
 });
 
-describe("set patient id", function() {
-    it("sets the correct patient id in the ehrEntry", function() {
+describe("Set patientID", function() {
+    it("Set and re-set PatientID in EHREntry", function() {
         const ehrEntry = new EhrEntry();
-        const id = "id_1"
-        ehrEntry.setPatientID(id);
-        assert.equal(ehrEntry.patientID, id);
-    })
-});
-
-describe("set healthcare institution", function() {
-    it("sets the correct healthcare institution in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const inst = "Ostra sjukhuset";
-        ehrEntry.setHealthcareInstitution(inst);
-        assert.equal(ehrEntry.healthcareInstitution, inst);
-    })
-});
-
-describe("set medical personnel", function() {
-    it("sets the correct medical personnel in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const personnel = "Hans Andersson";
-        ehrEntry.setMedicalPersonnel(personnel);
-        assert.equal(ehrEntry.medicalPersonnel, personnel);
-    })
-});
-
-describe("set details", function() {
-    it("sets the correct details in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const details = "stomach ache since ...";
-        ehrEntry.setDetails(details);
-        assert.equal(ehrEntry.details, details);
-    })
-});
-
-describe("set details", function() {
-    it("sets the correct details in the ehrEntry", function() {
-        const ehrEntry = new EhrEntry();
-        const details = "stomach ache since ...";
-        ehrEntry.setDetails(details);
-        assert.equal(ehrEntry.details, details);
-    })
-});
-
-describe("set diagnoses", function() {
-    it("sets the correct diagnoses in the ehrEntry, for non-empty diagnoses array", function() {
-        const ehrEntry = new EhrEntry();
-        const diagnoses = ["pollen allergy", "stomach ache"];
-        ehrEntry.setDiagnoses(diagnoses);
-        assert.equal(ehrEntry.diagnoses, diagnoses);
-    });
-
-    it("sets the correct diagnoses in the ehrEntry, for empty diagnoses array", function() {
-        const ehrEntry = new EhrEntry();
-        const diagnoses = [];
-        ehrEntry.setDiagnoses(diagnoses);
-        assert.equal(ehrEntry.diagnoses, diagnoses);
+        fc.assert(
+            fc.property( fc.string({minLength: 1}), (id) => {
+                ehrEntry.setPatientID(id);
+                assert.equal(ehrEntry.patientID, id);
+            })
+        );
     });
 });
 
-describe("set prescriptions", function() {
-    it("sets the correct prescriptions in the ehrEntry, for non-empty prescriptions array", function() {
+describe("Set healthcare institution", function() {
+    it("Set and re-set healthcare institution in EHREntry", function() {
         const ehrEntry = new EhrEntry();
-        const prescriptions = ["pollen stopper", "stomach happy"];
-        ehrEntry.setPrescriptions(prescriptions);
-        assert.equal(ehrEntry.prescriptions, prescriptions);
+        fc.assert(
+            fc.property( fc.string({minLength: 1}), (inst) => {
+                ehrEntry.setHealthcareInstitution(inst);
+                assert.equal(ehrEntry.healthcareInstitution, inst);
+            })
+        );
     });
+});
 
-    it("sets the correct prescriptions in the ehrEntry, for empty prescriptions array", function() {
+describe("Set medical personnel", function() {
+    it("Set and re-set medical personnel in EHREntry", function() {
         const ehrEntry = new EhrEntry();
-        const prescriptions = [];
-        ehrEntry.setPrescriptions(prescriptions);
-        assert.equal(ehrEntry.prescriptions, prescriptions);
+        fc.assert(
+            fc.property( fc.string({minLength: 1}), (personnel) => {
+                ehrEntry.setMedicalPersonnel(personnel);
+                assert.equal(ehrEntry.medicalPersonnel, personnel);
+            })
+        );
+    });
+});
+
+describe("Set details", function() {
+    it("Set and re-set details in EHREntry", function() {
+        const ehrEntry = new EhrEntry();
+        fc.assert(
+            fc.property( fc.string(), (details) => {
+                ehrEntry.setDetails(details);
+                assert.equal(ehrEntry.details, details);
+            })
+        );
+    });
+});
+
+describe("Set diagnoses", function() {
+    it("Set and re-set diagnoses in EHREntry - including empty list", function() {
+        const ehrEntry = new EhrEntry();
+        fc.assert(
+            fc.property( fc.array(fc.string()), (diagnoses) => {
+                ehrEntry.setDiagnoses(diagnoses);            
+                assert.equal(ehrEntry.diagnoses, diagnoses);
+            })
+        );
+    });
+});
+
+describe("Set prescriptions", function() {
+    it("Set and re-set prescriptions in EHREntry - including empty list", function() {
+        const ehrEntry = new EhrEntry();
+        fc.assert(
+            fc.property( fc.array(fc.string()), (prescriptions) => {
+                ehrEntry.setPrescriptions(prescriptions);
+                assert.equal(ehrEntry.prescriptions, prescriptions);
+            })
+        );
     });
 });
 
