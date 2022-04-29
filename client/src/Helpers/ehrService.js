@@ -261,9 +261,9 @@ export default class EHRService {
         diagnoses
       );
 
-      //OUR BRANCH ->
       // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
       let encryptedRecordKey = await this.getDoctorRecordKey(id);
+
 
       console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
       console.warn("PrivateKey: " + this.privateKey);
@@ -272,7 +272,6 @@ export default class EHRService {
         encryptedRecordKey,
         await this.privateKey
       );
-      //OUR BRANCH <-
 
       let finalFiles = [];
 

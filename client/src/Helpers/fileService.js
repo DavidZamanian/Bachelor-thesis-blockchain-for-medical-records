@@ -82,7 +82,7 @@ export default class FileService{
      * Fetches all EHR files
      * @param  {String} cid
      * @param {boolean} [getNextEHRIndex]
-     * @returns {Promise<{files: Array<File>, index?: number}>} Array with Files and the next index for EHR if upload is true
+     * @returns {Promise<{files: Array<File>, index: number}>} Array with Files and the next index for EHR if upload is true
      * @author Christopher Molin
      */
     async fetchEHRFiles(cid, getNextEHRIndex){
@@ -120,13 +120,7 @@ export default class FileService{
             }
         } while(keepSearching)
 
-        if (getNextEHRIndex){
-            return {files: results, index: index};
-        }
-        else{
-            return {files: results};
-        }
-        
+        return {files: results, index: (getNextEHRIndex ? index: -1)};  
     }
 
 

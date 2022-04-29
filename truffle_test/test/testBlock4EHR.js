@@ -35,10 +35,15 @@ contract("Block4EHR", accounts => {
     before(async () => {
         instance = await Block4EHR.deployed();
 
+        // ==== ADDING REGIONS ====
+        await instance.addRegion(gbg, "gbg_name");
+        await instance.addRegion(boras, "boras_name");
+        await instance.addRegion(kungalv, "kungalv_name");
+
         // ==== ADDING INSTITUTIONS ====
-        await instance.addHealthcareInst(inst_gbg, "gbg1", "gbg");
-        await instance.addHealthcareInst(inst_boras, "b1", "boras");
-        await instance.addHealthcareInst(inst_kungalv, "k1", "kungalv");
+        await instance.addHealthcareInst(inst_gbg, "gbg1", gbg);
+        await instance.addHealthcareInst(inst_boras, "b1", boras);
+        await instance.addHealthcareInst(inst_kungalv, "k1", kungalv);
 
         // ==== ADDING MEDICAL PERSONNEL ====
         await instance.addMedicalPersonnel(doc_gbg_account, doc_gbg, inst_gbg);
