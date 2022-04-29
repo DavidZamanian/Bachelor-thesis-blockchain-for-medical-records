@@ -111,7 +111,8 @@ export function EHROverviewScreen(props) {
             let msg = (`Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`);
 
             // get all regions within the system
-            let allRegions;
+            let allRegions = [];
+            
             try {
               allRegions = await EHRService.getRegions();
             } catch (err) {
@@ -120,6 +121,7 @@ export function EHROverviewScreen(props) {
               await logOut();
               return;
             }
+            
 
             // get the patient's id. May already be accessible but I could not see how /H. 
             // TODO: access in some other way if it is already possible. Else use this but clean up the comments.

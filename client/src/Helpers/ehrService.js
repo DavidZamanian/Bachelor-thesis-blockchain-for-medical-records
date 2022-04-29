@@ -17,6 +17,9 @@ import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
 
 
 export default class EHRService {
+
+  static chainConnection = ChainConnectionFactory.getChainConnection();
+  
   static privateKey;
   static publicKey;
 
