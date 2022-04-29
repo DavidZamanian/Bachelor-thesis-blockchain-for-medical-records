@@ -16,6 +16,7 @@ import EHRService from "../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
 import CouldNotLoadPermittedRegionsError from "../../Helpers/Errors/couldNotLoadPermittedRegionsError";
 import CouldNotLoadRegionsError from "../../Helpers/Errors/couldNotLoadRegionsError";
+import ChainOperationDeniedError from "../../chainConnection/chainOperationDeniedError";
 import { AuthContext } from "../../../contexts/AuthContext";
 
 
@@ -83,7 +84,6 @@ export function EHROverviewScreen(props) {
           // get all regions within the system
           let allRegions;
           try {
-            // throw new Error("GET ALL REGIONS FAILED VIA DUMMY ERROR"); //TODO REMOVE. Here for testing error handling.
             allRegions = await EHRService.getRegions();
           } catch (err) {
             alert(`FATAL: Failed to fetch list of regions.\n${msg}`);
@@ -95,10 +95,14 @@ export function EHROverviewScreen(props) {
           // get the patient's permitted regions
           let patientPermittedRegions;
           try {
-            // throw new Error("GET PATIENT REGIONS FAILED VIA DUMMY ERROR"); //TODO REMOVE. Here for testing error handling.
-            patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ));
+            const connection = await chainConnection;
+            const _patientId = props.route.params;
+            
+            if (connection.hasPermission(_patientId)) {
+              patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ));
+            }
           } catch (err) {
-            alert(`FATAL: Failed to Permission Settings.\n${msg}`);
+            alert(`FATAL: Failed to load Permission Settings.\n${msg}`);
             console.error(err.message);
             await logOut();
             return;
@@ -202,22 +206,24 @@ export function EHROverviewScreen(props) {
     alert(newPermittedRegions);
 
     try {
+      // TODO: decide whether to goa directly via chainconnection or via ehrService as with other region-functions...
       const connection = await chainConnection;
       await connection.setPermissions(state.patientID, newPermittedRegions);
       
       // update the list of permitted regions held by the state
       setState((prevState) => ({
         ...prevState,
-        // patientInfo.permittedRegions = permittedRegions
         patientInfo: {
           ...prevState.patientInfo,
           permittedRegions: newPermittedRegions,
         },
+        //remember which regions that should be marked as selected in the UI
         regionSnapshot: [...prevState.regions], 
       }));
     } catch (err) {
-      //todo: something
-      console.log(`ERROR on submitting new permitted regions... ${err.message}`);
+      if (err instanceof ChainOperationDeniedError)
+      alert(`Error on submitting new permission settings. Please check that you are connected to MetaMask.\n`+
+        `Error message: ${err.message}`);
     }
     togglePopup(false);
   };
