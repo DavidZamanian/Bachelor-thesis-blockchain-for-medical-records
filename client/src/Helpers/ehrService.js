@@ -19,7 +19,7 @@ import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
 export default class EHRService {
 
   static chainConnection = ChainConnectionFactory.getChainConnection();
-  
+
   static privateKey;
   static publicKey;
 
@@ -350,7 +350,12 @@ export default class EHRService {
         console.log(file.name + ": " + (await file.text()).toString("base64"));
       }
 
-      return cid;
+      // TODO: Do something with the CID!
+      // cid
+
+
+
+      return "Success";
     } catch (e) {
       throw e;
     }
