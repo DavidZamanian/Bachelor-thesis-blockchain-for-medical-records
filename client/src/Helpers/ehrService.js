@@ -274,19 +274,23 @@ export default class EHRService {
 
       let finalFiles = [];
 
+
+      //this is for testing
+      let oldCid = "bafybeienfqpxerm5iu46hdzcglka26gcgsnv5zagtkk7gubu5xfltekilq";
+
       // FETCH OLD FILES
-      /*
+      
       console.log("Attempting Fetch");
       let filesAndIndex = await fs.fetchEHRFiles(
-        PlaceholderValues.ipfsCID,
+        oldCid,
         true
       );
       let fetchedFiles = filesAndIndex.files;
       
-      let index = 0//filesAndIndex.index;
-      //console.log("Fetch success, found " + fetchedFiles.length + " files!");
+      let index = filesAndIndex.index;
+      console.log("Fetch success, found " + fetchedFiles.length + " files!");
 
-
+      
       for (const file of fetchedFiles) {
         let fileContent = await file.text();
 
@@ -302,7 +306,7 @@ export default class EHRService {
           finalFiles.push(file);
         }
       }
-      */
+      
 
       // Make into JSON objects
       let stringEHR = await this.stringify(objectEHR);
@@ -324,7 +328,7 @@ export default class EHRService {
       // Create JSON files
       let ehrFile = await FileService.createJSONFile(
         encryptedEHR,
-        "EHR_" //+ INDEX HERE
+        "EHR_"+index
       );
       let prescriptionsFile = await FileService.createJSONFile(
         encryptedPrescriptions,
