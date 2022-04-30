@@ -1,7 +1,14 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth } from "@firebase/auth";
-import { getDatabase, ref, onValue, get, child, update } from "firebase/database";
+import { getAuth, inMemoryPersistence } from "@firebase/auth";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  get,
+  child,
+  update,
+} from "firebase/database";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCT5G4byurxGZYa8Mrv0euwHANFpDgew6Y",
@@ -19,6 +26,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
+auth.setPersistence(inMemoryPersistence);
 const database = getDatabase(app);
 
 export { auth, database, ref, onValue, get, child };
