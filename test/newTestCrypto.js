@@ -4,6 +4,62 @@ import * as path from "path";
 import crypt from "../client/Crypto/crypt.js";
 import JSONService from "../server/jsonHandling/jsonService.js";
 import * as fc from "fast-check";
+import { database, ref, onValue } from "../client/firebaseSetup";
+import {getAuth,} from "@firebase/auth";
+
+/**
+ * 1. Generate salt for new user
+ * 2. Generate keyPair
+ * 3. Generate symmetricKey with new salt and universalPassword
+ * 4. Generate recordKey and encrypt is with users publicKey
+ * 5. Store salt on database
+ * 6. Store publicKey on database
+ * 7. Store privateKeyAndIv on database
+ * 8. Store recordKey on database
+ *
+ * @author David Zamanian
+ */
+
+const AddKeysToNewPatient = (patientUID) => {
+  //const auth = getAuth();
+  let dbRef = ref(database);
+  const userSnapshot = await get(child(dbRef, 'mapUser/' + patientUID))
+
+  //1
+  let newSalt = crypto.randomBytes(96);
+  newSalt = newSalt.toString("base64");
+  console.log("salt: " + newSalt);
+  //2
+  const keyPair = crypto.generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicKeyEncoding: {
+      type: "spki",
+      format: "pem",
+    },
+    privateKeyEncoding: {
+      type: "pkcs8",
+      format: "pem",
+    },
+  });
+  let privateKey = keyPair.privateKey;
+  let publicKey = keyPair.publicKey;
+  let newRecordKey = "";
+  //3
+  let symmetricKey = await crypt.derivePrivateKeyFromPassword(
+    universalPassword,
+    newSalt
+  );
+  //4
+  crypto.generateKey("aes", { length: 256 }, (err, key) => {
+    if (err) throw err;
+
+    newRecordKey = key.export().toString("base64");
+  })
+  let encryptedNewRecordKey = await crypt.encryptRecordKey(newRecordKey, publicKey)
+  //5
+  
+
+};
 
 /**
  * Methods for encrypting/decrypting EHR and record keys.
