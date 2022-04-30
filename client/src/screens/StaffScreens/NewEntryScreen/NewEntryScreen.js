@@ -74,17 +74,18 @@ export function NewEntryScreen(props) {
    * @author @Chrimle
    */
   const addPrescription = () => {
-
-    setPrescriptionsList((prevState) => {
-      prevState.push({name:inputPrescription,dosage:inputDosage});
-      return [...prevState];
-    })
-    setInputPrescription((prevState) => {
-      return "";
-    })
-    setInputDosage((prevState) => {
-      return "";
-    })
+    if (inputDosage.length > 0 && inputPrescription.length > 0){
+      setPrescriptionsList((prevState) => {
+        prevState.push({name:inputPrescription,dosage:inputDosage});
+        return [...prevState];
+      })
+      setInputPrescription((prevState) => {
+        return "";
+      })
+      setInputDosage((prevState) => {
+        return "";
+      })
+    }
   }
  
   /**
@@ -93,7 +94,6 @@ export function NewEntryScreen(props) {
    * @author @Chrimle
    */
   const removeDiagnosis = (index) => {
-
     setDiagnosesList((prevState) => {
       prevState.splice(index,1);
       return [...prevState];
@@ -106,13 +106,15 @@ export function NewEntryScreen(props) {
   */
   const addDiagnosis = () => {
 
-    setDiagnosesList((prevState) => {
-      prevState.push({diagnosis:inputDiagnosis});
-      return [...prevState];
-    })
-    setInputDiagnosis((prevState) => {
-      return "";
-    })
+    if(inputDiagnosis.length > 0){
+      setDiagnosesList((prevState) => {
+        prevState.push({diagnosis:inputDiagnosis});
+        return [...prevState];
+      })
+      setInputDiagnosis((prevState) => {
+        return "";
+      })
+    }
   }
 
   /**
@@ -120,14 +122,6 @@ export function NewEntryScreen(props) {
    * @author @Chrimle
    */
   const submitData = async () => {
-    
-    //For testing fetching a Web3Storage EHR file
-
-    //let cid = "bafybeifxi2lwmni6gnqanpposc74jugdxe6g6wfpl5saxfsq3t552mrl34"
-    //let fileName = "ehr"
-    
-    //let x = ( await EHRService.getPatientData())
-    //let x = ( await FileService.fetchFileContent(cid,fileName))
     
     
 
@@ -253,10 +247,7 @@ export function NewEntryScreen(props) {
           animationType="none"
           transparent={true}
           visible={modalVisible}
-          onRequestClose={() => {
-            alert("The submission was cancelled.");
-            setModalVisible(!modalVisible);
-          }}
+          onRequestClose={() => {}}
         >
           <View style={{width:"100%", height:"100%", backgroundColor:'rgba(0,0,0,0.80)', justifyContent:"center", alignItems:"center",}}>
             <View style={styles.popupWindow}>
@@ -277,10 +268,10 @@ export function NewEntryScreen(props) {
                 }
               </View>
               <View style={{flex:1, padding:10, borderTopColor:"grey", borderTopWidth:2, flexDirection:"row", justifyContent:"flex-end"}}>
-                <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.greyButton,{height:"100%"}]} onPress={()=>{setModalVisible(false)}}>
+                <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.greyButton,{height:"100%"}]} onPress={()=>{setModalVisible(false)}} disabled={submitStatus.status=="Loading" || submitStatus.status=="Success"}>
                   <Text style={[styles.greyText,{fontWeight:"bold"}]}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.primaryButton,{height:"100%"}]} onPress={()=>{submitData()}}>
+                <TouchableOpacity style={[styles.normalButton,styles.popupButton,styles.primaryButton,{height:"100%"}]} onPress={()=>{submitData()}} disabled={submitStatus.status=="Loading" || submitStatus.status=="Success"}>
                   <Text style={[styles.contrastText,{fontWeight:"bold"}]}>Submit</Text>
                 </TouchableOpacity>
               </View>
