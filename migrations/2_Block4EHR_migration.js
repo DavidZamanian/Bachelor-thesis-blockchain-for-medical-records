@@ -133,4 +133,60 @@ truffle(develop)> regions[0].name
 'Stockholm'
 truffle(develop)> 
 
+
+//======= GETTING PERSONNEL FOR A GIVEN REGION ====
+// get an array with each personnel defined inside an array
+> let personnel1 = await instance.getRegionPersonnel('1');
+
+// printing personnel1:
+> personnel1
+[
+  [
+    '0x60F7D8aF0251235614809989AF2ECE3B6959cde5',
+    '7403191234',
+    [
+      '2',
+      'Liljeholmskajens vårdcentral',
+      [Array],
+      id: '2',
+      name: 'Liljeholmskajens vårdcentral',
+      region: [Array]
+    ],
+    addr: '0x60F7D8aF0251235614809989AF2ECE3B6959cde5',
+    id: '7403191234',
+    healthcareInst: [
+      '2',
+      'Liljeholmskajens vårdcentral',
+      [Array],
+      id: '2',
+      name: 'Liljeholmskajens vårdcentral',
+      region: [Array]
+    ]
+  ],
+  [
+    '0x3726B0d9d8624b343D0fBe1084C26Bd079e46D17',
+    '8701104455',
+    [
+      '3',
+      'Segeltorps vårdcentral',
+      [Array],
+      id: '3',
+      name: 'Segeltorps vårdcentral',
+      region: [Array]
+    ],
+    addr: '0x3726B0d9d8624b343D0fBe1084C26Bd079e46D17',
+    id: '8701104455',
+    healthcareInst: [
+      '3',
+      'Segeltorps vårdcentral',
+      [Array],
+      id: '3',
+      name: 'Segeltorps vårdcentral',
+      region: [Array]
+    ]
+  ]
+]
+
+// getting the first personnel's id:
+> personnel1[0].id
 */
