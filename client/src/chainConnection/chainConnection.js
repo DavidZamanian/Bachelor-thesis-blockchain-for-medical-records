@@ -179,4 +179,45 @@ export default class ChainConnection {
       throw new ChainConnectionError(err.message);
     }
   }
+
+  /**
+   * Get all recorded personnel operating within a given region. 
+   * @param {String} regionId The region to return all personnel operating within. 
+   * @returns {Array<String>} An array of personnel ids.
+   * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
+   *  due to a network error. 
+   * @author Hampus Jernkrook
+   */
+  async getRegionPersonnel(regionId) {
+    let personnel;
+    try {
+      const { accounts, contract } = this.state;
+      personnel = await contract.methods
+        .getRegionPersonnel(regionId)
+        .call({ from : accounts[0] });
+    } catch (err) {
+      throw new ChainConnectionError(err.message);
+    }
+    return personnel.map(p => p.id);
+  }
+
+  /**
+   * Get the name of a given healthcare institution. 
+   * @param {String} institutionId The id of the institution that the name should be returned for. 
+   * @returns {String} The name of the instituion with the given id.
+   * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
+   *  due to a network error.
+   * @author Hampus Jernkrook
+   */
+  async getInstitutionName(institutionId) {
+    try {
+      const { accounts, contract } = this.state;
+      const name = await contract.methods
+        .getInstitutionName(institutionId)
+        .call({ from: accounts[0] });
+      return name;
+    } catch (err) {
+      throw new ChainConnectionError(err.message);
+    }
+  }
 }
