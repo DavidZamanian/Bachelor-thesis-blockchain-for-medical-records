@@ -350,8 +350,15 @@ export default class EHRService {
         console.log(file.name + ": " + (await file.text()).toString("base64"));
       }
 
-      // TODO: Do something with the CID!
-      // cid
+      let connection = await this.chainConnection;
+
+      await connection.updateEHR(id, cid);
+
+
+      // DEBUG
+      let checkCID = await connection.getEHRCid(id);
+      console.debug("Expected: "+cid+"\nActual: "+checkCID);
+      // END OF DEBUG
 
 
 
