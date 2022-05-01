@@ -47,9 +47,6 @@ contract Block4EHR {
     // mapping patient id to its latest EHR update
     mapping(string => EHR) public ehrs;
 
-    //mapping region id to the region struct object
-    mapping(string => Region) public regionsMap;
-
     //mapping patient id to the patient struct object 
     mapping(string => Patient) public patients;
 
@@ -58,7 +55,15 @@ contract Block4EHR {
     mapping(address => MedicalPersonnel) public medicalPersonnels;
 
     // ===== HEALTHCARE INST. MAPPINGS ======
+    // mapping institution id to the institution struct object. 
     mapping(string => HealthcareInst) public healthcareInstitutions;
+
+    // ===== REGION MAPPINGS ======
+    //mapping region id to the region struct object
+    mapping(string => Region) public regionsMap;
+
+    //mapping region id to a list of all medical personnel operating at an institution within that region.
+    mapping(string => MedicalPersonnel[]) public regionToPersonnel;
     //===============================================
     //================= ARRAYS ======================
     Region[] regionsArray;
@@ -81,7 +86,10 @@ contract Block4EHR {
     // TODO: enforce that the institution exists
     function addMedicalPersonnel(address _addr, string memory _id, string memory _healthcareInstId) public {
         HealthcareInst memory inst = healthcareInstitutions[_healthcareInstId]; //TODO: might not be needed it we want inst to be the id....
-        medicalPersonnels[_addr] = MedicalPersonnel(_addr, _id, inst);
+        MedicalPersonnel memory _personnel = MedicalPersonnel(_addr, _id, inst);
+        medicalPersonnels[_addr] = _personnel;
+        string memory _regionId = inst.region.id;
+        regionToPersonnel[_regionId].push(_personnel);
     }
 
     // TODO: enforce that the regions exist
@@ -90,8 +98,21 @@ contract Block4EHR {
     }
 
     //======= GETTING REGIONS ========
+    /** Get all regions on the smart contract. */
     function getRegions() public view returns(Region[] memory) {
         return regionsArray;
+    }
+
+    //======= GETTING ALL PERSONNEL FOR A GIVEN REGION ========
+    /** Get all medical personnel for a given region. */
+    function getRegionPersonnel(string memory _regionId) public view returns(MedicalPersonnel[] memory) {
+        return regionToPersonnel[_regionId];
+    }
+
+    //======= GETTING THE NAME OF A GIVEN INSTITUTION ========
+    /** Get the name of a given healthcare institution. */
+    function getInstitutionName(string memory _instId) public view returns(string memory) {
+        return healthcareInstitutions[_instId].name;
     }
 
     //======= CHECKING THAT THE FUNCTION INVOKER IS PERMISSIONED ========
