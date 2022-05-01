@@ -9,6 +9,7 @@ import theme from "../../theme.style";
 import ThemeButton from "../../components/themeButton";
 import styles from "./styles";
 import { getAuth } from "@firebase/auth";
+import { database, ref } from "../../../firebaseSetup";
 
 export function LoginScreen() {
   const { login } = React.useContext(AuthContext);
@@ -30,22 +31,99 @@ export function LoginScreen() {
             {descText}
           </Text>
         </View>
-        
       </View>
     );
   };
 
   const logIn = async () => {
+    //AddKeysToNewPatient("3VBIIE4oJnabVVXJd2s3F02WarF3");
     try {
       await login(email, password);
     } catch (e) {
       alert(e);
     }
+  };
+
+  /**
+   * 1. Generate salt for new user
+   * 2. Generate keyPair
+   * 3. Generate symmetricKey with new salt and universalPassword
+   * 4. Generate recordKey and encrypt is with users publicKey
+   * 5. Store salt on database
+   * 6. Store publicKey on database
+   * 7. Store privateKeyAndIv on database
+   * 8. Store recordKey on database
+   *
+   * @author David Zamanian
+   */
+
+  async function AddKeysToNewPatient(UID) {
+    //const auth = getAuth();
+
+    console.log("Do we get here?");
+    //1
+    let newSalt = crypto.randomBytes(96);
+    newSalt = newSalt.toString("base64");
+    console.log("salt: " + newSalt);
+    //2
+    //const keyPair = newTestCrypto.generatePubAndPrivKeys();
+    let privateKey = keyPair.privateKey;
+    let publicKey = keyPair.publicKey;
+    let newRecordKey = "";
+    //3
+    let symmetricKey = await crypt.derivePrivateKeyFromPassword(
+      universalPassword,
+      newSalt
+    );
+    //4
+    crypto.generateKey("aes", { length: 256 }, (err, key) => {
+      if (err) throw err;
+
+      newRecordKey = key.export().toString("base64");
+    });
+    let encryptedNewRecordKey = await crypt.encryptRecordKey(
+      newRecordKey,
+      publicKey
+    );
+    let encryptedPrivateKeyAndIV = await crypt.encryptPrivateKey(
+      privateKey,
+      symmetricKey
+    );
+    let concatPVandIVToSave = "";
+    concatPVandIVToSave =
+      encryptedPrivateKeyAndIV.iv + encryptedPrivateKeyAndIV.encryptedData;
+    //5
+    let dbRef = ref(database);
+    const mapUserSnapshot = get(child(dbRef, "mapUser/" + UID));
+    const doctorToRecordKeySnapshot = get(
+      child(dbRef, "DoctorToRecordKey/" + UID + "/recordKeys/")
+    );
+    const patientToRecordKeySnapshot = get(
+      child(dbRef, "PatientToRecordKey/" + UID + "/recordKey/")
+    );
+
+    update(ref(database, "mapUser/" + UID)),
+      {
+        IVAndPrivateKey: "Test", //concatPVandIVToSave,
+        //publicKey: publicKey,
+        //salt: newSalt
+      };
+
+    /*
+  update(ref(database, "Users/" + uid), {
+    phoneNr: phoneNr,
+  })
+    .then(() => {
+      resolve("Phone number updated successfully");
+    })
+    .catch((error) => {
+      reject(error);
+    });
+*/
   }
 
   return (
     <View style={styles.main}>
-      
       <View style={styles.content}>
         <View style={styles.splitContainer}>
           <View
