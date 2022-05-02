@@ -372,3 +372,109 @@ describe("NOT VALID TESTS - Test encryption of file content", () => {
   
 });
 */
+
+it("Decrypt Example Record Key with Example Private Key", async () => {
+  /**
+   * 1. Generate salt for new user
+   * 2. Generate keyPair
+   * 3. Generate symmetricKey with new salt and universalPassword
+   * 4. Generate recordKey and encrypt is with users publicKey
+   * 5. Store salt on database
+   * 6. Store publicKey on database
+   * 7. Store privateKeyAndIv on database
+   * 8. Store recordKey on database
+   *
+   * @author David Zamanian
+   */
+
+  let newSalt = crypto.randomBytes(96);
+  newSalt = newSalt.toString("base64");
+  console.log(
+    "------------------------------------------------------------------------------"
+  );
+  console.log("Salt: " + newSalt);
+
+  const keyPair = crypto.generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicKeyEncoding: {
+      type: "spki",
+      format: "pem",
+    },
+    privateKeyEncoding: {
+      type: "pkcs8",
+      format: "pem",
+    },
+  });
+
+  let privateKey = keyPair.privateKey;
+  let publicKey = keyPair.publicKey;
+
+  crypto.generateKey("aes", { length: 256 }, async (err, key) => {
+    if (err) throw err;
+
+    let rk = key.export().toString("base64");
+
+    console.log("RecordKey: " + rk);
+  });
+  //let recordKey1 = "M9woy+60QjZBcuJwQ8ar6aulGDvy5sFYWP1GcdKOdqQ=";
+  //let recordKey2 = "vtGihlrGMkRYw06H6E7K+aZOhT0fwu4gaoyGja6kMKk=";
+  let recordKey2 = "01fH4E8h/kHIGft88jD8tRFd+f7LeqHSjxSYZ/PLzvs=";
+
+  let encryptedNewRecordKey = await crypt.encryptRecordKey(
+    recordKey2,
+    publicKey
+  );
+  console.log("Encrypted recordKey: " + encryptedNewRecordKey);
+
+  console.log("Public key: " + publicKey);
+
+  //3
+  let symmetricKey = await crypt.derivePrivateKeyFromPassword(
+    universalPassword,
+    newSalt
+  );
+  //4
+
+  let encryptedPrivateKeyAndIV = await crypt.encryptPrivateKey(
+    privateKey,
+    symmetricKey
+  );
+  let concatPVandIVToSave = "";
+  concatPVandIVToSave =
+    encryptedPrivateKeyAndIV.iv + "IV" + encryptedPrivateKeyAndIV.encryptedData;
+  //5
+  console.log("PrivateKeyAndIv: " + concatPVandIVToSave);
+
+  console.log(
+    "------------------------------------------------------------------------------"
+  );
+
+  /*
+  let dbRef = ref(database);
+  const mapUserSnapshot = get(child(dbRef, "mapUser/" + UID));
+  const doctorToRecordKeySnapshot = get(
+    child(dbRef, "DoctorToRecordKey/" + UID + "/recordKeys/")
+  );
+  const patientToRecordKeySnapshot = get(
+    child(dbRef, "PatientToRecordKey/" + UID + "/recordKey/")
+  );
+
+  update(ref(database, "mapUser/" + UID)),
+    {
+      IVAndPrivateKey: "Test", //concatPVandIVToSave,
+      //publicKey: publicKey,
+      //salt: newSalt
+    };
+
+  
+  update(ref(database, "Users/" + uid), {
+    phoneNr: phoneNr,
+  })
+    .then(() => {
+      resolve("Phone number updated successfully");
+    })
+    .catch((error) => {
+      reject(error);
+    });
+*/
+});

@@ -16,75 +16,6 @@ import ChainConnectionError from "../chainConnection/chainConnectionError";
 import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
 
 export default class EHRService {
-  /**
-   * 1. Generate salt for new user
-   * 2. Generate keyPair
-   * 3. Generate symmetricKey with new salt and universalPassword
-   * 4. Generate recordKey and encrypt is with users publicKey
-   * 5. Store salt on database
-   * 6. Store publicKey on database
-   * 7. Store privateKeyAndIv on database
-   * 8. Store recordKey on database
-   *
-   * @author David Zamanian
-   */
-
-  static async AddKeysToNewPatient() {
-    let keysAndSalt = await crypt.generateKeysForUsers();
-    let keyPair = keysAndSalt.keyPair;
-    let salt = keysAndSalt.salt;
-
-    //2
-    //const keyPair = newTestCrypto.generatePubAndPrivKeys();
-
-    let newRecordKey = "";
-    //3
-    let symmetricKey = await crypt.derivePrivateKeyFromPassword(
-      universalPassword,
-      newSalt
-    );
-    //4
-    let encryptedNewRecordKey = await crypt.encryptRecordKey(
-      newRecordKey,
-      publicKey
-    );
-    let encryptedPrivateKeyAndIV = await crypt.encryptPrivateKey(
-      privateKey,
-      symmetricKey
-    );
-    let concatPVandIVToSave = "";
-    concatPVandIVToSave =
-      encryptedPrivateKeyAndIV.iv + encryptedPrivateKeyAndIV.encryptedData;
-    //5
-    let dbRef = ref(database);
-    const mapUserSnapshot = get(child(dbRef, "mapUser/" + UID));
-    const doctorToRecordKeySnapshot = get(
-      child(dbRef, "DoctorToRecordKey/" + UID + "/recordKeys/")
-    );
-    const patientToRecordKeySnapshot = get(
-      child(dbRef, "PatientToRecordKey/" + UID + "/recordKey/")
-    );
-
-    update(ref(database, "mapUser/" + UID)),
-      {
-        IVAndPrivateKey: "Test", //concatPVandIVToSave,
-        //publicKey: publicKey,
-        //salt: newSalt
-      };
-
-    /*
-    update(ref(database, "Users/" + uid), {
-      phoneNr: phoneNr,
-    })
-      .then(() => {
-        resolve("Phone number updated successfully");
-      })
-      .catch((error) => {
-        reject(error);
-      });
-  */
-  }
-
   static chainConnection = ChainConnectionFactory.getChainConnection();
 
   static privateKey;
@@ -100,8 +31,6 @@ export default class EHRService {
 
   static async setKeys(password, salt) {
     let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
-
-    EHRService.AddKeysToNewPatient();
 
     let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
     let encryptedData = encryptedPrivateKeyAndIV.slice(46);
@@ -501,6 +430,7 @@ export default class EHRService {
         encryptedRecordKey,
         this.privateKey
       );
+      console.log("RecordKey: " + decryptedRecordKey);
     } else {
       console.error("ERROR: missing role");
     }
@@ -611,6 +541,7 @@ export default class EHRService {
     let tagBuffer = Buffer.from(tag, "base64");
 
     console.log("----------------");
+    console.log("Decrypted recordKey: " + decryptedRecordKey);
     console.log("ATTEMPTING DECRYPT");
     console.log("DATA:");
     console.log(encrypted);
