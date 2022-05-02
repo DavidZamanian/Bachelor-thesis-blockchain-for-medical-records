@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+//import crypto from "crypto";
 /**
  * Methods for encrypting/decrypting EHR and record keys.
  * @author David Zamanian, Nils Johnsson, Wendy Pau, Christopher Molin
@@ -222,10 +223,13 @@ async function generateKeysForUsers() {
     newRecordKey = key.export().toString("base64");
   });
   return {
-    salt: salt,
+    salt: newSalt,
     keyParit: keyPair,
   };
 }
+
+let x = generateKeysForUsers();
+console.log(x);
 
 module.exports = {
   encryptRecordKey,
