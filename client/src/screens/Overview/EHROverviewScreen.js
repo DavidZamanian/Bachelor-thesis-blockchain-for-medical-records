@@ -429,10 +429,7 @@ export function EHROverviewScreen(props) {
           visible={state.modalVisible}
           horizontal={false}
           numColumns={3}
-          onRequestClose={() => {
-            alert("The submission was cancelled.");
-            togglePopup(false);
-          }}
+          onRequestClose={() => {}}
         >
           <View
             style={{
