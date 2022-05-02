@@ -17,9 +17,9 @@ contract Block4EHR {
     //================= STRUCTS ====================
     struct EHR {
         // healthcare provider/institution and the personnel issuing this EHR update.
-        HealthcareInst healthcareInst; //id of healthcare inst.
-        MedicalPersonnel medPersonnel; //id of medical personnel
-        Patient patient; // the id of the patient that this EHR snapshot is for.
+        HealthcareInst healthcareInst;
+        MedicalPersonnel medPersonnel;
+        Patient patient; // the patient that this EHR snapshot is for. 
         string cid; // content identifier referencing the IPFS archive containing the EHR files. 
     }
 
