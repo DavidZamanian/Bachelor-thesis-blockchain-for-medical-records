@@ -380,3 +380,8 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/reactnative,node,macos,windows,linux
 .vscode/launch.json
+client/package-lock.json
+client/package.json
+yarn.lock
+package-lock.json
+server/package-lock.json

@@ -186,6 +186,47 @@ function extractPublicKeyFromPrivateKey(privateKey) {
 }
 */
 
+/**
+ * 1. Generate salt for new user
+ * 2. Generate keyPair
+ * 3. Generate symmetricKey with new salt and universalPassword
+ * 4. Generate recordKey and encrypt is with users publicKey
+ * 5. Store salt on database
+ * 6. Store publicKey on database
+ * 7. Store privateKeyAndIv on database
+ * 8. Store recordKey on database
+ *
+ * @author David Zamanian
+ */
+
+async function generateKeysForUsers() {
+  //1
+  let newSalt = crypto.randomBytes(96);
+  newSalt = newSalt.toString("base64");
+
+  const keyPair = crypto.generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    publicKeyEncoding: {
+      type: "spki",
+      format: "pem",
+    },
+    privateKeyEncoding: {
+      type: "pkcs8",
+      format: "pem",
+    },
+  });
+
+  crypto.generateKey("aes", { length: 256 }, (err, key) => {
+    if (err) throw err;
+
+    newRecordKey = key.export().toString("base64");
+  });
+  return {
+    salt: salt,
+    keyParit: keyPair,
+  };
+}
+
 module.exports = {
   encryptRecordKey,
   decryptRecordKey,
@@ -194,4 +235,5 @@ module.exports = {
   derivePrivateKeyFromPassword,
   encryptPrivateKey,
   decryptPrivateKey,
+  generateKeysForUsers,
 };
