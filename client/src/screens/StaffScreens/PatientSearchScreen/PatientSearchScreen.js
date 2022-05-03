@@ -6,13 +6,16 @@ import ThemeButton from "../../../components/themeButton";
 import styles from "./styles";
 import { useNavigation } from "@react-navigation/native";
 import EHRService from "../../../Helpers/ehrService";
+import { ChainConnectionContext } from "../../../../contexts/ChainConnectionContext";
 
 export function PatientSearchScreen() {
+
+  const { chainConnection } = React.useContext(ChainConnectionContext);
 
   // Change this accordingly
   const expectedPatientIDLength = 10;
   const [patientID, setPatientID] = useState("");
-  const [showError, setShowError] = useState(false);
+  const [showError, setShowError] = useState("");
 
   // Navigation: redirect to the overview (staff version)
   const navigation = useNavigation();
@@ -27,7 +30,7 @@ export function PatientSearchScreen() {
     @Chrimle
   */
   const makeValidPatientID = (e) => {
-    setShowError(false);
+    setShowError("");
     const re = /^[0-9\b]+$/;
       if (e.target.value === "" || re.test(e.target.value)) {
         setPatientID(() => {
@@ -53,11 +56,21 @@ export function PatientSearchScreen() {
           PLACE CODE HERE
           This is where a check for permission COULD be made. 
         */
-        setPatientID("");
-        redirectTo();
+        let connection = await chainConnection;
+
+        if(await connection.hasPermission(patientID)){
+          setPatientID("");
+          setShowError("");
+          redirectTo();
+        }
+        else{
+          setShowError("Error: You lack permission to access "+patientID+"!");
+        }
+
+        
       }
     else{
-      setShowError(true);
+      setShowError("Error: "+patientID+" is not a valid patient ID!");
     }
     
   };
@@ -77,7 +90,7 @@ export function PatientSearchScreen() {
             placeholder="Enter patient ID..."
             placeholderTextColor={"grey"}
           />
-          {showError && <Text style={styles.errorText}>Error: "{patientID}" is not a valid patient ID!</Text>}
+          <Text style={styles.errorText}>{showError}</Text>
           <View style={{width:325, alignSelf:"center", marginTop:5}}>
             <ThemeButton extraStyle={styles.searchButton} iconName="search-sharp" iconSize={50} labelSize={25} labelText="View Patient EHR" bWidth="100%" onPress={() => {searchPatient()}}/>
           </View>
