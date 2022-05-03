@@ -78,13 +78,13 @@ export default class ChainConnection {
   async hasPermission(patientId) {
     const { accounts, contract } = this.state;
 
-    let stringID = "".concat(patientId);
+    patientId = "".concat(patientId);
 
     let res = false;
 
     try{
       res = await contract.methods
-      .hasPermission(stringID)
+      .hasPermission(patientId)
       .call({ from: accounts[0] });
     }catch(e){
       // Do something if this fails.
@@ -123,6 +123,7 @@ export default class ChainConnection {
    * @author Hampus Jernkrook
    */
   async getEHRCid(patientId) {
+    patientId = "".concat(patientId);
     const { accounts, contract } = this.state;
     try {
       const cid = await contract.methods
@@ -143,6 +144,7 @@ export default class ChainConnection {
    * @author Hampus Jernkrook
    */
   async updateEHR(patientId, cid) {
+    patientId = "".concat(patientId);
     try {
       const { accounts, contract } = this.state;
       await contract.methods

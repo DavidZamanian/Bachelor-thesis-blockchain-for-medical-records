@@ -258,6 +258,9 @@ export default class EHRService {
     diagnoses
   ) {
     try {
+
+      let connection = await this.chainConnection;
+
       let apiToken = await EHRService.getWeb3StorageToken();
 
       let fs = new FileService(apiToken);
@@ -296,19 +299,22 @@ export default class EHRService {
       // FETCH OLD FILES
       console.log("Attempting Fetch");
       try{
+        
         let oldCid = await connection.getEHRCid(id);
         let patientEHR = await this.getFiles(oldCid, decryptedRecordKey, true);
 
+        console.debug("get cid & get files")
+        console.table(patientEHR)
         prescriptions = prescriptions.concat(patientEHR.prescriptions);
         diagnoses = diagnoses.concat(patientEHR.diagnoses);
         finalFiles = finalFiles.concat(patientEHR.encryptedEHRFiles);
-
+        index = patientEHR.nextIndex;
       }catch(e){
-
+        console.log(e)
       }
       
       
-      index = patientEHR.nextIndex;
+      
       
 
       // Make into JSON objects
@@ -346,12 +352,12 @@ export default class EHRService {
       finalFiles.push(ehrFile, prescriptionsFile, diagnosesFile);
 
 
-      let connection = await this.chainConnection;
       try{
-        await connection.updateEHR(id, cid);
+        
         // Retrieve CID and return it
         let cid = await fs.uploadFiles(finalFiles);
 
+        await connection.updateEHR(id, cid);
         
         // DEBUG
         let checkCID = await connection.getEHRCid(id);
