@@ -2,20 +2,18 @@ import React, { useState } from "react";
 import { Text, View, TextInput } from "react-native";
 import { AuthContext } from "../../../contexts/AuthContext";
 import Header from "../../components/Header/Header";
-import { apiService } from "../../../hooks/apiService";
 import Icon from "react-native-vector-icons/Ionicons";
 import Footer from "../../components/Footer";
 import theme from "../../theme.style";
 import ThemeButton from "../../components/themeButton";
 import styles from "./styles";
-import { getAuth } from "@firebase/auth";
+
 
 export function LoginScreen() {
   const { login } = React.useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const auth = getAuth();
-  const userUID = auth.currentUser;
+
 
   const BulletPoint = (props) => {
     const { iconName, labelText, descText } = props;
@@ -30,7 +28,6 @@ export function LoginScreen() {
             {descText}
           </Text>
         </View>
-        
       </View>
     );
   };
@@ -45,7 +42,6 @@ export function LoginScreen() {
 
   return (
     <View style={styles.main}>
-      
       <View style={styles.content}>
         <View style={styles.splitContainer}>
           <View
