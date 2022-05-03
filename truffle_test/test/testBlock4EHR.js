@@ -1,4 +1,9 @@
+//import { assert } from "chai";
+
+const { assert } = require("chai");
+
 const Block4EHR = artifacts.require("Block4EHR");
+
 
 /**
  * Tests for the Block4EHR smart contract. 
@@ -17,6 +22,7 @@ contract("Block4EHR", accounts => {
     const inst_boras = "i_boras";
     const inst_kungalv = "i_kungalv";
     const doc_gbg = "d_gbg";
+    const nurse_gbg = "n_gbg"
     const doc_kungalv = "d_kungalv";
     const doc_boras = "d_boras";
     const pat_gbg_kungalv = "p_gbg_kungalv";
@@ -25,12 +31,14 @@ contract("Block4EHR", accounts => {
     const gbg = "gbg";
     const boras = "boras";
     const kungalv = "kungalv";
+    const kungsbacka = "kungsbacka";
     const pat_gbg_kungalv_accounts = accounts[9];
     const pat_boras_account = accounts[8];
     const pat_kungalv_account = accounts[7];
     const doc_gbg_account = accounts[1];
     const doc_boras_account = accounts[2];
     const doc_kungalv_account = accounts[3];
+    const nurse_gbg_account = accounts[4];
 
     before(async () => {
         instance = await Block4EHR.deployed();
@@ -49,6 +57,7 @@ contract("Block4EHR", accounts => {
         await instance.addMedicalPersonnel(doc_gbg_account, doc_gbg, inst_gbg);
         await instance.addMedicalPersonnel(doc_boras_account, doc_boras, inst_boras);
         await instance.addMedicalPersonnel(doc_kungalv_account, doc_kungalv, inst_kungalv);
+        await instance.addMedicalPersonnel(nurse_gbg_account,nurse_gbg,inst_gbg);
 
         // ==== ADDING PATIENTS ====
         await instance.addPatient(pat_gbg_kungalv_accounts, pat_gbg_kungalv, [gbg, kungalv]);
@@ -181,5 +190,54 @@ contract("Block4EHR", accounts => {
             assert.notEqual(e, undefined);
         });
     });
+    
 
+    describe("getRegionPersonnel get all personnel that works within a given region correctly", function (){
+
+        it("getRegionPersonnel gets alls personnel for a valid region", async function (){
+            const MedicalPersonnelIds = [doc_gbg, nurse_gbg];
+            let personnel = await instance.getRegionPersonnel(gbg);
+            let actual = personnel.map(p => p.id);
+            assert.deepEqual(MedicalPersonnelIds,actual);
+
+        });
+
+        it("getRegionPersonnel returns an empty arr for an invalid region", async function (){
+            const emptyArr = [];
+            let personnel = await instance.getRegionPersonnel(kungsbacka);
+            assert.deepEqual(emptyArr,personnel);
+            
+        });
+
+        it("getRegionPersonnel fails for a valid region", async function (){
+            const MedicalPersonnelIds = [doc_gbg, doc_kungalv];
+            let personnel = await instance.getRegionPersonnel(kungalv);
+            let actual = personnel.map(p => p.id);
+            assert.notEqual(MedicalPersonnelIds,actual);
+
+        })
+    })
+
+    describe("getInstitutionName returns the name of a given institution correctly", function (){
+        it("getInstitutions returns the correct name given a valid institution id", async function (){
+            let name = await instance.getInstitutionName(inst_gbg);
+            assert.deepEqual(name, "gbg1");
+
+        })
+       /* it("getInstitutions returns empty string given an unvalid institution id", async function (){
+            let name = await instance.getInstitutionName(inst_kungsbacka);
+            assert.deepEqual(name, "");
+        })*/ // No events were omitted
+
+    })
+
+    describe("getRegions returns all the correct regions in the Smart Contratc", function (){
+        it("getRegions returns all the regions in the contract", async function (){
+            let arr = await instance.getRegions();
+            console.log(JSON.stringify(arr));
+            let actualIds = arr.map(r => r.id);
+            let expectedArr = [gbg, boras, kungalv];
+            assert.deepEqual(actualIds,expectedArr);
+        });
+    })
 })
