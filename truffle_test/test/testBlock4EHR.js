@@ -216,6 +216,14 @@ contract("Block4EHR", accounts => {
             assert.notEqual(MedicalPersonnelIds,actual);
 
         })
+
+        it("getRegionPersonnel returns empty arr for a region without personnel", async function () {
+            const MedicalPersonnel = [];
+            let personnel = await instance.getRegionPersonnel("10");
+            assert.notEqual(MedicalPersonnel, personnel);
+
+        })
+
     })
 
     describe("getInstitutionName returns the name of a given institution correctly", function (){
@@ -224,19 +232,14 @@ contract("Block4EHR", accounts => {
             assert.deepEqual(name, "gbg1");
 
         })
-       /* it("getInstitutions returns empty string given an unvalid institution id", async function (){
-            let name = await instance.getInstitutionName(inst_kungsbacka);
-            assert.deepEqual(name, "");
-        })*/ // No events were omitted
 
     })
 
-    describe("getRegions returns all the correct regions in the Smart Contratc", function (){
-        it("getRegions returns all the regions in the contract", async function (){
+    describe("getRegions returns all the correct regions in the Smart Contratc", function (){ 
+        it("getRegions returns all the regions in the contract", async function (){ // dependent on objects from migrations script
             let arr = await instance.getRegions();
-            console.log(JSON.stringify(arr));
             let actualIds = arr.map(r => r.id);
-            let expectedArr = [gbg, boras, kungalv];
+            let expectedArr = ["1", '2', '3', '4', '5', '6', "7", "8", "9", "10", "11", "12", "13","14", "15", "16", "17", "18","19", "20",gbg, boras, kungalv];
             assert.deepEqual(actualIds,expectedArr);
         });
     })
