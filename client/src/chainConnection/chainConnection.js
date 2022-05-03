@@ -78,11 +78,13 @@ export default class ChainConnection {
   async hasPermission(patientId) {
     const { accounts, contract } = this.state;
 
+    let stringID = "".concat(patientId);
+
     let res = false;
 
     try{
       res = await contract.methods
-      .hasPermission(patientId)
+      .hasPermission(stringID)
       .call({ from: accounts[0] });
     }catch(e){
       // Do something if this fails.
