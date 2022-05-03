@@ -12,6 +12,9 @@ const Block4EHR = artifacts.require("Block4EHR");
  * describes an issue with how chai won't work with asyn functions.
  * We thus use a work-around which is slighlty less elegant. 
  * 
+ * All tests except the one for getRegions are self-contained and not dependent on the
+ * migrations script. The getRegions-test needs to be updated if the migrations script changes.
+ * 
  * @author Hampus Jernkrook
  * @author Edenia Isaac
  */
@@ -194,18 +197,18 @@ contract("Block4EHR", accounts => {
 
     describe("getRegionPersonnel get all personnel that works within a given region correctly", function (){
 
-        it("getRegionPersonnel gets alls personnel for a valid region", async function (){
+        it("getRegionPersonnel gets all personnel for a valid region", async function (){
             const MedicalPersonnelIds = [doc_gbg, nurse_gbg];
             let personnel = await instance.getRegionPersonnel(gbg);
             let actual = personnel.map(p => p.id);
-            assert.deepEqual(MedicalPersonnelIds,actual);
+            assert.deepEqual(MedicalPersonnelIds, actual);
 
         });
 
         it("getRegionPersonnel returns an empty arr for an invalid region", async function (){
             const emptyArr = [];
             let personnel = await instance.getRegionPersonnel(kungsbacka);
-            assert.deepEqual(emptyArr,personnel);
+            assert.deepEqual(emptyArr, personnel);
             
         });
 
@@ -213,34 +216,34 @@ contract("Block4EHR", accounts => {
             const MedicalPersonnelIds = [doc_gbg, doc_kungalv];
             let personnel = await instance.getRegionPersonnel(kungalv);
             let actual = personnel.map(p => p.id);
-            assert.notEqual(MedicalPersonnelIds,actual);
+            assert.notEqual(MedicalPersonnelIds, actual);
 
-        })
+        });
 
         it("getRegionPersonnel returns empty arr for a region without personnel", async function () {
             const MedicalPersonnel = [];
             let personnel = await instance.getRegionPersonnel("10");
-            assert.notEqual(MedicalPersonnel, personnel);
-
-        })
-
+            assert.deepEqual(MedicalPersonnel, personnel);
+        });
     })
 
     describe("getInstitutionName returns the name of a given institution correctly", function (){
         it("getInstitutions returns the correct name given a valid institution id", async function (){
             let name = await instance.getInstitutionName(inst_gbg);
             assert.deepEqual(name, "gbg1");
-
-        })
-
+        });
     })
 
     describe("getRegions returns all the correct regions in the Smart Contratc", function (){ 
-        it("getRegions returns all the regions in the contract", async function (){ // dependent on objects from migrations script
+        // dependent on objects from migrations script, unlike all other tests here.
+        // this means that regions 1,...,20 need to be accounted for.
+        // This needs to be changed if any update to the migrations script is done.
+        it("getRegions returns all the regions in the contract", async function (){ 
             let arr = await instance.getRegions();
             let actualIds = arr.map(r => r.id);
-            let expectedArr = ["1", '2', '3', '4', '5', '6', "7", "8", "9", "10", "11", "12", "13","14", "15", "16", "17", "18","19", "20",gbg, boras, kungalv];
-            assert.deepEqual(actualIds,expectedArr);
+            let expectedArr = ["1", '2', '3', '4', '5', '6', "7", "8", "9", "10", "11", "12", 
+                "13","14", "15", "16", "17", "18","19", "20", gbg, boras, kungalv];
+            assert.deepEqual(actualIds, expectedArr);
         });
     })
 })
