@@ -702,6 +702,7 @@ export function EHROverviewScreen(props) {
         <View style={styles.rowContainer}>
           <View style={styles.container}>
             <Text style={styles.header}>Prescriptions</Text>
+            {state.patientInfo.prescriptions.length == 0 && <Text style={styles.description}>No prescriptions found.</Text>}
             <FlatList
               data={state.patientInfo.prescriptions}
               keyExtractor={({ item, index }) => index}
@@ -716,6 +717,7 @@ export function EHROverviewScreen(props) {
           </View>
           <View style={styles.container}>
             <Text style={styles.header}>Diagnoses</Text>
+            {state.patientInfo.diagnoses.length == 0 && <Text style={styles.description}>No diagnoses found.</Text>}
             <FlatList
               data={state.patientInfo.diagnoses}
               keyExtractor={({ item, index }) => index}
@@ -732,6 +734,7 @@ export function EHROverviewScreen(props) {
         <View style={styles.rowContainer}>
           <View style={[styles.container, styles.doubleContainer]}>
             <Text style={styles.header}>Past record entries</Text>
+            {state.patientInfo.prescriptions.length > 0 ?
             <FlatList
               style={{ width: "100%" }}
               data={state.patientInfo.journals}
@@ -848,6 +851,7 @@ export function EHROverviewScreen(props) {
                 </View>
               )}
             />
+            :<Text style={styles.description}>No past journals found.</Text>}
           </View>
         </View>
       </View>

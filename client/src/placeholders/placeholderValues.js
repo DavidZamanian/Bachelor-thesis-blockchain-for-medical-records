@@ -104,6 +104,9 @@ HHivzD+EFv2LcyWtUwIDAQAB
         lastName:"",
         address:"",
         phoneNr:"",
+        journals:[],
+        prescriptions:[],
+        diagnoses:[],
     }
 
 }

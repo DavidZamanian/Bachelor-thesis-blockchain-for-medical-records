@@ -285,22 +285,30 @@ export default class EHRService {
       );
 
       let finalFiles = [];
+      let index = 0;
 
       //OUR BRANCH ->
       //this is for testing
-      let oldCid =
-        "bafybeienfqpxerm5iu46hdzcglka26gcgsnv5zagtkk7gubu5xfltekilq";
+      //let oldCid =
+      //  "bafybeienfqpxerm5iu46hdzcglka26gcgsnv5zagtkk7gubu5xfltekilq";
+      
       //OUR BRANCH <-
       // FETCH OLD FILES
-
       console.log("Attempting Fetch");
-      let patientEHR = await this.getFiles(oldCid, decryptedRecordKey, true);
-      
+      try{
+        let oldCid = await connection.getEHRCid(id);
+        let patientEHR = await this.getFiles(oldCid, decryptedRecordKey, true);
 
-      prescriptions = prescriptions.concat(patientEHR.prescriptions);
-      diagnoses = diagnoses.concat(patientEHR.diagnoses);
-      finalFiles = finalFiles.concat(patientEHR.encryptedEHRFiles);
-      let index = patientEHR.nextIndex;
+        prescriptions = prescriptions.concat(patientEHR.prescriptions);
+        diagnoses = diagnoses.concat(patientEHR.diagnoses);
+        finalFiles = finalFiles.concat(patientEHR.encryptedEHRFiles);
+
+      }catch(e){
+
+      }
+      
+      
+      index = patientEHR.nextIndex;
       
 
       // Make into JSON objects
@@ -337,30 +345,34 @@ export default class EHRService {
       // Put JSON files into list and upload
       finalFiles.push(ehrFile, prescriptionsFile, diagnosesFile);
 
-      // Retrieve CID and return it
-      let cid = await fs.uploadFiles(finalFiles);
-
-      // TESTING ONLY
-      // Testing if the cid and the files were uploaded
-      console.log(
-        "TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n" +
-          `https://${cid}.ipfs.dweb.link/`
-      );
-      for (const file of finalFiles) {
-        console.log(file.name + ": " + (await file.text()).toString("base64"));
-      }
 
       let connection = await this.chainConnection;
+      try{
+        await connection.updateEHR(id, cid);
+        // Retrieve CID and return it
+        let cid = await fs.uploadFiles(finalFiles);
 
-      await connection.updateEHR(id, cid);
+        
+        // DEBUG
+        let checkCID = await connection.getEHRCid(id);
+        console.debug("Expected: "+cid+"\nActual: "+checkCID);
+        // END OF DEBUG
 
 
-      // DEBUG
-      let checkCID = await connection.getEHRCid(id);
-      console.debug("Expected: "+cid+"\nActual: "+checkCID);
-      // END OF DEBUG
+        // TESTING ONLY
+        // Testing if the cid and the files were uploaded
+        console.log(
+          "TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n" +
+            `https://${cid}.ipfs.dweb.link/`
+        );
+        for (const file of finalFiles) {
+          console.log(file.name + ": " + (await file.text()).toString("base64"));
+        }
 
+      }
+      catch(e){
 
+      }
 
       return "Success";
     } catch (e) {
@@ -369,11 +381,11 @@ export default class EHRService {
   }
 
  /**
-     * Method for downloading, decrypting and parsing files from IPFS.
-     * @param {string} cid
-     * @param {string} decryptedRecordKey
-     * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
-     * @returns {Promise<{ 
+  * Method for downloading, decrypting and parsing files from IPFS.
+  * @param {string} cid
+  * @param {string} decryptedRecordKey
+  * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
+  * @returns {Promise<{ 
   * prescriptions: Array<string>, 
   * diagnoses: Array<string>,
   * decryptedEHRs: Array<object>,
@@ -384,45 +396,51 @@ export default class EHRService {
   * If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
   * @author Christopher Molin
   */
- static async getFiles(cid, decryptedRecordKey, keepEHRencrypted){
+  static async getFiles(cid, decryptedRecordKey, keepEHRencrypted){
 
-     let apiToken = await EHRService.getWeb3StorageToken()
-     let fs = new FileService(apiToken);
+    let apiToken = await EHRService.getWeb3StorageToken()
+    let fs = new FileService(apiToken);
 
-     let prescriptions = []
-     let diagnoses = []
-     let decryptedEHRs = []
-     let encryptedEHRFiles = []
-     
-     
-     let filesAndIndex = await fs.fetchEHRFiles(cid, keepEHRencrypted);
-         
-     for (const file of filesAndIndex.files){
+    let prescriptions = [];
+    let diagnoses = [];
+    let decryptedEHRs = [];
+    let encryptedEHRFiles = [];
+    let index = 0;
 
-         if (keepEHRencrypted && file.name.search("EHR") != -1){
-             encryptedEHRFiles.push(file)
-         }
-         else{
-             let fileContent = await file.text();
-             let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
-             let parsedData = await this.parseIntoJSON(decryptedData);
-             if(file.name == "prescriptions.json"){
-                 prescriptions = prescriptions.concat(parsedData);
-             }
-             else if(file.name == "diagnoses.json"){
-                 diagnoses = diagnoses.concat(parsedData);
-             }
-             else if (file.name.search("EHR") != -1){
-                 decryptedEHRs = decryptedEHRs.concat(parsedData);
-             }
-         }
-     }
-     return {prescriptions: prescriptions, 
-             diagnoses: diagnoses, 
-             nextIndex: filesAndIndex.index,
-             encryptedEHRFiles: encryptedEHRFiles,
-             decryptedEHRs: decryptedEHRs}
- }
+    if (cid.length == 59){
+      let filesAndIndex = await fs.fetchEHRFiles(cid, keepEHRencrypted);
+      index = filesAndIndex.index;
+      for (const file of filesAndIndex.files){
+
+        if (keepEHRencrypted && file.name.search("EHR") != -1){
+          encryptedEHRFiles.push(file);
+        }
+        else{
+          let fileContent = await file.text();
+          let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
+          let parsedData = await this.parseIntoJSON(decryptedData);
+
+          if(file.name == "prescriptions.json"){
+            prescriptions = prescriptions.concat(parsedData);
+          }
+          else if(file.name == "diagnoses.json"){
+            diagnoses = diagnoses.concat(parsedData);
+          }
+          else if (file.name.search("EHR") != -1){
+            decryptedEHRs = decryptedEHRs.concat(parsedData);
+          }
+        }
+      }
+    } 
+
+    return {
+        prescriptions: prescriptions, 
+        diagnoses: diagnoses, 
+        nextIndex: index,
+        encryptedEHRFiles: encryptedEHRFiles,
+        decryptedEHRs: decryptedEHRs
+    }
+  }
 
 
 
@@ -461,15 +479,37 @@ export default class EHRService {
     }
 
     //TODO Need real CID here
-    let cid = "bafybeienfqpxerm5iu46hdzcglka26gcgsnv5zagtkk7gubu5xfltekilq";
+    let connection = await this.chainConnection;
 
-    let fetchedFiles = await this.getFiles(cid, decryptedRecordKey, false);
+    let cid = "";
 
     let EHR = {
-      prescriptions: fetchedFiles.prescriptions,
-      diagnoses: fetchedFiles.diagnoses,
-      journals: fetchedFiles.decryptedEHRs,
+      prescriptions: [],
+      diagnoses: [],
+      journals: [],
     };
+
+    
+
+    try{
+      // This may throw an error
+      cid = await connection.getEHRCid(patientID);
+      console.debug(cid)
+      if (cid.length == 59){
+        let fetchedFiles = await this.getFiles(cid, decryptedRecordKey, false);
+
+        EHR = {
+          prescriptions: fetchedFiles.prescriptions,
+          diagnoses: fetchedFiles.diagnoses,
+          journals: fetchedFiles.decryptedEHRs,
+        };
+      }
+    }
+    catch(e){
+      console.warn("The requested patient "+patientID+" has no prior CIDs. \n "+e)
+    }
+
+    
     
     return EHR;
     
