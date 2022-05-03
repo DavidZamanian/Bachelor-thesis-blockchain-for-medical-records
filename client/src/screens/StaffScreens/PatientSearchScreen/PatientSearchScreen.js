@@ -23,39 +23,35 @@ export function PatientSearchScreen() {
     navigation.navigate("EHROverview",patientID);
   };
 
-  /* 
-    Validates the <TextInput> field to be only digits
-    Quite secure, as it will also check when trying to paste non-numeric inputs.
-
-    @Chrimle
-  */
-  const makeValidPatientID = (e) => {
+  
+  /**
+   * Validates the <TextInput> field to be only digits within certain length.
+   * Quite secure, as it will also check when trying to paste non-numeric inputs.
+   * @param  {String} id
+   * @author Christopher Molin
+   */
+  const makeValidPatientID = (id) => {
     setShowError("");
     const re = /^[0-9\b]+$/;
-      if (e.target.value === "" || re.test(e.target.value)) {
+      if (id.target.value === "" || re.test(id.target.value)) {
         setPatientID(() => {
-          return [e.target.value]
+          return [id.target.value]
         })
       }
   };
 
-
-  /* 
-    This method uses the global patientID to check if the provided patient exist.
-    patientID is checked to be the correct length and it is assumed REGEX ensures it is only digits.
-    Depending on if the patient exists, an error message will show resp. the redirecting-method will be called.
-
-    @Chrimle
-  */
+ 
+  /**
+   * Check if the provided patient exist and if the ID is of correct length.
+   * Ensures the doctor has permission to access the patient's EHR.
+   * Redirects if permitted, shown an error message if not.
+   * @author Christopher Molin
+   */
   const searchPatient = async () => {
     //alert("[DEBUG] Attempting to search for patient: "+patientID);
     if(patientID.toString().length === expectedPatientIDLength &&
       await EHRService.checkPatientExist(patientID)){
-        // This will occur only if the specified user exists
-        /*
-          PLACE CODE HERE
-          This is where a check for permission COULD be made. 
-        */
+        
         let connection = await chainConnection;
 
         let patID = "".concat(patientID);
@@ -68,8 +64,6 @@ export function PatientSearchScreen() {
         else{
           setShowError("Error: You lack permission to access "+patientID+"!");
         }
-
-        
       }
     else{
       setShowError("Error: "+patientID+" is not a valid patient ID!");
@@ -98,7 +92,7 @@ export function PatientSearchScreen() {
           </View>
         </View>
       </View> 
-      <Footer />
+      <Footer/>
     </View>
   );
 };
