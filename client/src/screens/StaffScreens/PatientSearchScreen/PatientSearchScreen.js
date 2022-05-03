@@ -58,7 +58,9 @@ export function PatientSearchScreen() {
         */
         let connection = await chainConnection;
 
-        if(await connection.hasPermission(patientID)){
+        let patID = "".concat(patientID);
+        
+        if(await connection.hasPermission(patID)){
           setPatientID("");
           setShowError("");
           redirectTo();

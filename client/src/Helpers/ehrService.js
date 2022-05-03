@@ -259,6 +259,9 @@ export default class EHRService {
   ) {
     try {
 
+      id = "".concat(id);
+
+
       let connection = await this.chainConnection;
 
       let apiToken = await EHRService.getWeb3StorageToken();
@@ -462,6 +465,7 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async getEHR(patientID, role) {
+    patientID = "".concat(patientID);
     // THIS IS ONLY CALLED BY OVERVIEW
 
     let decryptedRecordKey = "";
