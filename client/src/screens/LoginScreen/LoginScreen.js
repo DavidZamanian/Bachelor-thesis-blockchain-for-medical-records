@@ -50,10 +50,12 @@ export function LoginScreen() {
         <View style={styles.splitContainer}>
           <View
             style={{
-              flex: "49",
-              height: "100%",
+              flex: "1",
+              height: "80%",
               justifyContent: "space-evenly",
               alignItems: "center",
+              borderRightColor:"lightgrey",
+              borderRightWidth:2,
             }}
           >
             <View style={styles.loginContainer}>
@@ -90,15 +92,7 @@ export function LoginScreen() {
             </View>
           </View>
           <View
-            style={{
-              flex: "1",
-              height: "80%",
-              borderLeftWidth: 2,
-              borderColor: "lightgray",
-            }}
-          ></View>
-          <View
-            style={{ flex: "49", height: "100%", justifyContent: "center" }}
+            style={{ flex: "1", height: "80%", justifyContent: "center" }}
           >
             <BulletPoint
               labelText=" Access your medical records"

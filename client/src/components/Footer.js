@@ -8,17 +8,18 @@ export default class Footer extends React.Component{
     render(){
         return(
             <View style={styles.footer}>
-                <Text style={styles.footerText}>Group 58 Copyright {'\u00A9'} 2022</Text>
-                <Image
-                  source={require("../../assets/SecondaryLogo.png")}
-                  style={{ 
-                    width: 30, 
-                    height: 30, 
-                    margin:5,
-                    alignSelf:"center"
-                  }}
-                />
-                <View style={{flexDirection:"row", alignItems:"center"}}>
+                <Text style={[styles.footerText, {flex:2}]}>Group 58 Copyright {'\u00A9'} 2022</Text>
+                <View style={{flexDirection:"row",flex:1, justifyContent:"center"}}>
+                  <Image
+                    source={require("../../assets/SecondaryLogo.png")}
+                    style={{ 
+                      width: 30, 
+                      height: 30, 
+                      margin:5,
+                    }}
+                  />
+                </View>
+                <View style={{flexDirection:"row",flex:2, alignItems:"center"}}>
                     <Text style={styles.footerText}>Powered by: </Text>
                     <Icon style={styles.footerIcon} name="logo-javascript" size={20}/>
                     <Icon style={styles.footerIcon} name="logo-nodejs" size={20}/>
