@@ -283,12 +283,10 @@ export function NewEntryScreen(props) {
           <ColouredIcon name="arrow-back-circle-outline" size={40}/>
           <Text style={styles.navigation_text}>Cancel & Return</Text>
         </TouchableOpacity>
-        </View>
-        <View style={{marginBottom:10}}>
-          <Text style={styles.genericHeader}>Add Entry</Text>
-        </View>
+        </View>   
+        <Text style={styles.genericHeader}>Add Entry</Text>
         <View style={styles.splitContainer}> 
-          <View style={{flex:'49', height:'100%', alignItems:"center",}}>
+          <View style={{flex:'1', height:'80%', alignItems:"center",borderRightColor:"lightgrey", borderRightWidth:2}}>
             <View style={{marginVertical:25, marginHorizontal:15, maxWidth:300}}>
               <Text style={styles.inputHeader}>Patient ID:</Text>
               <TextInput
@@ -316,8 +314,7 @@ export function NewEntryScreen(props) {
               />
             </View>
           </View>
-          <View style={{flex:'1', height: '90%',borderLeftWidth:2,borderColor:"lightgray"}}></View>
-          <View style={{flex:'49', height:'100%', paddingTop:25, paddingHorizontal:10}}>
+          <View style={{flex:'1', height:'100%', paddingTop:25, paddingHorizontal:10}}>
             <Text style={styles.genericListItemHeader}>Prescriptions:</Text>
             <ScrollView style={{borderWidth:1, borderRadius:5, maxHeight:175, maxWidth:500,}}>
               <SafeAreaView>
