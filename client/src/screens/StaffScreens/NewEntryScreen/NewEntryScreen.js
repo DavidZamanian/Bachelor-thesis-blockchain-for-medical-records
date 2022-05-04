@@ -1,4 +1,4 @@
-import React, { useState, setState } from "react";
+import React, { useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Text, View, TextInput, SafeAreaView, FlatList, Modal, ActivityIndicator} from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
@@ -20,14 +20,8 @@ export function NewEntryScreen(props) {
   const navigation = useNavigation();
 
   const { role, userSSN, institution } = React.useContext(UserDataContext);
-  const { chainConnection } = React.useContext(ChainConnectionContext);
 
-  if (role != "doctor"){
-    alert("WARNING: NOT A DOCTOR");
-    return;
-  }
-
-  // These are for testing purposes only
+  // These are for testing purposes only, leave as empty arrays.
   const prescriptions = [];
   const diagnoses = [];
 
@@ -38,8 +32,7 @@ export function NewEntryScreen(props) {
   const [inputDetails, setInputDetails] = useState("");
   /* For patient ID to be prefilled, enter it here below */
   const [inputPatient, setInputPatient] = useState(props.route.params);
-  const medicalPerson = "Placeholder Staff";
-  const healthcareInst = "Placeholder Hospital";
+
 
   /* This is the popup window - whether it is visible or no */ 
   const [modalVisible, setModalVisible] = useState(false);
@@ -65,9 +58,13 @@ export function NewEntryScreen(props) {
     setPrescriptionsList((prevState) => { 
       prevState.splice(index,1);
       return [...prevState];
-    })
+    });
     
   }
+
+  const openPopup = () => { setModalVisible(true); }
+
+  const cancelAndReturn = () => { navigation.navigate("EHROverview",inputPatient); }
 
   /**
    * Creates a list element based on text from prescription name and dosage
@@ -75,16 +72,19 @@ export function NewEntryScreen(props) {
    */
   const addPrescription = () => {
     if (inputDosage.length > 0 && inputPrescription.length > 0){
+
       setPrescriptionsList((prevState) => {
         prevState.push({name:inputPrescription,dosage:inputDosage});
         return [...prevState];
-      })
-      setInputPrescription((prevState) => {
+      });
+
+      setInputPrescription(() => {
         return "";
-      })
-      setInputDosage((prevState) => {
+      });
+
+      setInputDosage(() => {
         return "";
-      })
+      });
     }
   }
  
@@ -97,12 +97,12 @@ export function NewEntryScreen(props) {
     setDiagnosesList((prevState) => {
       prevState.splice(index,1);
       return [...prevState];
-    })
+    });
   }
 
   /**
   * Method for adding diagnosis to the list of diagnoses
-  * @author @Chrimle
+  * @author Christopher Molin
   */
   const addDiagnosis = () => {
 
@@ -111,63 +111,67 @@ export function NewEntryScreen(props) {
         prevState.push({diagnosis:inputDiagnosis});
         return [...prevState];
       })
-      setInputDiagnosis((prevState) => {
+      setInputDiagnosis(() => {
         return "";
       })
     }
   }
 
   /**
-   * Constructs and submits an EHR file to Web3Storage
-   * @author @Chrimle
+   * Attempts submitting data to Web3Storage and checks the status of the upload.
+   * Navigates to PatientSearchScreen if successful, display an error message if not.
+   * @author Christopher Molin
    */
   const submitData = async () => {
-    
-    
 
-    updateSubmitStatus("Loading")
+    updateSubmitStatus("Loading");
     
-    let status = await submitEHR()
+    let status = await submitEHR();
     
     if (status){
       setTimeout(()=>{
         navigation.navigate("PatientSearchScreen");
         setModalVisible(false);
-       },3000)
+       },3000);
      }   
   }
 
   /**
-   * Sends input data to be made into files and uploaded
-   * @returns {Promise<String>} cid -- Successful if not 'null'
-   * @author @Chrimle
+   * Sends input data to be made into files and uploaded.
+   * Returns whether the upload was successful or not.
+   * @returns {Promise<Boolean>} Upload was successful
+   * @author Christopher Molin
    */
   const submitEHR = async () => {
 
-    // Merge prescription name and dosage into single string
+    // Create empty lists
     let prescriptList = [];
+    let diagnoseList = [];
+
+    
+    // Merge Prescription name and dosage into a single string and add to list.
     prescriptionsList.forEach(element => prescriptList.push(element.name.toString()+" "+element.dosage.toString()));
     
-    // Create list of diagnoses
-    let diagnoseList = [];
-    diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()))
+    // Add diagnoses to diagnoses list
+    diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()));
 
     let medicalPersonnel = await EHRService.getDoctorFullName(userSSN);
 
     let healthcareInstitution = await EHRService.getInstitutionName(institution);
 
 
+    console.log(medicalPersonnel+institution+healthcareInstitution);
 
-    console.log(medicalPersonnel+institution+healthcareInstitution)
+
     try{
       let cid =  await EHRService.packageAndUploadEHR(
-      props.route.params.toString(),
-      medicalPersonnel,
-      healthcareInstitution,
-      inputDetails,
-      prescriptList,
-      diagnoseList
-      )
+        props.route.params.toString(),
+        medicalPersonnel,
+        healthcareInstitution,
+        inputDetails,
+        prescriptList,
+        diagnoseList
+      );
 
       //let connection = await chainConnection;
       //await connection.updateEHR(props.route.params.toString(), cid);
@@ -181,21 +185,10 @@ export function NewEntryScreen(props) {
     
   }
 
-
-
-  const openPopup = () => {
-
-    setModalVisible(true);
-  }
-
-  const cancelAndReturn = () => {
-    navigation.navigate("EHROverview",inputPatient);
-  }
-
   /**
    * Sets the submit message, style and text according to a given status.
    * @param {String} newStatus - if nothing is given, it will be hidden.
-   * @author @Chrimle
+   * @author Christopher Molin
    */
   const updateSubmitStatus = (newStatus) => {
     let newStyle;
@@ -236,7 +229,7 @@ export function NewEntryScreen(props) {
       status: newStatus,
       message: newMessage,
       visible: newVisible
-    })
+    });
   }
 
   return (
