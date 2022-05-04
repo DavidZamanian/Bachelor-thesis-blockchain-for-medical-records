@@ -1,4 +1,9 @@
+//import { assert } from "chai";
+
+const { assert } = require("chai");
+
 const Block4EHR = artifacts.require("Block4EHR");
+
 
 /**
  * Tests for the Block4EHR smart contract. 
@@ -6,6 +11,9 @@ const Block4EHR = artifacts.require("Block4EHR");
  * but e.g. https://github.com/chaijs/chai/issues/958 
  * describes an issue with how chai won't work with asyn functions.
  * We thus use a work-around which is slighlty less elegant. 
+ * 
+ * All tests except the one for getRegions are self-contained and not dependent on the
+ * migrations script. The getRegions-test needs to be updated if the migrations script changes.
  * 
  * @author Hampus Jernkrook
  * @author Edenia Isaac
@@ -17,6 +25,7 @@ contract("Block4EHR", accounts => {
     const inst_boras = "i_boras";
     const inst_kungalv = "i_kungalv";
     const doc_gbg = "d_gbg";
+    const nurse_gbg = "n_gbg"
     const doc_kungalv = "d_kungalv";
     const doc_boras = "d_boras";
     const pat_gbg_kungalv = "p_gbg_kungalv";
@@ -25,12 +34,14 @@ contract("Block4EHR", accounts => {
     const gbg = "gbg";
     const boras = "boras";
     const kungalv = "kungalv";
+    const kungsbacka = "kungsbacka";
     const pat_gbg_kungalv_accounts = accounts[9];
     const pat_boras_account = accounts[8];
     const pat_kungalv_account = accounts[7];
     const doc_gbg_account = accounts[1];
     const doc_boras_account = accounts[2];
     const doc_kungalv_account = accounts[3];
+    const nurse_gbg_account = accounts[4];
 
     before(async () => {
         instance = await Block4EHR.deployed();
@@ -49,6 +60,7 @@ contract("Block4EHR", accounts => {
         await instance.addMedicalPersonnel(doc_gbg_account, doc_gbg, inst_gbg);
         await instance.addMedicalPersonnel(doc_boras_account, doc_boras, inst_boras);
         await instance.addMedicalPersonnel(doc_kungalv_account, doc_kungalv, inst_kungalv);
+        await instance.addMedicalPersonnel(nurse_gbg_account,nurse_gbg,inst_gbg);
 
         // ==== ADDING PATIENTS ====
         await instance.addPatient(pat_gbg_kungalv_accounts, pat_gbg_kungalv, [gbg, kungalv]);
@@ -181,5 +193,57 @@ contract("Block4EHR", accounts => {
             assert.notEqual(e, undefined);
         });
     });
+    
 
+    describe("getRegionPersonnel get all personnel that works within a given region correctly", function (){
+
+        it("getRegionPersonnel gets all personnel for a valid region", async function (){
+            const MedicalPersonnelIds = [doc_gbg, nurse_gbg];
+            let personnel = await instance.getRegionPersonnel(gbg);
+            let actual = personnel.map(p => p.id);
+            assert.deepEqual(MedicalPersonnelIds, actual);
+
+        });
+
+        it("getRegionPersonnel returns an empty arr for an invalid region", async function (){
+            const emptyArr = [];
+            let personnel = await instance.getRegionPersonnel(kungsbacka);
+            assert.deepEqual(emptyArr, personnel);
+            
+        });
+
+        it("getRegionPersonnel fails for a valid region", async function (){
+            const MedicalPersonnelIds = [doc_gbg, doc_kungalv];
+            let personnel = await instance.getRegionPersonnel(kungalv);
+            let actual = personnel.map(p => p.id);
+            assert.notEqual(MedicalPersonnelIds, actual);
+
+        });
+
+        it("getRegionPersonnel returns empty arr for a region without personnel", async function () {
+            const MedicalPersonnel = [];
+            let personnel = await instance.getRegionPersonnel("10");
+            assert.deepEqual(MedicalPersonnel, personnel);
+        });
+    })
+
+    describe("getInstitutionName returns the name of a given institution correctly", function (){
+        it("getInstitutions returns the correct name given a valid institution id", async function (){
+            let name = await instance.getInstitutionName(inst_gbg);
+            assert.deepEqual(name, "gbg1");
+        });
+    })
+
+    describe("getRegions returns all the correct regions in the Smart Contratc", function (){ 
+        // dependent on objects from migrations script, unlike all other tests here.
+        // this means that regions 1,...,20 need to be accounted for.
+        // This needs to be changed if any update to the migrations script is done.
+        it("getRegions returns all the regions in the contract", async function (){ 
+            let arr = await instance.getRegions();
+            let actualIds = arr.map(r => r.id);
+            let expectedArr = ["1", '2', '3', '4', '5', '6', "7", "8", "9", "10", "11", "12", 
+                "13","14", "15", "16", "17", "18","19", "20", gbg, boras, kungalv];
+            assert.deepEqual(actualIds, expectedArr);
+        });
+    })
 })

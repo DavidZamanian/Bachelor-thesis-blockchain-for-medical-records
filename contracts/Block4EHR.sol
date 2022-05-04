@@ -5,16 +5,21 @@ pragma solidity ^0.8.0;
 /**
 * @author Hampus Jernkrook
 *
-* TODO: add owner(s) that are the only one(s) allowed to add new objects. 
+* TODOs for eventual future versions:
+*  - TODO: add owner(s) that are the only one(s) allowed to add new objects. 
+*  - TODO: enforce that referenced objects exist in the addX(_)-methods. 
+*          E.g.: That the region of a to-be-added institution actually exists on the chain.
+*          These are found commented throughout the contract.'
+*          Also relevant for setPermissions(_). 
 */ 
 contract Block4EHR {
 
     //================= STRUCTS ====================
     struct EHR {
         // healthcare provider/institution and the personnel issuing this EHR update.
-        HealthcareInst healthcareInst; //id of healthcare inst.
-        MedicalPersonnel medPersonnel; //id of medical personnel
-        Patient patient; // the id of the patient that this EHR snapshot is for.
+        HealthcareInst healthcareInst;
+        MedicalPersonnel medPersonnel;
+        Patient patient; // the patient that this EHR snapshot is for. 
         string cid; // content identifier referencing the IPFS archive containing the EHR files. 
     }
 
@@ -42,23 +47,28 @@ contract Block4EHR {
     }
     //===============================================
 
-    //================= MAPPINGS ==================== //TODO REMOVE PUBLIC ACCESS WHEN DONE TESTING
+    //================= MAPPINGS ====================
     // ===== PATIENT MAPPINGS ======
     // mapping patient id to its latest EHR update
-    mapping(string => EHR) public ehrs;
-
-    //mapping region id to the region struct object
-    mapping(string => Region) public regionsMap;
+    mapping(string => EHR) ehrs;
 
     //mapping patient id to the patient struct object 
-    mapping(string => Patient) public patients;
+    mapping(string => Patient) patients;
 
     // ===== MEDICAL PERSONNEL MAPPINGS ======
     //mapping medical personnel address to the corresponding personnel object
-    mapping(address => MedicalPersonnel) public medicalPersonnels;
+    mapping(address => MedicalPersonnel) medicalPersonnels;
 
     // ===== HEALTHCARE INST. MAPPINGS ======
-    mapping(string => HealthcareInst) public healthcareInstitutions;
+    // mapping institution id to the institution struct object. 
+    mapping(string => HealthcareInst) healthcareInstitutions;
+
+    // ===== REGION MAPPINGS ======
+    //mapping region id to the region struct object
+    mapping(string => Region) regionsMap;
+
+    //mapping region id to a list of all medical personnel operating at an institution within that region.
+    mapping(string => MedicalPersonnel[]) regionToPersonnel;
     //===============================================
     //================= ARRAYS ======================
     Region[] regionsArray;
@@ -80,8 +90,11 @@ contract Block4EHR {
 
     // TODO: enforce that the institution exists
     function addMedicalPersonnel(address _addr, string memory _id, string memory _healthcareInstId) public {
-        HealthcareInst memory inst = healthcareInstitutions[_healthcareInstId]; //TODO: might not be needed it we want inst to be the id....
-        medicalPersonnels[_addr] = MedicalPersonnel(_addr, _id, inst);
+        HealthcareInst memory inst = healthcareInstitutions[_healthcareInstId];
+        MedicalPersonnel memory _personnel = MedicalPersonnel(_addr, _id, inst);
+        medicalPersonnels[_addr] = _personnel;
+        string memory _regionId = inst.region.id;
+        regionToPersonnel[_regionId].push(_personnel);
     }
 
     // TODO: enforce that the regions exist
@@ -90,8 +103,21 @@ contract Block4EHR {
     }
 
     //======= GETTING REGIONS ========
+    /** Get all regions on the smart contract. */
     function getRegions() public view returns(Region[] memory) {
         return regionsArray;
+    }
+
+    //======= GETTING ALL PERSONNEL FOR A GIVEN REGION ========
+    /** Get all medical personnel for a given region. */
+    function getRegionPersonnel(string memory _regionId) public view returns(MedicalPersonnel[] memory) {
+        return regionToPersonnel[_regionId];
+    }
+
+    //======= GETTING THE NAME OF A GIVEN INSTITUTION ========
+    /** Get the name of a given healthcare institution. */
+    function getInstitutionName(string memory _instId) public view returns(string memory) {
+        return healthcareInstitutions[_instId].name;
     }
 
     //======= CHECKING THAT THE FUNCTION INVOKER IS PERMISSIONED ========
@@ -151,10 +177,6 @@ contract Block4EHR {
 
     /** Checks that the function invoker is a medical personnel within some region permissioned by the patient. */
     modifier onlyPermissionedStaff(string memory _patientId) {
-        // TODO REMOVE COMMENTED CODE
-        //string memory _senderRegion = medicalPersonnels[msg.sender].healthcareInst.region;
-        //bool _regionIsPermissioned = regionIsPermissioned(_patientId, _senderRegion);
-        //require(_regionIsPermissioned);
         require(personnelHasPermission(_patientId));
         _;
     }
