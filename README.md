@@ -1,5 +1,8 @@
 # Blockchain-for-medical-records
 
+## Application Features & Appearance
+These can be found over at our [Wiki](https://github.com/DavidZamanian/Bachelor-thesis-blockchain-for-medical-records/wiki)!
+
 ## INSTALLATION:
 
 ### Start by installing expo and NodeJS (automatically includes NPM in the installation) on your machine
