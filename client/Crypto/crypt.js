@@ -1,4 +1,9 @@
 const crypto = require("crypto");
+const { default: EHRDecryptionError } = require("./EHRDecryptionError");
+const { default: EHREncryptionError } = require("./EHREncryptionError");
+const { default: KeyDecryptionError } = require("./KeyDecryptionError");
+const { default: KeyDerivationError } = require("./KeyDerivationError");
+const { default: KeyEncryptionError } = require("./KeyEncryptionError");
 /**
  * Methods for encrypting/decrypting EHR and record keys.
  * @author David Zamanian, Nils Johnsson, Wendy Pau, Christopher Molin
@@ -10,102 +15,124 @@ const algorithm = "aes-256-gcm";
  *
  * @param {*} privateKey This will be pre-generated together with the public key.
  * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
- * @returns the iv concatenated with the encryptedPrivateKey (will be stored in database)
+ * @returns {Promise<{iv:*, encryptedData: *}>} the iv concatenated with the encryptedPrivateKey (will be stored in database)
+ * @throws {KeyEncryptionError}
  */
-
 async function encryptPrivateKey(privateKey, symmetricKey) {
-  const iv = crypto.randomBytes(32);
 
-  let cipher = crypto.createCipheriv(algorithm, symmetricKey, iv);
+  try {
+    const iv = crypto.randomBytes(32);
 
-  let encryptedPrivateKey = cipher.update(Buffer.from(privateKey, "utf8"));
-  encryptedPrivateKey = Buffer.concat([encryptedPrivateKey, cipher.final()]);
+    let cipher = crypto.createCipheriv(algorithm, symmetricKey, iv);
 
-  //console.log("IV: " + iv.toString("base64"));
-  //console.log("EncryptedPrivateKey: " + encryptedPrivateKey.toString("hex"));
-  return {
-    iv: iv.toString("base64"),
-    encryptedData: encryptedPrivateKey.toString("hex"),
-  };
+    let encryptedPrivateKey = cipher.update(Buffer.from(privateKey, "utf8"));
+    encryptedPrivateKey = Buffer.concat([encryptedPrivateKey, cipher.final()]);
+
+    return {
+      iv: iv.toString("base64"),
+      encryptedData: encryptedPrivateKey.toString("hex"),
+    };
+
+  } catch (error) {
+    throw new KeyEncryptionError(error.message);
+  }
 }
 
-/** Not done yet. This will be called everytime user logs in to get the privateKey.
- *
- * @param {*} encryptedPrivateKeyAndIV Get this from the database
+/** 
+ * Decrypts a private key 
+ * @param {{iv:*, encryptedData: *}} encryptedPrivateKeyAndIV Get this from the database
  * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
- * @returns
+ * @returns {*} decrypted key
+ * @throws {KeyDecryptionError}
  */
 async function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
-  let iv = Buffer.from(encryptedPrivateKeyAndIV.iv, "base64"); //slice(0, 44); //Need to find the end of the IV (30 is not correct i dont think)
-  let encryptedPrivateKey = Buffer.from(
-    encryptedPrivateKeyAndIV.encryptedData,
-    "hex"
-  ); //.slice(44);
 
-  let decipher = crypto.createDecipheriv(
-    algorithm,
-    Buffer.from(symmetricKey),
-    iv
-  );
+  try {
+    
+    let iv = Buffer.from(encryptedPrivateKeyAndIV.iv, "base64");
+    let encryptedPrivateKey = Buffer.from(
+      encryptedPrivateKeyAndIV.encryptedData,
+      "hex"
+    ); 
 
-  // Updating encrypted text
-  let decryptedKey = decipher.update(encryptedPrivateKey);
-  //decryptedKey = Buffer.concat([decryptedKey, decipher.final()]);
+    let decipher = crypto.createDecipheriv(
+      algorithm,
+      Buffer.from(symmetricKey),
+      iv
+    );
 
-  return decryptedKey; //.toString("base64");
+    // Updating encrypted text
+    let decryptedKey = decipher.update(encryptedPrivateKey);
+
+    return decryptedKey; 
+
+  } catch (error) {
+    throw new KeyDecryptionError(error.message);
+  }
 }
 
 /**
  * Encrypts the EHR with the record key using the AES crypto algorithm.
- * @param {string} recordKey Encrypted record_key retrieved from DB.
+ * @param {string} decryptedRecordKey Encrypted record_key retrieved from DB.
  * @param {string} EHR The EHR text content to be encrypted.
  * @returns {Promise<{iv: string, Tag: Buffer, encryptedData: string}>} The IV for the encryption and the encrypted EHR.
+ * @throws {EHREncryptionError}
  */
 async function encryptEHR(decryptedRecordKey, EHR) {
-  //const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
-  const iv = crypto.randomBytes(32);
 
-  let cipher = crypto.createCipheriv(
-    algorithm,
-    Buffer.from(decryptedRecordKey, "base64"),
-    iv
-  );
+  try{
+    const iv = crypto.randomBytes(32);
 
-  let encryptedEHR = cipher.update(Buffer.from(EHR, "utf8"));
-  encryptedEHR = Buffer.concat([encryptedEHR, cipher.final()]);
-
-  return {
-    iv: iv.toString("base64"),
-    encryptedData: encryptedEHR.toString("hex"),
-    Tag: cipher.getAuthTag(),
-  };
+    let cipher = crypto.createCipheriv(
+      algorithm,
+      Buffer.from(decryptedRecordKey, "base64"),
+      iv
+    );
+  
+    let encryptedEHR = cipher.update(Buffer.from(EHR, "utf8"));
+    encryptedEHR = Buffer.concat([encryptedEHR, cipher.final()]);
+  
+    return {
+      iv: iv.toString("base64"),
+      encryptedData: encryptedEHR.toString("hex"),
+      Tag: cipher.getAuthTag(),
+    };
+  }
+  catch(err){
+    throw new EHREncryptionError(err.message);
+  }
 }
 
 /**
  * Decrypts the EHR using the record key.
- * @param {string} recordKey Encrypted record_key retrieved from DB.
+ * @param {string} decryptedRecordKey Encrypted record_key retrieved from DB.
  * @param {{iv: string, Tag: Buffer, encryptedData: string}} EHR Contains the IV and encrypted EHR.
  * @returns {Promise<string>} The decrypted EHR in string.
+ * @throws {EHRDecryptionError}
  */
 async function decryptEHR(decryptedRecordKey, EHR) {
-  //const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
 
-  let iv = Buffer.from(EHR.iv, "base64");
-  let encryptedEHR = Buffer.from(EHR.encryptedData, "hex");
+  try{
+    let iv = Buffer.from(EHR.iv, "base64");
+    let encryptedEHR = Buffer.from(EHR.encryptedData, "hex");
+  
+    let decipher = crypto.createDecipheriv(
+      algorithm,
+      Buffer.from(decryptedRecordKey, "base64"),
+      iv
+    );
+    decipher.setAuthTag(EHR.Tag);
+  
+    // Updating encrypted text
+    let decryptedEHR = decipher.update(encryptedEHR);
+    decryptedEHR = Buffer.concat([decryptedEHR, decipher.final()]);
+  
+    // returns data after decryption
+    return decryptedEHR.toString();
 
-  let decipher = crypto.createDecipheriv(
-    algorithm,
-    Buffer.from(decryptedRecordKey, "base64"),
-    iv
-  );
-  decipher.setAuthTag(EHR.Tag);
-
-  // Updating encrypted text
-  let decryptedEHR = decipher.update(encryptedEHR);
-  decryptedEHR = Buffer.concat([decryptedEHR, decipher.final()]);
-
-  // returns data after decryption
-  return decryptedEHR.toString();
+  }catch(err){
+    throw new EHRDecryptionError(err.message);
+  }
 }
 
 /**
@@ -114,13 +141,21 @@ async function decryptEHR(decryptedRecordKey, EHR) {
  * @param {string} recordKey A generated symmetric record key.
  * @param {string} publicKey The public key used to encrypt the record key.
  * @returns {Promise<string>} Encrypted record key.
+ * @throws {KeyEncryptionError}
  */
 async function encryptRecordKey(recordKey, publicKey) {
-  const encrypted = crypto.publicEncrypt(
-    publicKey,
-    Buffer.from(recordKey, "base64")
-  );
-  return encrypted.toString("base64");
+
+  try {
+    let encrypted = crypto.publicEncrypt(
+      publicKey,
+      Buffer.from(recordKey, "base64")
+    );
+
+    return encrypted.toString("base64");
+
+  } catch (error) {
+    throw new KeyEncryptionError(error.message);
+  }
 }
 
 /**
@@ -129,19 +164,22 @@ async function encryptRecordKey(recordKey, publicKey) {
  * @param {string} recordKey Encrypted record key.
  * @param {string} privateKey A users private key.
  * @returns {Promise<string>} The decrypted record key.
+ * @throws {KeyDecryptionError}
  */
 async function decryptRecordKey(recordKey, privateKey) {
-  //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
-  // privateDecrypt() method with its parameters
 
-  // console.log("!!!!!PrivateKEy; " + privateKey);
+  try {
 
-  const decrypted = crypto.privateDecrypt(
-    privateKey,
-    Buffer.from(recordKey, "base64")
-  );
+    let decrypted = crypto.privateDecrypt(
+      privateKey,
+      Buffer.from(recordKey, "base64")
+    );
+  
+    return decrypted.toString("base64");
 
-  return decrypted.toString("base64");
+  } catch (error) {
+    throw new KeyDecryptionError(error.message);
+  }
 }
 
 /**
@@ -151,40 +189,25 @@ async function decryptRecordKey(recordKey, privateKey) {
  * @param {*} password The password of the user login
  * @param {*} salt The salt used in the hasing. This should be stored in database (can be public)
  * @returns {Promise<string>} The privateKey that has been derived from the password
+ * @throws {KeyDerivationError}
  */
 async function derivePrivateKeyFromPassword(password, salt) {
-  var hexKey;
 
-  var iterations = 1000;
-  var outputBitLen = 16; // this could be wrong
-  var digest = "sha512"; // this could be wrong
+  try {
+    var hexKey;
 
-  hexKey = crypto.pbkdf2Sync(password, salt, iterations, outputBitLen, digest);
+    var iterations = 1000;
+    var outputBitLen = 16;
+    var digest = "sha512";
 
-  return hexKey.toString("hex"); // MUST be HEX format!
+    hexKey = crypto.pbkdf2Sync(password, salt, iterations, outputBitLen, digest);
+
+    return hexKey.toString("hex"); // MUST be HEX format!
+
+  } catch (error) {
+    throw new KeyDerivationError(error.message);
+  }
 }
-
-/** This will not be needed anymore
- *
- * Creates a publicKey from a given privateKey
- * @param {string} privateKey The privateKey that has originally been derived from the user's password
- * @returns {Promise<string>} The publicKey that has been extracted
- */
-/*
-function extractPublicKeyFromPrivateKey(privateKey) {
-  const pubKeyObject = crypto.createPublicKey({
-    key: privateKey,
-    format: "pem",
-  });
-
-  const publicKey = pubKeyObject.export({
-    format: "pem",
-    type: "spki",
-  });
-
-  return publicKey.toString("base64");
-}
-*/
 
 module.exports = {
   encryptRecordKey,
