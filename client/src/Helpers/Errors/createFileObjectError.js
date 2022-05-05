@@ -2,7 +2,7 @@
  * Error to be used when the attempted file creation failed.
  * The @msg parameter specifies the error that was thrown by the File constructor.
  * 
- * @author @Chrimle
+ * @author Christopher Molin
  */
 export default class CreateFileObjectError extends Error {
     /**

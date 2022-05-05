@@ -2,7 +2,7 @@
  * Error to be used when the reading of a Web3Storage-file failed.
  * The @msg parameter specifies the error that was thrown by fetch().
  * 
- * @author @Chrimle
+ * @author Christopher Molin
  */
  export default class FetchFileContentError extends Error {
     /**

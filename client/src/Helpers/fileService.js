@@ -30,7 +30,7 @@ export default class FileService{
             return new File([content], fileName+'.json', { type: 'text/json' });
         }
         catch(e){
-            throw CreateFileObjectError(e);
+            throw new CreateFileObjectError(e);
         }
         
     }
@@ -60,6 +60,7 @@ export default class FileService{
      * @param  {String} cid Only the random part of the full address
      * @param  {String} fileName The name and filetype of the file
      * @returns {Promise<string>} content 
+     * @throws {FetchFileContentError}
      * @author Christopher Molin 
      * - Inspiration: Kamil Kiełczewski https://stackoverflow.com/a/55784549/5424535
      */
@@ -73,6 +74,8 @@ export default class FileService{
             return content;
         }
         catch(e){
+            // This could've thrown a CannotResolveCID too, but it's not a trivial choice
+            // ALSO, this is where the HTTP GET error originates
             throw FetchFileContentError(e);
         }
         
@@ -83,44 +86,56 @@ export default class FileService{
      * @param  {String} cid
      * @param {boolean} [getNextEHRIndex]
      * @returns {Promise<{files: Array<File>, index: number}>} Array with Files and the next index for EHR if upload is true
+     * @throws {DownloadError}
      * @author Christopher Molin
      */
     async fetchEHRFiles(cid, getNextEHRIndex){
 
         let results = [];
-
-        // Get prescriptions
-        let content = await FileService.fetchFileContent(cid, "prescriptions.json");
-        let file = new File([content], "prescriptions.json", { type: 'text/json' });
-        results.push(file);
-
-        // get diagnoses
-        content = await FileService.fetchFileContent(cid, "diagnoses.json");
-        file = new File([content], "diagnoses.json", { type: 'text/json' });
-        results.push(file);
-
-        // LOOP: get EHR_index
         let index = 0;
-        let keepSearching = true;
-        do {
-            try{
-                let fileName = "EHR_"+index+".json"
-                let content = await FileService.fetchFileContent(cid, fileName);
 
-                if (content.search("ipfs resolve") == -1){
-                    let file = new File([content], fileName, { type: 'text/json' });
-                    results.push(file);  
-                    index += 1;  
-                }else{
+        try {
+            // Get prescriptions
+            let content = await FileService.fetchFileContent(cid, "prescriptions.json");
+            let file = new File([content], "prescriptions.json", { type: 'text/json' });
+            results.push(file);
+
+            // get diagnoses
+            content = await FileService.fetchFileContent(cid, "diagnoses.json");
+            file = new File([content], "diagnoses.json", { type: 'text/json' });
+            results.push(file);
+
+            // LOOP: get EHR_index
+            let keepSearching = true;
+            do {
+                try{
+                    let fileName = "EHR_"+index+".json"
+                    let content = await FileService.fetchFileContent(cid, fileName);
+
+                    if (content.search("ipfs resolve") == -1){
+                        let file = new File([content], fileName, { type: 'text/json' });
+                        results.push(file);  
+                        index += 1;  
+                    }else{
+                        keepSearching = false
+                    }
+                }
+                catch (e){
                     keepSearching = false
                 }
+            } while(keepSearching)
+
+        } catch (error) {
+            if (error instanceof FetchFileContentError){
+                // This happens when prescriptions/diagnoses does not exist
+                // This should never happen, as they MUST exist, regardless if they are empty.
+                console.error("FATAL ERROR: "+error.message);
             }
-            catch (e){
-                keepSearching = false
-            }
-        } while(keepSearching)
+            throw new DownloadError(error.message);
+        }
 
         return {files: results, index: (getNextEHRIndex ? index: -1)};  
+
     }
 
 
@@ -129,7 +144,7 @@ export default class FileService{
      * Method to get the files' urls, where they can be accesses via an ipfs web interface. 
      * Inspired by https://docs.web3.storage/how-tos/retrieve/#using-the-client-libraries 
      * and https://docs.web3.storage/reference/js-client-library/#retrieve-files. 
-     * 
+     * @deprecated NO LONGER IN USE
      * @param {String} cid content identifier for the file to be retrieved
      * @returns {Promise<Array<String>>} Array of urls of the files to be retrieved 
      */
@@ -152,6 +167,7 @@ export default class FileService{
     /**
      * Method to get urls in the right format. The path is on the form <cid>/<dir>/<file>. 
      * This method returns the <dir>/<file>-part. 
+     * @deprecated NO LONGER IN USE
      * @param {String} path - Path to file 
      * @param {String} cid - content indentifier to the content archive where the files resides. 
      * @returns the path with the prefix cid removed.

@@ -2,7 +2,7 @@
  * Error to be used when the attempted file upload failed
  * The @msg parameter specifies the error that was thrown by Web3Storage class.
  * 
- * @author @Chrimle
+ * @author Christopher Molin
  */
  export default class UploadFileError extends Error {
     /**
