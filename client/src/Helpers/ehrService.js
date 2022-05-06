@@ -74,7 +74,7 @@ export default class EHRService {
         publicKey:    pubKey,
       };
 
-      console.table(debug);
+      console.debug(debug);
 
     } catch (error) {
       if (error instanceof KeyDerivationError){
@@ -182,15 +182,15 @@ export default class EHRService {
       )
     )
     .then((snapshot) => {
-      if (snapshot.exists()) {
-        encDoctorRecordKey = snapshot.val();
-      } else {
-        throw new FetchKeyError("Either the Doctor does not have permission to view this patient's records, or the provided patient does not exist.");
-      }
-    })
-    .catch((error) => {
-      throw new FetchKeyError(error.message);
-    });
+        if (snapshot.exists()) {
+          encDoctorRecordKey = snapshot.val();
+        } else {
+          throw new FetchKeyError("Either the Doctor does not have permission to view this patient's records, or the provided patient does not exist.");
+        }
+      })
+      .catch((error) => {
+        throw new FetchKeyError(error.message);
+      });
     return encDoctorRecordKey;
   }
   /**
@@ -210,16 +210,16 @@ export default class EHRService {
       )
     )
     .then((snapshot) => {
-      if (snapshot.exists()) {
-        encPatientRecordKey = snapshot.val();
-      } else {
-        //Maybe do something else here
-        throw new FetchKeyError("Record key was not found for the provided patient: "+auth.currentUser.uid);
-      }
-    })
-    .catch((error) => {
-      throw new FetchKeyError(error.message);
-    });
+        if (snapshot.exists()) {
+          encPatientRecordKey = snapshot.val();
+        } else {
+          //Maybe do something else here
+          throw new FetchKeyError("Record key was not found for the provided patient: "+auth.currentUser.uid);
+        }
+      })
+      .catch((error) => {
+        throw new FetchKeyError(error.message);
+      });
     return encPatientRecordKey;
   }
 
@@ -315,22 +315,22 @@ export default class EHRService {
       let encryptedRecordKey = await this.getDoctorRecordKey(patientID);
 
 
-      console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
-      console.warn("PrivateKey: " + this.privateKey);
+      console.debug("Encrypted decryptedRecordKey: " + encryptedRecordKey);
+      console.debug("PrivateKey: " + this.privateKey);
 
       let decryptedRecordKey = await crypt.decryptRecordKey(
         encryptedRecordKey,
         await this.privateKey
       );
       
-      console.log("Attempting Fetch");
+      console.debug("Attempting Fetch");
 
       try{
         
         let oldCid = await connection.getEHRCid(patientID);
         let patientEHR = await this.getFiles(oldCid, decryptedRecordKey, true);
 
-        console.table(patientEHR)
+        console.debug(patientEHR)
 
         prescriptions = prescriptions.concat(patientEHR.prescriptions);
         diagnoses = diagnoses.concat(patientEHR.diagnoses);
@@ -339,7 +339,7 @@ export default class EHRService {
         index = patientEHR.nextIndex;
 
       }catch(e){
-        console.log(e)
+        console.error(e)
       }
       
       // Make into JSON objects
@@ -347,7 +347,7 @@ export default class EHRService {
       let stringPrescriptions = await this.stringify(prescriptions);
       let stringDiagnoses = await this.stringify(diagnoses);
 
-      console.log("Starting to encrypt files");
+      console.debug("Starting to encrypt files");
 
       let encryptedEHR = await this.encrypt(stringEHR, decryptedRecordKey);
       let encryptedPrescriptions = await this.encrypt(
@@ -390,12 +390,12 @@ export default class EHRService {
 
         // TESTING ONLY
         // Testing if the cid and the files were uploaded
-        console.log(
+        console.debug(
           "TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n" +
             `https://${newCID}.ipfs.dweb.link/`
         );
         for (const file of finalFiles) {
-          console.log(file.name + ": " + (await file.text()).toString("base64"));
+          console.debug(file.name + ": " + (await file.text()).toString("base64"));
         }
 
       }catch(e){}
@@ -562,60 +562,15 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async encrypt(content, decryptedRecordKey) {
-    let x = await crypt.encryptEHR(decryptedRecordKey, content);
+    let encryptedEHR = await crypt.encryptEHR(decryptedRecordKey, content);
 
-    console.log("----------------------------------");
-    console.log("Tag:" + x.Tag.toString("base64"));
-    console.log("IV:" + x.iv.toString("base64"));
-    console.log("Data:" + x.encryptedData);
-    console.log("----------------------------------");
+    console.debug(encryptedEHR);
 
-    let result = "";
-
-    return result.concat(
-      x.Tag.toString("base64"),
-      x.iv.toString("base64"),
-      x.encryptedData
+    return "".concat(
+      encryptedEHR.Tag.toString("base64"),
+      encryptedEHR.iv.toString("base64"),
+      encryptedEHR.encryptedData
     );
-  }
-  /**
-   * Decrypts and returns the given file content
-   * @param  {string} fileContent file content (including Tag and IV at the beginning)
-   * @returns {Promise<string>} The decrypted content data (Tag and IV excluded)
-   * @author Christopher Molin
-   */
-  static async oldDecrypt(fileContent) {
-    let tag = fileContent.slice(0, 24);
-    let iv = fileContent.slice(24, 68);
-    let encrypted = fileContent.slice(68);
-
-    let ivBuffer = Buffer.from(iv, "base64");
-    let tagBuffer = Buffer.from(tag, "base64");
-
-    console.log("----------------");
-    console.log("ATTEMPTING DECRYPT");
-    console.log("DATA:");
-    console.log(encrypted);
-    console.log("IV:");
-    console.log(ivBuffer.toString("base64"));
-    console.log("TAG:");
-    console.log(tagBuffer.toString("base64"));
-
-    let EHR = {
-      iv: ivBuffer,
-      encryptedData: encrypted,
-      Tag: tagBuffer,
-    };
-
-    let x = await crypt.decryptEHR(
-      PlaceholderValues.recordKey,
-      EHR,
-      PlaceholderValues.medicPrivateKey
-    );
-
-    console.log("DECRYPTED DATA:");
-    console.log(x);
-    return x;
   }
 
   /**
@@ -639,11 +594,11 @@ export default class EHRService {
       Tag: tagBuffer,
     };
 
-    console.table(EHR);
+    console.debug(EHR);
 
     let decryptedContent = await crypt.decryptEHR(decryptedRecordKey, EHR);
     
-    console.table(decryptedContent);
+    console.debug(decryptedContent);
 
     return decryptedContent;
   }
