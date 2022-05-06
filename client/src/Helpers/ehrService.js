@@ -14,6 +14,9 @@ import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
 import ChainConnectionError from "../chainConnection/chainConnectionError";
 import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
+import KeyDerivationError from "../../Crypto/KeyDerivationError";
+import KeyDecryptionError from "../../Crypto/KeyDecryptionError";
+import FetchWeb3StorageTokenError from "./Errors/FetchWeb3StorageTokenError";
 
 
 export default class EHRService {
@@ -38,37 +41,56 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async setKeys(password, salt) {
+
+    try {
+
+      let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
+
+      let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
+      let encryptedData = encryptedPrivateKeyAndIV.slice(46);
+
+      let iv = encryptedPrivateKeyAndIV.slice(0, 44);
+      let keyAndIv = { encryptedData, iv };
+
+      let privKey = await crypt.decryptPrivateKey(keyAndIv, symmetricKey);
+
+      this.setPrivateKey(privKey);
+
+      let pubKey = await this.getPublicKey();
+
+      this.setPublicKey(pubKey);
+
+      this.setPrivateKey(privKey);
+
+      console.warn(this.privateKey);
+      console.warn(this.publicKey);
+
+      let debug = {
+        password:     password,
+        salt:         salt,
+        symmetricKey: symmetricKey,
+        privateKey:   privKey,
+        publicKey:    pubKey,
+      };
+
+      console.table(debug);
+
+    } catch (error) {
+      if (error instanceof KeyDerivationError){
+
+      }
+      else if (error instanceof KeyDecryptionError){
+
+      }
+    }
     
-    let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
-
-    let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
-    let encryptedData = encryptedPrivateKeyAndIV.slice(46);
-    let iv = encryptedPrivateKeyAndIV.slice(0, 44);
-    let keyAndIv = { encryptedData, iv };
-
-    let privKey = await crypt.decryptPrivateKey(keyAndIv, symmetricKey);
-
-    this.setPrivateKey(privKey);
-
-    let pubKey = await this.getPublicKey();
-
-    this.setPublicKey(pubKey);
-
-    this.setPrivateKey(privKey);
-
-    console.warn(this.privateKey);
-    console.warn(this.publicKey);
-
-    console.log(
-      "Password:" + password + "\nSalt:" + salt + "\nSymmetric:" + symmetricKey
-    );
-    console.log("Private:" + privKey + "\nPublic:" + pubKey);
+    
   }
 
   /**
    * Fetches API-token to Web3Storage from Firebase
    * @returns {Promise<String>} apiToken to Web3Storage
-   * @throws
+   * @throws {Web}
    * @author Christopher Molin
    */
   static async getWeb3StorageToken() {
@@ -79,11 +101,11 @@ export default class EHRService {
         if (snapshot.exists()) {
           apiToken = snapshot.val();
         } else {
-          throw "No data available";
+          throw new FetchWeb3StorageTokenError("Token was not found");
         }
       })
       .catch((error) => {
-        throw error;
+        throw new FetchWeb3StorageTokenError(error.message);
       });
     return apiToken;
   }
