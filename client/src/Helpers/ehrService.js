@@ -14,10 +14,7 @@ import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
 import ChainConnectionError from "../chainConnection/chainConnectionError";
 import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
-import KeyDerivationError from "../../Crypto/KeyDerivationError";
-import KeyDecryptionError from "../../Crypto/KeyDecryptionError";
-import FetchWeb3StorageTokenError from "./Errors/FetchWeb3StorageTokenError";
-import FetchKeyError from "./Errors/FetchKeyError";
+
 
 export default class EHRService {
 
@@ -30,6 +27,7 @@ export default class EHRService {
   static async setPrivateKey(newPrivateKey) { this.privateKey = newPrivateKey; }
   static async setPublicKey(newPublicKey) { this.publicKey = newPublicKey; }
 
+
   /**
    * Derives symmetric key from password and salt,
    * fetches private and public keys, 
@@ -41,47 +39,36 @@ export default class EHRService {
    */
   static async setKeys(password, salt) {
     
-    try {
+    let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
 
-      let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
+    let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
+    let encryptedData = encryptedPrivateKeyAndIV.slice(46);
+    let iv = encryptedPrivateKeyAndIV.slice(0, 44);
+    let keyAndIv = { encryptedData, iv };
 
-      let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
-      let encryptedData = encryptedPrivateKeyAndIV.slice(46);
-      let iv = encryptedPrivateKeyAndIV.slice(0, 44);
-      let keyAndIv = { encryptedData, iv };
+    let privKey = await crypt.decryptPrivateKey(keyAndIv, symmetricKey);
 
-      let privKey = await crypt.decryptPrivateKey(keyAndIv, symmetricKey);
+    this.setPrivateKey(privKey);
 
-      let pubKey = await this.getPublicKey();
+    let pubKey = await this.getPublicKey();
 
-      this.setPublicKey(pubKey);
-      this.setPrivateKey(privKey);
+    this.setPublicKey(pubKey);
 
-      let debug = {
-        password:     password,
-        salt:         salt,
-        symmetricKey: symmetricKey,
-        privateKey:   privKey,
-        publicKey:    pubKey,
-      };
+    this.setPrivateKey(privKey);
 
-      console.table(debug);
+    console.warn(this.privateKey);
+    console.warn(this.publicKey);
 
-    } catch (error) {
-      if (error instanceof KeyDerivationError){
-
-      }
-      else if (error instanceof KeyDecryptionError){
-
-      }
-      
-    }
+    console.log(
+      "Password:" + password + "\nSalt:" + salt + "\nSymmetric:" + symmetricKey
+    );
+    console.log("Private:" + privKey + "\nPublic:" + pubKey);
   }
 
   /**
    * Fetches API-token to Web3Storage from Firebase
    * @returns {Promise<String>} apiToken to Web3Storage
-   * @throws {FetchWeb3StorageTokenError}
+   * @throws
    * @author Christopher Molin
    */
   static async getWeb3StorageToken() {
@@ -92,11 +79,11 @@ export default class EHRService {
         if (snapshot.exists()) {
           apiToken = snapshot.val();
         } else {
-          throw new FetchWeb3StorageTokenError("Token was not found");
+          throw "No data available";
         }
       })
       .catch((error) => {
-        throw new FetchWeb3StorageTokenError(error.message);
+        throw error;
       });
     return apiToken;
   }
@@ -104,8 +91,7 @@ export default class EHRService {
   /**
    * Fetches the public key for the currently logged in user.
    * @returns {Promise<String>} returns the public key for the current user.
-   * @throws {FetchKeyError}
-   * @author David Zamanian, Christopher Molin
+   * @author David Zamanian
    */
 
   static async getPublicKey() {
@@ -117,27 +103,25 @@ export default class EHRService {
         if (snapshot.exists()) {
           publicKey = snapshot.val();
         } else {
-          throw new FetchKeyError(auth.currentUser.uid+" lacks a public key!");
+          throw "No data available";
         }
       })
       .catch((error) => {
-        throw new FetchKeyError(error.message);
+        throw error;
       });
     return publicKey;
   }
 
   /**
    * Fetches the encrypted private key (and IV) of the current user from Firebase.
-   * @returns {*} returns the encrypted private key + IV of the currently logged in user
-   * @throws {FetchKeyError}
+   * @returns returns the encrypted private key + IV of the currently logged in user
    * @author David Zamanian
    */
-  static async getEncPrivateKeyAndIV() {
 
+  static async getEncPrivateKeyAndIV() {
     let encryptedPrivateKey;
     const auth = getAuth();
     let dbRef = ref(database);
-
     await get(
       child(dbRef, "mapUser/" + auth.currentUser.uid + "/IvAndPrivateKey/")
     )
@@ -145,11 +129,11 @@ export default class EHRService {
         if (snapshot.exists()) {
           encryptedPrivateKey = snapshot.val();
         } else {
-          throw new FetchKeyError(auth.currentUser.uid+" lacks a private key!");
+          throw "No data available";
         }
       })
       .catch((error) => {
-        throw new FetchKeyError(error.message);
+        throw error;
       });
     return encryptedPrivateKey;
   }
@@ -158,7 +142,6 @@ export default class EHRService {
    * Fetches the current doctor's encrypted record key for the provided patient.
    * @param {String} patientID The SSN/patientID of the patient
    * @returns {*} The record key of the specified patient (if permission is granted)
-   * @throws {FetchKeyError}
    * @author David Zamanian
    */
 
@@ -172,23 +155,22 @@ export default class EHRService {
         "DoctorToRecordKey/" + auth.currentUser.uid + "/recordKeys/" + patientID
       )
     )
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        encDoctorRecordKey = snapshot.val();
-      } else {
-        //Maybe do something else here
-        throw new FetchKeyError("Either the Doctor does not have permission to view this patient's records, or the provided patient does not exist.");
-      }
-    })
-    .catch((error) => {
-      throw new FetchKeyError(error.message);
-    });
-
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          encDoctorRecordKey = snapshot.val();
+        } else {
+          //Maybe do something else here
+          throw "Doctor does not have permission to view this patient's records";
+        }
+      })
+      .catch((error) => {
+        throw error;
+      });
     return encDoctorRecordKey;
   }
   /**
    * Fetches the current patient's record key.
-   * @returns {*} The encrypted record key of the currently logged in patient
+   * @returns The encrypted record key of the currently logged in patient
    * @author David Zamanian
    */
 
@@ -202,18 +184,18 @@ export default class EHRService {
         "PatientToRecordKey/" + auth.currentUser.uid + "/recordKey"
       )
     )
-    .then((snapshot) => {
-      if (snapshot.exists()) {
-        encPatientRecordKey = snapshot.val();
-      } else {
-        //Maybe do something else here
-        throw new FetchKeyError("Record key was not found for the provided patient: "+auth.currentUser.uid);
-      }
-    })
-    .catch((error) => {
-      throw new FetchKeyError(error.message);
-    });
-    
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          encPatientRecordKey = snapshot.val();
+        } else {
+          //Maybe do something else here
+          console.error("GetPatientRecordKey Error: "+auth.currentUser.uid);
+          throw "Something went wrong";
+        }
+      })
+      .catch((error) => {
+        throw error;
+      });
     return encPatientRecordKey;
   }
 
@@ -616,6 +598,7 @@ export default class EHRService {
    * Decrypts and returns the given file content
    * @param  {string} fileContent file content (including Tag and IV at the beginning)
    * @param {*} decryptedRecordKey
+   * @param {*} privateKey
    * @returns {Promise<string>} The decrypted content data (Tag and IV excluded)
    * @author Christopher Molin
    */
@@ -627,6 +610,15 @@ export default class EHRService {
     let ivBuffer = Buffer.from(iv, "base64");
     let tagBuffer = Buffer.from(tag, "base64");
 
+    console.log("----------------");
+    console.log("ATTEMPTING DECRYPT");
+    console.log("DATA:");
+    console.log(encrypted);
+    console.log("IV:");
+    console.log(ivBuffer.toString("base64"));
+    console.log("TAG:");
+    console.log(tagBuffer.toString("base64"));
+
     let EHR = {
       iv: ivBuffer,
       encryptedData: encrypted,
@@ -635,15 +627,8 @@ export default class EHRService {
 
     let x = await crypt.decryptEHR(decryptedRecordKey, EHR);
 
-    let debugData = {
-      enc:encrypted,
-      iv:ivBuffer.toString("base64"),
-      tag:tagBuffer.toString("base64"),
-      dec: x,
-    };
-
-    console.table(debugData);
-
+    console.log("DECRYPTED DATA:");
+    console.log(x);
     return x;
   }
 
