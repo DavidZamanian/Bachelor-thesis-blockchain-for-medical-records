@@ -649,24 +649,29 @@ export default class EHRService {
   }
 
   /**
-     * Gets all regions from Firebase, and returns them as a list of region names.
-     * @returns {Promise<Array<String>>}
-     * @throws {CouldNotLoadRegionsError} If the operation failed, e.g. due to network error. 
-     * @author Hampus Jernkrook
-     */
-    static async getRegions() {
-        let connection = await this.chainConnection;
-        let regions;
-        try {
-            regions = await connection.getAllRegions();
-        } catch (err) {
-            if (err instanceof ChainConnectionError) {
-                throw new CouldNotLoadRegionsError(`Could not load the regions from the blockchain. `+
-                `The connection failed. Error: ${err.message}`);
-            }
-        }
-        return regions;
+  * Gets all regions from Firebase, and returns them as a list of region names.
+  * @returns {Promise<Array<String>>}
+  * @throws {CouldNotLoadRegionsError} If the operation failed, e.g. due to network error. 
+  * @author Hampus Jernkrook
+  */
+  static async getRegions() {
+    let connection = await this.chainConnection;
+    let regions;
+    try {
+      regions = await connection.getAllRegions();
+    } catch (err) {
+      if (err instanceof ChainConnectionError) {
+          throw new CouldNotLoadRegionsError(`Could not load the regions from the blockchain. `+
+          `The connection failed. Error: ${err.message}`);
+      }
+      else{
+        // TODO: Handle the other cases, otherwise this will return a null reference?
+        // Alternative: let regions = []. That way it is guaranteed to be a valid return type
+
+      }
     }
+    return regions;
+  }
 
   /**
      * Gets all regions the given patient has granted permission to.
@@ -687,6 +692,7 @@ export default class EHRService {
                 throw new CouldNotLoadPermittedRegionsError(`Operation denied:\n` +
                 `Could not load permitted regions. Error thrown with message ${err.message}`);
             } 
+            // TODO: regions will be undefined if this happens
         }   
         return regions;
     }
