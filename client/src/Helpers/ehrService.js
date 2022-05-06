@@ -83,15 +83,16 @@ export default class EHRService {
       else if (error instanceof KeyDecryptionError){
 
       }
+      // Retry recursively?
+      // setKeys(password, salt);
+
     }
-    
-    
   }
 
   /**
    * Fetches API-token to Web3Storage from Firebase
    * @returns {Promise<String>} apiToken to Web3Storage
-   * @throws {Web}
+   * @throws {FetchWeb3StorageTokenError}
    * @author Christopher Molin
    */
   static async getWeb3StorageToken() {
