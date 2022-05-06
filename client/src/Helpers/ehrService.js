@@ -131,7 +131,7 @@ export default class EHRService {
         }
       })
       .catch((error) => {
-        throw new FetchKeyError("Public key could not be retrieved from Firebase."+error.message);
+        throw new FetchKeyError(error.message);
       });
     return publicKey;
   }
@@ -139,6 +139,7 @@ export default class EHRService {
   /**
    * Fetches the encrypted private key (and IV) of the current user from Firebase.
    * @returns returns the encrypted private key + IV of the currently logged in user
+   * @throws {FetchKeyError}
    * @author David Zamanian
    */
 
@@ -153,11 +154,11 @@ export default class EHRService {
         if (snapshot.exists()) {
           encryptedPrivateKey = snapshot.val();
         } else {
-          throw "No data available";
+          throw new FetchKeyError(auth.currentUser.uid+" lacks a private key!");
         }
       })
       .catch((error) => {
-        throw error;
+        throw new FetchKeyError(error.message);
       });
     return encryptedPrivateKey;
   }
@@ -166,6 +167,7 @@ export default class EHRService {
    * Fetches the current doctor's encrypted record key for the provided patient.
    * @param {String} patientID The SSN/patientID of the patient
    * @returns {*} The record key of the specified patient (if permission is granted)
+   * @throws {FetchKeyError}
    * @author David Zamanian
    */
 
@@ -179,17 +181,16 @@ export default class EHRService {
         "DoctorToRecordKey/" + auth.currentUser.uid + "/recordKeys/" + patientID
       )
     )
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          encDoctorRecordKey = snapshot.val();
-        } else {
-          //Maybe do something else here
-          throw "Doctor does not have permission to view this patient's records";
-        }
-      })
-      .catch((error) => {
-        throw error;
-      });
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        encDoctorRecordKey = snapshot.val();
+      } else {
+        throw new FetchKeyError("Either the Doctor does not have permission to view this patient's records, or the provided patient does not exist.");
+      }
+    })
+    .catch((error) => {
+      throw new FetchKeyError(error.message);
+    });
     return encDoctorRecordKey;
   }
   /**
@@ -208,18 +209,17 @@ export default class EHRService {
         "PatientToRecordKey/" + auth.currentUser.uid + "/recordKey"
       )
     )
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          encPatientRecordKey = snapshot.val();
-        } else {
-          //Maybe do something else here
-          console.error("GetPatientRecordKey Error: "+auth.currentUser.uid);
-          throw "Something went wrong";
-        }
-      })
-      .catch((error) => {
-        throw error;
-      });
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        encPatientRecordKey = snapshot.val();
+      } else {
+        //Maybe do something else here
+        throw new FetchKeyError("Record key was not found for the provided patient: "+auth.currentUser.uid);
+      }
+    })
+    .catch((error) => {
+      throw new FetchKeyError(error.message);
+    });
     return encPatientRecordKey;
   }
 
