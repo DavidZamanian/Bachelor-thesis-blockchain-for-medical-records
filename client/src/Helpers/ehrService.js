@@ -17,6 +17,7 @@ import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
 import KeyDerivationError from "../../Crypto/KeyDerivationError";
 import KeyDecryptionError from "../../Crypto/KeyDecryptionError";
 import FetchWeb3StorageTokenError from "./Errors/FetchWeb3StorageTokenError";
+import FetchKeyError from "./Errors/FetchKeyError";
 
 
 export default class EHRService {
@@ -113,6 +114,7 @@ export default class EHRService {
   /**
    * Fetches the public key for the currently logged in user.
    * @returns {Promise<String>} returns the public key for the current user.
+   * @throws {FetchKeyError}
    * @author David Zamanian
    */
 
@@ -125,11 +127,11 @@ export default class EHRService {
         if (snapshot.exists()) {
           publicKey = snapshot.val();
         } else {
-          throw "No data available";
+          throw new FetchKeyError("UID: "+auth.currentUser.uid+" lacks a public-key.");
         }
       })
       .catch((error) => {
-        throw error;
+        throw new FetchKeyError("Public key could not be retrieved from Firebase."+error.message);
       });
     return publicKey;
   }
