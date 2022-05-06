@@ -248,25 +248,49 @@ export function EHROverviewScreen(props) {
    *
    * Need access to: Firebase, recordKey of patient and publicKey of doctor
    *
-   * @param {List<>} newPermittedRegions
+   * @param {*} newPermittedRegions
    */
 
   const updateRecordKeys = async (newPermittedRegions) => {
     /* TODO
+
   1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
   2. Connect to Firebase 
-  3. Find which regions that was removed
-    i) Go through all doctors in 'DoctorsToRecordKey' and look for user SSN
-    ii) When we find match, delete the recordKey of the user for that doctor
+  3. Find which regions that was removed and get doctors of each such region (with getRegionPersonnel). Store in deletedDoctors.
   4. For every new permitted region:  
     i) Go through all doctors in 'Doctors' 
     ii) and if said doctor is in the new permitted region, encrypt patient recordKey with doctors publicKey
     ii) Add a new entry in 'DoctorsToRecordKey' under said doctor with the new encrypted recordKey.
 
-
-
-
+      1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
+  2. Connect to Firebase 
+  3. Find which regions that was removed and get doctors of each such region. Store in deletedDoctors. 
+  4. For every new permitted region: get the doctors of each such region. Store in addedDoctors. 
+  5. Go through all doctors d in 'Firebase/Doctors'.
+    i) If d in removedDoctors: delete recordKey for d. 
+    ii) If d in addedDoctors: encrypt patient recordKey with doctors publicKey into recordKey_version and store recordKey_version in 'Firebase/DoctorsToRecordKey'
   */
+
+    //Maybe not needed
+    let changedRegions = [];
+    for (let region in newPermittedRegions) {
+      if (!state.regions.includes(region)) {
+        changedRegions.push(region["id"]);
+      }
+    }
+
+    let permitted = new Set(state.permittedRegions);
+    let newPermitted = new Set(newPermittedRegions);
+
+    let permitted_intersect_newPermitted = new Set(
+      [...permitted].filter((x) => newPermitted.has(x))
+    );
+    let deletedRegions = new Set(
+      [...permitted].filter((x) => !permitted_intersect_newPermitted.has(x))
+    );
+    let addedRegions = new Set(
+      [...newPermitted].filter((x) => !permitted_intersect_newPermitted.has(x))
+    );
   };
 
   /**
