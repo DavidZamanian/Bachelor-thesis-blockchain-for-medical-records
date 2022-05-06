@@ -619,10 +619,9 @@ export default class EHRService {
   }
 
   /**
-   * Decrypts and returns the given file content
+   * NEEDS RENAMING? Decrypts and returns the given file content
    * @param  {string} fileContent file content (including Tag and IV at the beginning)
    * @param {*} decryptedRecordKey
-   * @param {*} privateKey
    * @returns {Promise<string>} The decrypted content data (Tag and IV excluded)
    * @author Christopher Molin
    */
@@ -634,26 +633,19 @@ export default class EHRService {
     let ivBuffer = Buffer.from(iv, "base64");
     let tagBuffer = Buffer.from(tag, "base64");
 
-    console.log("----------------");
-    console.log("ATTEMPTING DECRYPT");
-    console.log("DATA:");
-    console.log(encrypted);
-    console.log("IV:");
-    console.log(ivBuffer.toString("base64"));
-    console.log("TAG:");
-    console.log(tagBuffer.toString("base64"));
-
     let EHR = {
       iv: ivBuffer,
       encryptedData: encrypted,
       Tag: tagBuffer,
     };
 
-    let x = await crypt.decryptEHR(decryptedRecordKey, EHR);
+    console.table(EHR);
 
-    console.log("DECRYPTED DATA:");
-    console.log(x);
-    return x;
+    let decryptedContent = await crypt.decryptEHR(decryptedRecordKey, EHR);
+    
+    console.table(decryptedContent);
+
+    return decryptedContent;
   }
 
   /**
