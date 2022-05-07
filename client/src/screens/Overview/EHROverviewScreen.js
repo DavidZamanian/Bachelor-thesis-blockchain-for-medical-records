@@ -25,6 +25,8 @@ import CouldNotLoadPermittedRegionsError from "../../Helpers/Errors/couldNotLoad
 import CouldNotLoadRegionsError from "../../Helpers/Errors/couldNotLoadRegionsError";
 import ChainOperationDeniedError from "../../chainConnection/chainOperationDeniedError";
 import { AuthContext } from "../../../contexts/AuthContext";
+import { set } from "firebase/database";
+import crypt from "../../../Crypto/crypt";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
@@ -244,56 +246,6 @@ export function EHROverviewScreen(props) {
   };
 
   /**
-   * Update recordKeys for all involed doctors when updating permitted regions
-   *
-   * Need access to: Firebase, recordKey of patient and publicKey of doctor
-   *
-   * @param {*} newPermittedRegions
-   */
-
-  const updateRecordKeys = async (newPermittedRegions) => {
-    /* TODO
-
-  1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
-  2. Connect to Firebase 
-  3. Find which regions that was removed and get doctors of each such region (with getRegionPersonnel). Store in deletedDoctors.
-  4. For every new permitted region:  
-    i) Go through all doctors in 'Doctors' 
-    ii) and if said doctor is in the new permitted region, encrypt patient recordKey with doctors publicKey
-    ii) Add a new entry in 'DoctorsToRecordKey' under said doctor with the new encrypted recordKey.
-
-      1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
-  2. Connect to Firebase 
-  3. Find which regions that was removed and get doctors of each such region. Store in deletedDoctors. 
-  4. For every new permitted region: get the doctors of each such region. Store in addedDoctors. 
-  5. Go through all doctors d in 'Firebase/Doctors'.
-    i) If d in removedDoctors: delete recordKey for d. 
-    ii) If d in addedDoctors: encrypt patient recordKey with doctors publicKey into recordKey_version and store recordKey_version in 'Firebase/DoctorsToRecordKey'
-  */
-
-    //Maybe not needed
-    let changedRegions = [];
-    for (let region in newPermittedRegions) {
-      if (!state.regions.includes(region)) {
-        changedRegions.push(region["id"]);
-      }
-    }
-
-    let permitted = new Set(state.permittedRegions);
-    let newPermitted = new Set(newPermittedRegions);
-
-    let permitted_intersect_newPermitted = new Set(
-      [...permitted].filter((x) => newPermitted.has(x))
-    );
-    let deletedRegions = new Set(
-      [...permitted].filter((x) => !permitted_intersect_newPermitted.has(x))
-    );
-    let addedRegions = new Set(
-      [...newPermitted].filter((x) => !permitted_intersect_newPermitted.has(x))
-    );
-  };
-
-  /**
    * Submit new permitted regions to the blockchain.
    * TODO: clean up, error handling, make the new permitted regions be reflected right away without
    * needing to re-login.
@@ -319,6 +271,9 @@ export function EHROverviewScreen(props) {
     try {
       // TODO: decide whether to goa directly via chainconnection or via ehrService as with other region-functions...
       const connection = await chainConnection;
+      console.log("Are we gonna make it?");
+      await EHRService.updateRecordKeys(newPermittedRegions, state.patientID);
+      console.log("YES WE ARE!");
       await connection.setPermissions(state.patientID, newPermittedRegions);
 
       // update the list of permitted regions held by the state
@@ -402,7 +357,10 @@ export function EHROverviewScreen(props) {
     }));
   };
 
-  const editContactInfo = () => {
+  const editContactInfo = async () => {
+    //TODO remove. For testing only
+    let ssn = await EHRService.getSSNFromUID("3VBIIE4oJnabVVXJd2s3F02WarF3");
+    console.log("SSN: " + ssn.toString());
     toggleWarning(false);
     toggleEditingContactInfo(true);
     // populating input forms before editing

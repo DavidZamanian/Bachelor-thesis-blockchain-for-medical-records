@@ -4,12 +4,12 @@ import ChainOperationDeniedError from "./chainOperationDeniedError";
 import ChainConnectionError from "./chainConnectionError";
 
 /**
- * Handles the connection to the smart contract Block4EHR on the blockchain. 
+ * Handles the connection to the smart contract Block4EHR on the blockchain.
  * Is used to both integrate with metamask and acts as an intermediate
- * against contract calls. 
- * 
- * TODO: remove console.log:s. Only there for dev purposes. 
- * 
+ * against contract calls.
+ *
+ * TODO: remove console.log:s. Only there for dev purposes.
+ *
  * @author Hampus Jernkrook
  */
 export default class ChainConnection {
@@ -26,12 +26,12 @@ export default class ChainConnection {
   }
 
   /**
-   * Initializes the state variables of the `ChainConnection` instance. 
+   * Initializes the state variables of the `ChainConnection` instance.
    * This method is a slightly modified version of the client/src/App.js file
-   * provided by the truffle box "react". 
+   * provided by the truffle box "react".
    * @author Hampus Jernkrook
-   * 
-   * TODO: remove the console.log:s when done developing. 
+   *
+   * TODO: remove the console.log:s when done developing.
    */
   async init() {
     console.log("Starting init()");
@@ -59,20 +59,21 @@ export default class ChainConnection {
       // Set web3, accounts, and contract to the state.
       this.setState({ web3, accounts, contract: instance });
     } catch (error) {
-      alert(`FATAL: Failed to connect to the blockchain system.\n`+
-        `- If not already connected, you need to allow Metamask to connect to the site.\n` + 
-        `- Click OK below to reload the page. Metamask will prompt you to connect.`
+      alert(
+        `FATAL: Failed to connect to the blockchain system.\n` +
+          `- If not already connected, you need to allow Metamask to connect to the site.\n` +
+          `- Click OK below to reload the page. Metamask will prompt you to connect.`
       );
-      window.location.reload(); // reload the page. 
+      window.location.reload(); // reload the page.
     }
     console.log("Done init()");
   }
 
   /**
-   * Checks it the method invoker has permission to 
+   * Checks it the method invoker has permission to
    * access the given patient's EHR.
-   * @param {String} patientId The id of the patient to check permision against. 
-   * @returns {Promise<boolean>} true iff the invoker is permissioned by the given patient. 
+   * @param {String} patientId The id of the patient to check permision against.
+   * @returns {Promise<boolean>} true iff the invoker is permissioned by the given patient.
    * @author Hampus Jernkrook
    */
   async hasPermission(patientId) {
@@ -80,32 +81,32 @@ export default class ChainConnection {
 
     let res = false;
 
-    try{
+    try {
       res = await contract.methods
-      .hasPermission(patientId)
-      .call({ from: accounts[0] });
-    }catch(e){
+        .hasPermission(patientId)
+        .call({ from: accounts[0] });
+    } catch (e) {
       // Do something if this fails.
       console.warn(e);
     }
-    
+
     return res;
   }
 
   /**
-   * Get the list of permissioned regions, for the given patient. 
-   * @param {String} patientId The id of the patient to retrieve permissioned regions for. 
+   * Get the list of permissioned regions, for the given patient.
+   * @param {String} patientId The id of the patient to retrieve permissioned regions for.
    * @returns {Promise<Array<String>>} The list of permissioned regions, in the form of region id:s.
    * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
-   *  having permission to invoke it. 
+   *  having permission to invoke it.
    * @author Hampus Jernkrook
    */
   async getPermissionedRegions(patientId) {
     const { accounts, contract } = this.state;
     try {
       const arr = await contract.methods
-      .getPermissionedRegions(patientId)
-      .call({ from: accounts[0] });
+        .getPermissionedRegions(patientId)
+        .call({ from: accounts[0] });
       return arr;
     } catch (err) {
       throw new ChainOperationDeniedError(err.message);
@@ -113,19 +114,19 @@ export default class ChainConnection {
   }
 
   /**
-   * Get the CID of the given patient's EHR, stored on the chain. 
+   * Get the CID of the given patient's EHR, stored on the chain.
    * @param {String} patientId The id of the patient to retrieve the CID of.
-   * @returns {Promise<String>} The CID of the given patient's EHR. 
+   * @returns {Promise<String>} The CID of the given patient's EHR.
    * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
-   *  having permission to invoke it. 
+   *  having permission to invoke it.
    * @author Hampus Jernkrook
    */
   async getEHRCid(patientId) {
     const { accounts, contract } = this.state;
     try {
       const cid = await contract.methods
-          .getEHRCid(patientId)
-          .call({ from: accounts[0] });
+        .getEHRCid(patientId)
+        .call({ from: accounts[0] });
       return cid;
     } catch (err) {
       throw new ChainOperationDeniedError(err.message);
@@ -133,11 +134,11 @@ export default class ChainConnection {
   }
 
   /**
-   * Set the CID of the given patient on the chain. 
-   * @param {String} patientId The id of the patient to set the CID for. 
+   * Set the CID of the given patient on the chain.
+   * @param {String} patientId The id of the patient to set the CID for.
    * @param {String} cid The value of CID to be set.
    * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
-   *  having permission to invoke it. 
+   *  having permission to invoke it.
    * @author Hampus Jernkrook
    */
   async updateEHR(patientId, cid) {
@@ -152,19 +153,19 @@ export default class ChainConnection {
   }
 
   /**
-   * Set the list of permissioned regions for the given patient. 
-   * @param {String} patientId The id of the patient to set the list of permissions for. 
-   * @param {Array<String>} regions Array of region id:s that the patient have authorized permission to. 
+   * Set the list of permissioned regions for the given patient.
+   * @param {String} patientId The id of the patient to set the list of permissions for.
+   * @param {Array<String>} regions Array of region id:s that the patient have authorized permission to.
    * @throws {ChainOperationDeniedError} if the operation failed, most likely due to the invoker not
-   *  having permission to invoke it. 
-   * @author Hampus Jernkrook 
+   *  having permission to invoke it.
+   * @author Hampus Jernkrook
    */
   async setPermissions(patientId, regions) {
     try {
       const { accounts, contract } = this.state;
       await contract.methods
-          .setPermissions(patientId, regions)
-          .send({ from: accounts[0] });
+        .setPermissions(patientId, regions)
+        .send({ from: accounts[0] });
     } catch (err) {
       throw new ChainOperationDeniedError(err.message);
     }
@@ -172,9 +173,9 @@ export default class ChainConnection {
 
   /**
    * Get the list of all regions on the chain.
-   * @returns {Promise<Array<Array<string>>>} Array of Region objects, with properties `id` and `name`. 
+   * @returns {Promise<Array<Array<string>>>} Array of Region objects, with properties `id` and `name`.
    * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
-   *  due to a network error. 
+   *  due to a network error.
    * @author Hampus Jernkrook
    */
   async getAllRegions() {
@@ -190,11 +191,11 @@ export default class ChainConnection {
   }
 
   /**
-   * Get all recorded personnel operating within a given region. 
-   * @param {String} regionId The region to return all personnel operating within. 
-   * @returns {Array<String>} An array of personnel ids.
+   * Get all recorded personnel operating within a given region.
+   * @param {String} regionId The region to return all personnel operating within.
+   * @returns {Promise<String>} An array of personnel ids.
    * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
-   *  due to a network error. 
+   *  due to a network error.
    * @author Hampus Jernkrook
    */
   async getRegionPersonnel(regionId) {
@@ -203,17 +204,17 @@ export default class ChainConnection {
       const { accounts, contract } = this.state;
       personnel = await contract.methods
         .getRegionPersonnel(regionId)
-        .call({ from : accounts[0] });
+        .call({ from: accounts[0] });
     } catch (err) {
       throw new ChainConnectionError(err.message);
     }
-    return personnel.map(p => p.id);
+    return personnel.map((p) => p.id);
   }
 
   /**
-   * Get the name of a given healthcare institution. 
-   * @param {String} institutionId The id of the institution that the name should be returned for. 
-   * @returns {String} The name of the instituion with the given id.
+   * Get the name of a given healthcare institution.
+   * @param {String} institutionId The id of the institution that the name should be returned for.
+   * @returns {Primise<String>} The name of the instituion with the given id.
    * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
    *  due to a network error.
    * @author Hampus Jernkrook

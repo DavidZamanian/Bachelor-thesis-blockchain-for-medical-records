@@ -9,28 +9,29 @@ import { PlaceholderValues } from "../placeholders/placeholderValues";
 import * as crypt from "../../Crypto/crypt";
 import { getAuth } from "@firebase/auth";
 import crypto, { createPrivateKey } from "crypto";
-import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError"
+import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError";
 import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
 import ChainConnectionError from "../chainConnection/chainConnectionError";
 import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
 
-
 export default class EHRService {
-
   // Class variables
   static chainConnection = ChainConnectionFactory.getChainConnection();
   static privateKey;
   static publicKey;
 
   // Setters
-  static async setPrivateKey(newPrivateKey) { this.privateKey = newPrivateKey; }
-  static async setPublicKey(newPublicKey) { this.publicKey = newPublicKey; }
-
+  static async setPrivateKey(newPrivateKey) {
+    this.privateKey = newPrivateKey;
+  }
+  static async setPublicKey(newPublicKey) {
+    this.publicKey = newPublicKey;
+  }
 
   /**
    * Derives symmetric key from password and salt,
-   * fetches private and public keys, 
+   * fetches private and public keys,
    * and uses symmetric key to decrypt private key.
    * Then sets the class instance's private and public key variables to these keys.
    * @param  {String} password
@@ -38,7 +39,6 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async setKeys(password, salt) {
-    
     let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
 
     let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
@@ -50,7 +50,7 @@ export default class EHRService {
 
     this.setPrivateKey(privKey);
 
-    let pubKey = await this.getPublicKey();
+    let pubKey = await this.getPublicKeyWithUID();
 
     this.setPublicKey(pubKey);
 
@@ -89,12 +89,12 @@ export default class EHRService {
   }
 
   /**
-   * Fetches the public key for the currently logged in user.
+   * (ONLY AVAILABLE FOR CURRENLY LOGGED IN USER) - Fetches the public key for the currently logged in patient.
    * @returns {Promise<String>} returns the public key for the current user.
    * @author David Zamanian
    */
 
-  static async getPublicKey() {
+  static async getPublicKeyWithUID() {
     let publicKey;
     const auth = getAuth();
     let dbRef = ref(database);
@@ -110,6 +110,57 @@ export default class EHRService {
         throw error;
       });
     return publicKey;
+  }
+
+  /** Pass a user SSN and get back the respective UID
+   *
+   * @param {String} SSN
+   * @returns UID of the user
+   * @author David Zamanian
+   */
+  static async getUIDFromSSN(SSN) {
+    let getUID;
+    let dbRef = ref(database);
+    await get(child(dbRef, "mapUserSSNtoUID/" + SSN))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          getUID = snapshot.val();
+        } else {
+          throw "No data available";
+        }
+      })
+      .catch((error) => {
+        throw error;
+      });
+    return getUID;
+  }
+
+  /** Pass a user UID and get back the respective SSN
+   *
+   * @param {String} UID
+   * @returns SSN of the user
+   * @author David Zamanian
+   */
+  static async getSSNFromUID(UID) {
+    console.log("In function");
+    let getSSN;
+    let dbRef = ref(database);
+    await get(child(dbRef, "mapUser/" + UID))
+      .then((snapshot) => {
+        console.log("snapshot: " + snapshot);
+        if (snapshot.exists()) {
+          console.log("snapshot: " + snapshot);
+          console.log("snapshot.val(): " + snapshot.val());
+          console.log("snapshot.val().SSN: " + snapshot.val().SSN);
+          getSSN = snapshot.val().SSN;
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.log("error: " + error);
+      });
+    return getSSN;
   }
 
   /**
@@ -152,7 +203,11 @@ export default class EHRService {
     await get(
       child(
         dbRef,
-        "DoctorToRecordKey/" + auth.currentUser.uid + "/recordKeys/" + patientID
+        "DoctorToRecordKey/" +
+          auth.currentUser.uid +
+          "/recordKeys/" +
+          patientID +
+          "/recordKey/"
       )
     )
       .then((snapshot) => {
@@ -179,17 +234,14 @@ export default class EHRService {
     const auth = getAuth();
     let dbRef = ref(database);
     await get(
-      child(
-        dbRef,
-        "PatientToRecordKey/" + auth.currentUser.uid + "/recordKey"
-      )
+      child(dbRef, "PatientToRecordKey/" + auth.currentUser.uid + "/recordKey")
     )
       .then((snapshot) => {
         if (snapshot.exists()) {
           encPatientRecordKey = snapshot.val();
         } else {
           //Maybe do something else here
-          console.error("GetPatientRecordKey Error: "+auth.currentUser.uid);
+          console.error("GetPatientRecordKey Error: " + auth.currentUser.uid);
           throw "Something went wrong";
         }
       })
@@ -197,6 +249,137 @@ export default class EHRService {
         throw error;
       });
     return encPatientRecordKey;
+  }
+
+  /**
+   * Update recordKeys for all involed doctors when updating permitted regions
+   *
+   * Need access to: Firebase, recordKey of patient and publicKey of doctor
+   *
+   * @param {*} newPermittedRegions
+   */
+
+  static async updateRecordKeys(newPermittedRegions, patientID) {
+    console.log("We are in the method");
+    /* TODO
+
+1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
+2. Connect to Firebase 
+3. Find which regions that was removed and get doctors of each such region (with getRegionPersonnel). Store in deletedDoctors.
+4. For every new permitted region:  
+  i) Go through all doctors in 'Doctors' 
+  ii) and if said doctor is in the new permitted region, encrypt patient recordKey with doctors publicKey
+  ii) Add a new entry in 'DoctorsToRecordKey' under said doctor with the new encrypted recordKey.
+
+    1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
+2. Connect to Firebase 
+3. Find which regions that was removed and get doctors of each such region. Store in deletedDoctors. 
+4. For every new permitted region: get the doctors of each such region. Store in addedDoctors. 
+5. Go through all doctors d in 'Firebase/Doctors'.
+  i) If d in removedDoctors: delete recordKey for d. 
+  ii) If d in addedDoctors: encrypt patient recordKey with doctors publicKey into recordKey_version and store recordKey_version in 'Firebase/DoctorsToRecordKey'
+*/
+
+    let connection = await this.chainConnection;
+
+    //The old permitted regions
+
+    console.log("NewPermittedRegions: " + newPermittedRegions);
+    let p = await this.getPatientRegions(patientID);
+    var permitted = new Set();
+    p.map((item) => permitted.add(item));
+    console.log("permittedRegions: " + p);
+    //Values disappear when creating a set with them..
+    //let permitted = new Set(p);
+    console.log("permittedRegions: " + Array.from(permitted));
+
+    //the new permitted regions
+    let newPermitted = new Set(newPermittedRegions);
+    console.log("newPermitted: " + Array.from(newPermitted));
+    //The common regions between permitted and newPermitted. Basically A intersect B
+    let permitted_intersect_newPermitted = new Set(
+      [...permitted].filter((x) => newPermitted.has(x))
+    );
+    console.log(
+      "intersection: " + Array.from(permitted_intersect_newPermitted)
+    );
+    //All the deleted regions (from permitted). Basically A - (A intersect B)
+    let deletedRegions = new Set(
+      [...permitted].filter((x) => !permitted_intersect_newPermitted.has(x))
+    );
+    console.log("deleted regions: " + Array.from(deletedRegions));
+    //All the new regions that was added. Basically B - (A intersect B)
+    let addedRegions = new Set(
+      [...newPermitted].filter((x) => !permitted_intersect_newPermitted.has(x))
+    );
+    console.log("addedRegions: " + Array.from(addedRegions));
+
+    //Make array of all the added doctors
+    let addedDoctors = [];
+    addedRegions.forEach(async function (regionID) {
+      let result = await connection.getRegionPersonnel(regionID);
+      if (result != "" && result != null) {
+        addedDoctors.push(result);
+      }
+      console.log("addedDoctors: " + addedDoctors);
+    });
+
+    //Make array of all the removed doctors
+    let removedDoctors = [];
+    deletedRegions.forEach(async function (regionID) {
+      let result = await connection.getRegionPersonnel(regionID);
+      if (result != "" && result != null) {
+        removedDoctors.push(result);
+      }
+      console.log("removedDoctors1: " + removedDoctors);
+    });
+
+    //Go through all doctors in database and check if added or removed
+    console.log("All assignments are done");
+    let dbRef = ref(database);
+    const doctorSnapshot = await get(child(dbRef, "DoctorToRecordKey/"));
+    //For each doctor (that has a recordKey, but basically all doctors in the system)
+
+    doctorSnapshot.forEach(async function (child) {
+      //If the doctor is in the list of removed doctors, remove that recordKey from database
+      console.log(
+        "Check if undefined, child.val(): " +
+          Object.keys(doctorSnapshot.val())[0]
+      );
+      let doctorUID = Object.keys(doctorSnapshot.val())[0];
+      console.log("Got doctorUID");
+      let doctorSSN = await EHRService.getSSNFromUID(doctorUID);
+      console.log("Got doctorSSN: " + doctorSSN);
+      console.log("removedDoctors2: " + removedDoctors);
+      if (removedDoctors.includes(doctorSSN)) {
+        console.log("Doctor was found in removed list");
+        set(dbRef, "DoctorToRecordKey/" + doctorUID + "/recordKeys/", {
+          patientID: null,
+        });
+        console.log("RecordKey should have been removed");
+      } else if (addedDoctors.includes(doctorSSN)) {
+        console.log("Doctor was found in added list");
+        let doctorPubKey = await EHRService.getPublicKeyWithUID(doctorUID);
+        console.log("Get DoctorPublicKey");
+        //Get recordKey from user, decrypt it en reencrypt it with doctors publicKey here..
+        let encryptedPatientRecordKey = await EHRService.getPatientRecordKey();
+        let patientRecordKey = await crypt.decryptRecordKey(
+          encryptedPatientRecordKey,
+          EHRService.privateKey
+        );
+        let newEncryptedRecordKey = await crypt.encryptRecordKey(
+          patientRecordKey,
+          doctorPubKey
+        );
+        set(
+          dbRef,
+          "DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID,
+          {
+            recordKey: newEncryptedRecordKey,
+          }
+        );
+      } else console.log("Something strange happened");
+    });
   }
 
   /**
@@ -265,7 +448,6 @@ export default class EHRService {
     diagnoses
   ) {
     try {
-
       patientID = "".concat(patientID);
 
       let finalFiles = [];
@@ -290,7 +472,6 @@ export default class EHRService {
       // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
       let encryptedRecordKey = await this.getDoctorRecordKey(patientID);
 
-
       console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
       console.warn("PrivateKey: " + this.privateKey);
 
@@ -298,26 +479,24 @@ export default class EHRService {
         encryptedRecordKey,
         await this.privateKey
       );
-      
+
       console.log("Attempting Fetch");
 
-      try{
-        
+      try {
         let oldCid = await connection.getEHRCid(patientID);
         let patientEHR = await this.getFiles(oldCid, decryptedRecordKey, true);
 
-        console.table(patientEHR)
+        console.table(patientEHR);
 
         prescriptions = prescriptions.concat(patientEHR.prescriptions);
         diagnoses = diagnoses.concat(patientEHR.diagnoses);
         finalFiles = finalFiles.concat(patientEHR.encryptedEHRFiles);
 
         index = patientEHR.nextIndex;
-
-      }catch(e){
-        console.log(e)
+      } catch (e) {
+        console.log(e);
       }
-      
+
       // Make into JSON objects
       let stringEHR = await this.stringify(objectEHR);
       let stringPrescriptions = await this.stringify(prescriptions);
@@ -352,17 +531,15 @@ export default class EHRService {
       // Put JSON files into list and upload
       finalFiles.push(ehrFile, prescriptionsFile, diagnosesFile);
 
-      try{
-        
+      try {
         let newCID = await fs.uploadFiles(finalFiles);
 
         await connection.updateEHR(patientID, newCID);
-        
+
         // DEBUG
         let checkCID = await connection.getEHRCid(patientID);
-        console.debug("Expected: "+newCID+"\nActual: "+checkCID);
+        console.debug("Expected: " + newCID + "\nActual: " + checkCID);
         // END OF DEBUG
-
 
         // TESTING ONLY
         // Testing if the cid and the files were uploaded
@@ -371,35 +548,36 @@ export default class EHRService {
             `https://${newCID}.ipfs.dweb.link/`
         );
         for (const file of finalFiles) {
-          console.log(file.name + ": " + (await file.text()).toString("base64"));
+          console.log(
+            file.name + ": " + (await file.text()).toString("base64")
+          );
         }
+      } catch (e) {}
 
-      }catch(e){}
-      
       return "Success";
-
-    } catch (e) {throw e;}
+    } catch (e) {
+      throw e;
+    }
   }
 
- /**
-  * Method for downloading, decrypting and parsing files from IPFS.
-  * @param {string} cid
-  * @param {string} decryptedRecordKey
-  * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
-  * @returns {Promise<{ 
-  * prescriptions: Array<string>, 
-  * diagnoses: Array<string>,
-  * decryptedEHRs: Array<object>,
-  * encryptedEHRFiles: Array<File>,
-  * nextIndex: number
-  * }>}
-  * If keepEHRencrypted is true, decryptedEHRs will be empty. 
-  * If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
-  * @author Christopher Molin
-  */
-  static async getFiles(cid, decryptedRecordKey, keepEHRencrypted){
-
-    let apiToken = await EHRService.getWeb3StorageToken()
+  /**
+   * Method for downloading, decrypting and parsing files from IPFS.
+   * @param {string} cid
+   * @param {string} decryptedRecordKey
+   * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
+   * @returns {Promise<{
+   * prescriptions: Array<string>,
+   * diagnoses: Array<string>,
+   * decryptedEHRs: Array<object>,
+   * encryptedEHRFiles: Array<File>,
+   * nextIndex: number
+   * }>}
+   * If keepEHRencrypted is true, decryptedEHRs will be empty.
+   * If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
+   * @author Christopher Molin
+   */
+  static async getFiles(cid, decryptedRecordKey, keepEHRencrypted) {
+    let apiToken = await EHRService.getWeb3StorageToken();
     let fs = new FileService(apiToken);
 
     let prescriptions = [];
@@ -408,45 +586,39 @@ export default class EHRService {
     let encryptedEHRFiles = [];
     let index = 0;
 
-    if (cid.length == 59){
+    if (cid.length == 59) {
       let filesAndIndex = await fs.fetchEHRFiles(cid, keepEHRencrypted);
       index = filesAndIndex.index;
-      for (const file of filesAndIndex.files){
-
-        if (keepEHRencrypted && file.name.search("EHR") != -1){
+      for (const file of filesAndIndex.files) {
+        if (keepEHRencrypted && file.name.search("EHR") != -1) {
           encryptedEHRFiles.push(file);
-        }
-        else{
+        } else {
           let fileContent = await file.text();
-          let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
+          let decryptedData = await this.decrypt(
+            fileContent,
+            decryptedRecordKey
+          );
           let parsedData = await this.parseIntoJSON(decryptedData);
 
-          if(file.name == "prescriptions.json"){
+          if (file.name == "prescriptions.json") {
             prescriptions = prescriptions.concat(parsedData);
-          }
-          else if(file.name == "diagnoses.json"){
+          } else if (file.name == "diagnoses.json") {
             diagnoses = diagnoses.concat(parsedData);
-          }
-          else if (file.name.search("EHR") != -1){
+          } else if (file.name.search("EHR") != -1) {
             decryptedEHRs = decryptedEHRs.concat(parsedData);
           }
         }
       }
-    } 
+    }
 
     return {
-        prescriptions: prescriptions, 
-        diagnoses: diagnoses, 
-        nextIndex: index,
-        encryptedEHRFiles: encryptedEHRFiles,
-        decryptedEHRs: decryptedEHRs
-    }
+      prescriptions: prescriptions,
+      diagnoses: diagnoses,
+      nextIndex: index,
+      encryptedEHRFiles: encryptedEHRFiles,
+      decryptedEHRs: decryptedEHRs,
+    };
   }
-
-
-
-
-
 
   /**
    * Gets EHR-files and parses contents to an object containing:
@@ -465,7 +637,6 @@ export default class EHRService {
 
     // This is needed to ensure patientID is in fact a string...
     patientID = "".concat(patientID);
-    
 
     let decryptedRecordKey = "";
 
@@ -497,11 +668,11 @@ export default class EHRService {
       journals: [],
     };
 
-    try{
+    try {
       // This may throw an error
       cid = await connection.getEHRCid(patientID);
-      console.debug(cid)
-      if (cid.length == 59){
+      console.debug(cid);
+      if (cid.length == 59) {
         let fetchedFiles = await this.getFiles(cid, decryptedRecordKey, false);
 
         EHR = {
@@ -510,13 +681,13 @@ export default class EHRService {
           journals: fetchedFiles.decryptedEHRs,
         };
       }
+    } catch (e) {
+      console.warn(
+        "The requested patient " + patientID + " has no prior CIDs. \n " + e
+      );
     }
-    catch(e){
-      console.warn("The requested patient "+patientID+" has no prior CIDs. \n "+e)
-    }
-    
+
     return EHR;
-    
   }
 
   /**
@@ -633,47 +804,51 @@ export default class EHRService {
   }
 
   /**
-     * Gets all regions from Firebase, and returns them as a list of region names.
-     * @returns {Promise<Array<String>>}
-     * @throws {CouldNotLoadRegionsError} If the operation failed, e.g. due to network error. 
-     * @author Hampus Jernkrook
-     */
-    static async getRegions() {
-        let connection = await this.chainConnection;
-        let regions;
-        try {
-            regions = await connection.getAllRegions();
-        } catch (err) {
-            if (err instanceof ChainConnectionError) {
-                throw new CouldNotLoadRegionsError(`Could not load the regions from the blockchain. `+
-                `The connection failed. Error: ${err.message}`);
-            }
-        }
-        return regions;
+   * Gets all regions from Firebase, and returns them as a list of region names.
+   * @returns {Promise<Array<String>>}
+   * @throws {CouldNotLoadRegionsError} If the operation failed, e.g. due to network error.
+   * @author Hampus Jernkrook
+   */
+  static async getRegions() {
+    let connection = await this.chainConnection;
+    let regions;
+    try {
+      regions = await connection.getAllRegions();
+    } catch (err) {
+      if (err instanceof ChainConnectionError) {
+        throw new CouldNotLoadRegionsError(
+          `Could not load the regions from the blockchain. ` +
+            `The connection failed. Error: ${err.message}`
+        );
+      }
     }
+    return regions;
+  }
 
   /**
-     * Gets all regions the given patient has granted permission to.
-     * @param {String} patientID The id of the patient to retrieve permissioned regions for. 
-     * @returns {Promise<Array<String>>} Array of regions authorised by the patient.
-     * @throws {CouldNotLoadPermittedRegionsError} If the operation failed, e.g. due to network error 
-     *  or that the caller is unauthorised to call this function. 
-     * @author Hampus Jernkrook
-     */
-     static async getPatientRegions(patientID){
-        let connection = await this.chainConnection;
-        let regions;
-        try {
-            regions = await connection.getPermissionedRegions(patientID);
-        } catch (err) {
-            if (err instanceof ChainOperationDeniedError) {
-                // show that the operation was denied, followed by generic message. 
-                throw new CouldNotLoadPermittedRegionsError(`Operation denied:\n` +
-                `Could not load permitted regions. Error thrown with message ${err.message}`);
-            } 
-        }   
-        return regions;
+   * Gets all regions the given patient has granted permission to.
+   * @param {String} patientID The id of the patient to retrieve permissioned regions for.
+   * @returns {Promise<Array<String>>} Array of regions authorised by the patient.
+   * @throws {CouldNotLoadPermittedRegionsError} If the operation failed, e.g. due to network error
+   *  or that the caller is unauthorised to call this function.
+   * @author Hampus Jernkrook
+   */
+  static async getPatientRegions(patientID) {
+    let connection = await this.chainConnection;
+    let regions;
+    try {
+      regions = await connection.getPermissionedRegions(patientID);
+    } catch (err) {
+      if (err instanceof ChainOperationDeniedError) {
+        // show that the operation was denied, followed by generic message.
+        throw new CouldNotLoadPermittedRegionsError(
+          `Operation denied:\n` +
+            `Could not load permitted regions. Error thrown with message ${err.message}`
+        );
+      }
     }
+    return regions;
+  }
 
   /**
    * Fetches the doctor's full name from Firebase.
