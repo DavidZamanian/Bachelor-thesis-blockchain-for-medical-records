@@ -259,134 +259,6 @@ export default class EHRService {
    * @param {*} newPermittedRegions
    */
 
-  static async oldupdateRecordKeys(newPermittedRegions, patientID) {
-    console.log("We are in the method");
-    /* TODO
-
-1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
-2. Connect to Firebase 
-3. Find which regions that was removed and get doctors of each such region (with getRegionPersonnel). Store in deletedDoctors.
-4. For every new permitted region:  
-  i) Go through all doctors in 'Doctors' 
-  ii) and if said doctor is in the new permitted region, encrypt patient recordKey with doctors publicKey
-  ii) Add a new entry in 'DoctorsToRecordKey' under said doctor with the new encrypted recordKey.
-
-    1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
-2. Connect to Firebase 
-3. Find which regions that was removed and get doctors of each such region. Store in deletedDoctors. 
-4. For every new permitted region: get the doctors of each such region. Store in addedDoctors. 
-5. Go through all doctors d in 'Firebase/Doctors'.
-  i) If d in removedDoctors: delete recordKey for d. 
-  ii) If d in addedDoctors: encrypt patient recordKey with doctors publicKey into recordKey_version and store recordKey_version in 'Firebase/DoctorsToRecordKey'
-*/
-
-    let connection = await this.chainConnection;
-
-    //The old permitted regions
-
-    console.log("NewPermittedRegions: " + newPermittedRegions);
-    let p = await this.getPatientRegions(patientID);
-    var permitted = new Set();
-    p.map((item) => permitted.add(item));
-    console.log("permittedRegions: " + p);
-    //Values disappear when creating a set with them..
-    //let permitted = new Set(p);
-    console.log("permittedRegions: " + Array.from(permitted));
-
-    //the new permitted regions
-    let newPermitted = new Set(newPermittedRegions);
-    console.log("newPermitted: " + Array.from(newPermitted));
-    //The common regions between permitted and newPermitted. Basically A intersect B
-    let permitted_intersect_newPermitted = new Set(
-      [...permitted].filter((x) => newPermitted.has(x))
-    );
-    console.log(
-      "intersection: " + Array.from(permitted_intersect_newPermitted)
-    );
-    //All the deleted regions (from permitted). Basically A - (A intersect B)
-    let deletedRegions = new Set(
-      [...permitted].filter((x) => !permitted_intersect_newPermitted.has(x))
-    );
-    console.log("deleted regions: " + Array.from(deletedRegions));
-    //All the new regions that was added. Basically B - (A intersect B)
-    let addedRegions = new Set(
-      [...newPermitted].filter((x) => !permitted_intersect_newPermitted.has(x))
-    );
-    console.log("addedRegions: " + Array.from(addedRegions));
-
-    let addedDoctors = [];
-    addedDoctors = await this.pushDoctorsToList(
-      connection,
-      addedRegions
-    ).then();
-    //Make array of all the added doctors
-    /*let addedDoctors = [];
-    addedRegions.forEach(async function (regionID) {
-      let result = await connection.getRegionPersonnel(regionID);
-      if (result != "" && result != null) {
-        addedDoctors.push(result);
-      }
-      console.log("addedDoctors: " + addedDoctors);
-    });
-    */
-
-    //Make array of all the removed doctors
-    let removedDoctors = [];
-    removedDoctors = await this.pushDoctorsToList(connection, deletedRegions);
-
-    /*deletedRegions.forEach(async function (regionID) {
-      let result = await connection.getRegionPersonnel(regionID);
-      if (result != "" && result != null) {
-        removedDoctors.push(result);
-      }
-      console.log("removedDoctors1: " + removedDoctors);
-    });
-    */
-
-    //Go through all doctors in database and check if added or removed
-    console.log("All assignments are done");
-    let dbRef = ref(database);
-    const doctorSnapshot = await get(child(dbRef, "DoctorToRecordKey/"));
-    //For each doctor (that has a recordKey, but basically all doctors in the system)
-
-    doctorSnapshot.forEach(async function (child) {
-      //If the doctor is in the list of removed doctors, remove that recordKey from database
-      let doctorUID = Object.keys(doctorSnapshot.val())[0];
-      let doctorSSN = await EHRService.getSSNFromUID(doctorUID);
-      console.log("doctorSSN: " + doctorSSN);
-      console.log("removedDoctors2: " + removedDoctors);
-      console.log("addedDoctors2: " + addedDoctors + "  " + Date.now());
-      if (removedDoctors.includes(doctorSSN)) {
-        console.log("Doctor was found in removed list");
-        set(dbRef, "DoctorToRecordKey/" + doctorUID + "/recordKeys/", {
-          patientID: null,
-        });
-        console.log("RecordKey should have been removed");
-      } else if (addedDoctors.includes(doctorSSN)) {
-        console.log("Doctor was found in added list");
-        let doctorPubKey = await EHRService.getPublicKeyWithUID(doctorUID);
-        console.log("Get DoctorPublicKey");
-        //Get recordKey from user, decrypt it en reencrypt it with doctors publicKey here..
-        let encryptedPatientRecordKey = await EHRService.getPatientRecordKey();
-        let patientRecordKey = await crypt.decryptRecordKey(
-          encryptedPatientRecordKey,
-          EHRService.privateKey
-        );
-        let newEncryptedRecordKey = await crypt.encryptRecordKey(
-          patientRecordKey,
-          doctorPubKey
-        );
-        set(
-          dbRef,
-          "DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID,
-          {
-            recordKey: newEncryptedRecordKey,
-          }
-        );
-      } else console.log("Something strange happened");
-    });
-  }
-
   static async updateRecordKeys(newPermittedRegions, patientID) {
     console.log("We are in the method");
     /* TODO
@@ -465,14 +337,14 @@ export default class EHRService {
       console.log("addedDoctors: " + addedDoctors + " Time: " + Date.now());
       let testArray = ["9711021234"];
 
-      //This runs before removeDoctors is fully updated
-      if (removedDoctors.indexOf("9711021234") > -1) {
+      //This runs before removeDoctors is fully updated (works if you change one or few permissions at a time but too many and it is not updated)
+      if (removedDoctors.indexOf(doctorSSN) > -1) {
         console.log("Doctor was found in removed list");
         set(dbRef, "DoctorToRecordKey/" + doctorUID + "/recordKeys/", {
           patientID: null,
         });
         console.log("RecordKey should have been removed");
-      } else if (addedDoctors.indexOf("9711021234") > -1) {
+      } else if (addedDoctors.indexOf(doctorSSN) > -1) {
         console.log("Doctor was found in added list");
         let doctorPubKey = await EHRService.getPublicKeyWithUID(doctorUID);
         console.log("Get DoctorPublicKey: " + doctorPubKey);
@@ -483,7 +355,24 @@ export default class EHRService {
           encryptedPatientRecordKey,
           EHRService.privateKey
         );
-        console.log("decrypted patient recordKey: " + patientRecordKey);
+        console.log(
+          "decrypted patient recordKey: " + patientRecordKey.toString("base64")
+        );
+
+        //FOR TESTING, these work find because format of publicKey is correct
+        const ericRecordKey = `KuM4sQeaBMXUN4Gpo1qRj1tUhyaAtDqpxXVyoMvgb9w=`;
+        const ericAnderssonPublicKey = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3heUWD+OjQqTY3ETu9wo
+DdM8lBn6tnGUqgF6jyQ7xebRO/kceSFBIm3DYI2qDDLXkZwZm/zpfJu6MWrlTGgZ
+h5UYdYTOj2GT3KZS38Dza8zfNzmE7+ZeNgSvjUpyGu7HKSXiwIY1/9qgyL6hrBLU
+fDyoaPZ5QdN1aZvxoGvfLc9zCViyR1+VcN5NJ//Wg/ry62fqmV/c0cete33iOoUn
+CsEjK3+xY6yZI/RJV9LUZdVeW4ynTS/20DtXrG83ucXLkQEt3R9HLzhXP/j3gu3Z
+Ppesfeub/aNBLy8m6EO4J3q1mKZwcsqjfUu8ZFPxzD/d/4EsG7AN2YY3crVrT5zo
+yQIDAQAB
+-----END PUBLIC KEY-----
+`;
+
+        //This gives error because publicKey is weirdly formatted (i need to redo the keys in database)
         let newEncryptedRecordKey = await crypt.encryptRecordKey(
           patientRecordKey,
           doctorPubKey
