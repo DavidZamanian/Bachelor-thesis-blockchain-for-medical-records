@@ -214,7 +214,7 @@ export default class ChainConnection {
   /**
    * Get the name of a given healthcare institution.
    * @param {String} institutionId The id of the institution that the name should be returned for.
-   * @returns {Primise<String>} The name of the instituion with the given id.
+   * @returns {Promise<String>} The name of the instituion with the given id.
    * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
    *  due to a network error.
    * @author Hampus Jernkrook
