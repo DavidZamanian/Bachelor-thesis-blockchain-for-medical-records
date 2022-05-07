@@ -172,21 +172,26 @@ export default class EHRService {
    * @author David Zamanian
    */
 
-  static async getDoctorRecordKey(patientID) {
+   static async getDoctorRecordKey(patientID) {
     let encDoctorRecordKey;
     const auth = getAuth();
     let dbRef = ref(database);
     await get(
       child(
         dbRef,
-        "DoctorToRecordKey/" + auth.currentUser.uid + "/recordKeys/" + patientID
+        "DoctorToRecordKey/" +
+          auth.currentUser.uid +
+          "/recordKeys/" +
+          patientID +
+          "/recordKey/"
       )
     )
-    .then((snapshot) => {
+      .then((snapshot) => {
         if (snapshot.exists()) {
           encDoctorRecordKey = snapshot.val();
         } else {
-          throw new FetchKeyError("Either the Doctor does not have permission to view this patient's records, or the provided patient does not exist.");
+          //Maybe do something else here
+          throw new FetchKeyError("Doctor does not have permission to view this patient's records");
         }
       })
       .catch((error) => {
