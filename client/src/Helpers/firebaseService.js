@@ -136,7 +136,51 @@ export default class FirebaseService{
         return encPatientRecordKey;
     }
 
+    /**
+    * Fetches the name of the institution from Firebase.
+    * @param  {String} institution A valid id
+    * @returns {Promise<String>} The name of the institution
+    * @author Christopher Molin
+    */
+    static async getInstitutionName(institution) { // kommer ersättas av metod i chainconnection 
+        let dbRef = ref(database);
+        let institutionName = "";
+        await get(child(dbRef, "Institutions/" + institution))
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    institutionName = snapshot.val().name;
+                } else {
+                    throw "No data available";
+                }
+            })
+            .catch((error) => {
+                throw error;
+            });
+        return institutionName;
+    }
 
+    /**
+   * Fetches the doctor's full name from Firebase.
+   * @param  {String} doctorID A valid SSN
+   * @returns {Promise<String>} Doctor's full name
+   * @author Christopher Molin
+   */
+    static async getDoctorFullName(doctorID) {
+        let dbRef = ref(database);
+        let fullName = "";
+        await get(child(dbRef, "Doctors/" + doctorID))
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    fullName = snapshot.val().lastName + ", " + snapshot.val().firstName;
+                } else {
+                    throw "The requested doctor is not available";
+                }
+            })
+            .catch((error) => {
+                throw error;
+            });
+        return fullName;
+    }
 
 
 }

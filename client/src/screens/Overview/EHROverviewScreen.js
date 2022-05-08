@@ -95,7 +95,7 @@ export function EHROverviewScreen(props) {
           const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 */
 
-          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ), role);
+          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ), role, false);
 
           const patientPrescriptions = ehr.prescriptions
           const patientDiagnoses = ehr.diagnoses;
