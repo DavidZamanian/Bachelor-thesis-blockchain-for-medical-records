@@ -8,6 +8,7 @@ import {
   get,
   child,
   update,
+  set,
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -29,4 +30,4 @@ const auth = getAuth(app);
 auth.setPersistence(inMemoryPersistence);
 const database = getDatabase(app);
 
-export { auth, database, ref, onValue, get, child };
+export { auth, database, ref, onValue, get, child, set, update };

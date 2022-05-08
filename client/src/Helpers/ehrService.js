@@ -3,7 +3,8 @@ import CreateFileObjectError from "./Errors/createFileObjectError";
 import fetchFileContentError from "./Errors/FetchFileContentError";
 import UploadFileError from "./Errors/uploadFileError";
 import FileService from "./fileService";
-import { database, ref, get, child } from "../../firebaseSetup";
+import { database, get, child } from "../../firebaseSetup";
+import { ref, update, set, getDatabase } from "firebase/database";
 import FetchFileContentError from "./Errors/FetchFileContentError";
 import { PlaceholderValues } from "../placeholders/placeholderValues";
 import * as crypt from "../../Crypto/crypt";
@@ -50,7 +51,7 @@ export default class EHRService {
 
     this.setPrivateKey(privKey);
 
-    let pubKey = await this.getPublicKeyWithUID();
+    let pubKey = await this.getPublicKey();
 
     this.setPublicKey(pubKey);
 
@@ -94,11 +95,34 @@ export default class EHRService {
    * @author David Zamanian
    */
 
-  static async getPublicKeyWithUID() {
+  static async getPublicKey() {
     let publicKey;
     const auth = getAuth();
     let dbRef = ref(database);
     await get(child(dbRef, "mapUser/" + auth.currentUser.uid + "/publicKey/"))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          publicKey = snapshot.val();
+        } else {
+          throw "No data available";
+        }
+      })
+      .catch((error) => {
+        throw error;
+      });
+    return publicKey;
+  }
+
+  /**
+   * Fetches the public key for the user of the provided UID
+   * @returns {Promise<String>} returns the public key for the current user.
+   * @author David Zamanian
+   */
+
+  static async getPublicKeyWithUID(UID) {
+    let publicKey;
+    let dbRef = ref(database);
+    await get(child(dbRef, "mapUser/" + UID + "/publicKey/"))
       .then((snapshot) => {
         if (snapshot.exists()) {
           publicKey = snapshot.val();
@@ -325,24 +349,37 @@ export default class EHRService {
     //Go through all doctors in database and check if added or removed
     console.log("All assignments are done");
     let dbRef = ref(database);
+    let db = getDatabase();
     const doctorSnapshot = await get(child(dbRef, "DoctorToRecordKey/"));
     //For each doctor (that has a recordKey, but basically all doctors in the system)
 
+    //This should only be for removedDoctors. addedDoctors should not be in this forEach clause
     doctorSnapshot.forEach(async function (child) {
       //If the doctor is in the list of removed doctors, remove that recordKey from database
       let doctorUID = Object.keys(doctorSnapshot.val())[0];
       let doctorSSN = await EHRService.getSSNFromUID(doctorUID);
+      console.log("doctorUID: " + doctorUID);
       console.log("doctorSSN: " + doctorSSN);
       console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
       console.log("addedDoctors: " + addedDoctors + " Time: " + Date.now());
-      let testArray = ["9711021234"];
 
       //This runs before removeDoctors is fully updated (works if you change one or few permissions at a time but too many and it is not updated)
       if (removedDoctors.indexOf(doctorSSN) > -1) {
         console.log("Doctor was found in removed list");
-        set(dbRef, "DoctorToRecordKey/" + doctorUID + "/recordKeys/", {
-          patientID: null,
-        });
+        const dataToSave = {
+          recordKey: null,
+        };
+        const updates = {};
+        updates["DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID] =
+          dataToSave;
+
+        update(dbRef, updates)
+          .then(() => {
+            console.log("Data removed successfully");
+          })
+          .catch((e) => {
+            console.log("Data could not be removed due to: " + e);
+          });
         console.log("RecordKey should have been removed");
       } else if (addedDoctors.indexOf(doctorSSN) > -1) {
         console.log("Doctor was found in added list");
@@ -359,19 +396,6 @@ export default class EHRService {
           "decrypted patient recordKey: " + patientRecordKey.toString("base64")
         );
 
-        //FOR TESTING, these work find because format of publicKey is correct
-        const ericRecordKey = `KuM4sQeaBMXUN4Gpo1qRj1tUhyaAtDqpxXVyoMvgb9w=`;
-        const ericAnderssonPublicKey = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3heUWD+OjQqTY3ETu9wo
-DdM8lBn6tnGUqgF6jyQ7xebRO/kceSFBIm3DYI2qDDLXkZwZm/zpfJu6MWrlTGgZ
-h5UYdYTOj2GT3KZS38Dza8zfNzmE7+ZeNgSvjUpyGu7HKSXiwIY1/9qgyL6hrBLU
-fDyoaPZ5QdN1aZvxoGvfLc9zCViyR1+VcN5NJ//Wg/ry62fqmV/c0cete33iOoUn
-CsEjK3+xY6yZI/RJV9LUZdVeW4ynTS/20DtXrG83ucXLkQEt3R9HLzhXP/j3gu3Z
-Ppesfeub/aNBLy8m6EO4J3q1mKZwcsqjfUu8ZFPxzD/d/4EsG7AN2YY3crVrT5zo
-yQIDAQAB
------END PUBLIC KEY-----
-`;
-
         //This gives error because publicKey is weirdly formatted (i need to redo the keys in database)
         let newEncryptedRecordKey = await crypt.encryptRecordKey(
           patientRecordKey,
@@ -380,13 +404,21 @@ yQIDAQAB
         console.log(
           "new encrypted patient recordKey: " + newEncryptedRecordKey
         );
-        set(
-          dbRef,
-          "DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID,
-          {
-            recordKey: newEncryptedRecordKey,
-          }
-        );
+
+        const dataToSave = {
+          recordKey: newEncryptedRecordKey,
+        };
+        const updates = {};
+        updates["DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID] =
+          dataToSave;
+
+        update(dbRef, updates)
+          .then(() => {
+            console.log("Data saved successfully");
+          })
+          .catch((e) => {
+            console.log("Data could not be saved: " + e);
+          });
       } else console.log("Something strange happened");
     });
   }
@@ -408,8 +440,8 @@ yQIDAQAB
       let results = await connection.getRegionPersonnel(regionID);
 
       console.log(results);
-      
-      if (results.length > 0){
+
+      if (results.length > 0) {
         doctors = doctors.concat(results);
       }
     }
