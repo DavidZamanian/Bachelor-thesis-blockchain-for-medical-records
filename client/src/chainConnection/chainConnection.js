@@ -193,13 +193,13 @@ export default class ChainConnection {
   /**
    * Get all recorded personnel operating within a given region.
    * @param {String} regionId The region to return all personnel operating within.
-   * @returns {Promise<String>} An array of personnel ids.
+   * @returns {Promise<Array<String>>} An array of personnel ids.
    * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
    *  due to a network error.
    * @author Hampus Jernkrook
    */
   async getRegionPersonnel(regionId) {
-    let personnel;
+    let personnel = [];
     try {
       const { accounts, contract } = this.state;
       personnel = await contract.methods

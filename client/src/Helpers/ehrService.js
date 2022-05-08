@@ -394,23 +394,28 @@ yQIDAQAB
   /**
    *
    * @param {*} connection
-   * @param {Set<String>} setOfRegions
+   * @param {Set<Array<String>>} setOfRegions
    * @returns {Promise<Array<String>>}
    */
 
   static async pushDoctorsToList(setOfRegions) {
     let connection = await this.chainConnection;
     let doctors = [];
-    let result = "";
+
     console.log("setOfRegions: " + Array.from(setOfRegions));
-    setOfRegions.forEach(async (regionID) => {
-      result = await connection.getRegionPersonnel(regionID);
-      console.log("result: " + result);
-      if (result != "" && result != null) {
-        doctors.push(result.toString());
+
+    for (let regionID of setOfRegions) {
+      let results = await connection.getRegionPersonnel(regionID);
+
+      console.log(results);
+      
+      if (results.length > 0){
+        doctors = doctors.concat(results);
       }
-    });
-    console.log("Doctors: " + doctors);
+    }
+
+    console.log("Doctors:");
+    console.table(doctors);
     return doctors;
   }
 
