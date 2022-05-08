@@ -245,7 +245,7 @@ export default class EHRService {
       // Put JSON files into list and upload
       finalFiles.push(ehrFile, prescriptionsFile, diagnosesFile);
       */
-      finalFiles.push( await this.createEHRFiles(objectEHR, prescriptions, diagnoses,index, patientID));
+      finalFiles = finalFiles.concat( await this.createEHRFiles(objectEHR, prescriptions, diagnoses,index, patientID));
 
       try{
         
