@@ -14,6 +14,7 @@ import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
 import ChainConnectionError from "../chainConnection/chainConnectionError";
 import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
+import FirebaseService from "./firebaseService";
 
 
 export default class EHRService {
@@ -41,7 +42,7 @@ export default class EHRService {
     
     let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
 
-    let encryptedPrivateKeyAndIV = await this.getEncPrivateKeyAndIV();
+    let encryptedPrivateKeyAndIV = await FirebaseService.getEncPrivateKeyAndIV();
     let encryptedData = encryptedPrivateKeyAndIV.slice(46);
     let iv = encryptedPrivateKeyAndIV.slice(0, 44);
     let keyAndIv = { encryptedData, iv };
@@ -50,7 +51,7 @@ export default class EHRService {
 
     this.setPrivateKey(privKey);
 
-    let pubKey = await this.getPublicKey();
+    let pubKey = await FirebaseService.getPublicKey(); // ersätt med FirebaseService.getPublicKey
 
     this.setPublicKey(pubKey);
 
@@ -94,7 +95,7 @@ export default class EHRService {
    * @author David Zamanian
    */
 
-  static async getPublicKey() {
+ /* static async getPublicKey() {
     let publicKey;
     const auth = getAuth();
     let dbRef = ref(database);
@@ -110,7 +111,7 @@ export default class EHRService {
         throw error;
       });
     return publicKey;
-  }
+  }*/
 
   /**
    * Fetches the encrypted private key (and IV) of the current user from Firebase.
@@ -118,7 +119,7 @@ export default class EHRService {
    * @author David Zamanian
    */
 
-  static async getEncPrivateKeyAndIV() {
+ /* static async getEncPrivateKeyAndIV() {
     let encryptedPrivateKey;
     const auth = getAuth();
     let dbRef = ref(database);
@@ -136,7 +137,7 @@ export default class EHRService {
         throw error;
       });
     return encryptedPrivateKey;
-  }
+  }/*
 
   /**
    * Fetches the current doctor's encrypted record key for the provided patient.
@@ -145,7 +146,7 @@ export default class EHRService {
    * @author David Zamanian
    */
 
-  static async getDoctorRecordKey(patientID) {
+  /*static async getDoctorRecordKey(patientID) {
     let encDoctorRecordKey;
     const auth = getAuth();
     let dbRef = ref(database);
@@ -167,14 +168,16 @@ export default class EHRService {
         throw error;
       });
     return encDoctorRecordKey;
-  }
+  }*/
+
+  /*
   /**
    * Fetches the current patient's record key.
    * @returns The encrypted record key of the currently logged in patient
    * @author David Zamanian
    */
 
-  static async getPatientRecordKey() {
+  /*static async getPatientRecordKey() {
     let encPatientRecordKey;
     const auth = getAuth();
     let dbRef = ref(database);
@@ -197,7 +200,7 @@ export default class EHRService {
         throw error;
       });
     return encPatientRecordKey;
-  }
+  }*/
 
   /**
    * Constructs an EHR object
@@ -288,7 +291,7 @@ export default class EHRService {
       );
 
       // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
-      let encryptedRecordKey = await this.getDoctorRecordKey(patientID);
+      let encryptedRecordKey = await FirebaseService.getDoctorRecordKey(patientID);
 
 
       console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
@@ -461,31 +464,25 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async getEHR(patientID, role) {
-    // THIS IS ONLY CALLED BY OVERVIEW
 
     // This is needed to ensure patientID is in fact a string...
     patientID = "".concat(patientID);
-    
 
     let decryptedRecordKey = "";
+    let encryptedRecordKey = "";
 
     if (role == "doctor") {
-      let encryptedRecordKey = await this.getDoctorRecordKey(patientID);
-
-      decryptedRecordKey = await crypt.decryptRecordKey(
-        encryptedRecordKey,
-        this.privateKey
-      );
+      encryptedRecordKey = await FirebaseService.getDoctorRecordKey(patientID);
     } else if (role == "patient") {
-      let encryptedRecordKey = await this.getPatientRecordKey();
-
-      decryptedRecordKey = await crypt.decryptRecordKey(
-        encryptedRecordKey,
-        this.privateKey
-      );
+      encryptedRecordKey = await FirebaseService.getPatientRecordKey();
     } else {
-      console.error("ERROR: missing role");
+      throw "Invalid role!";
     }
+
+    decryptedRecordKey = await crypt.decryptRecordKey(
+      encryptedRecordKey,
+      this.privateKey
+    );
 
     let connection = await this.chainConnection;
 
@@ -520,14 +517,13 @@ export default class EHRService {
   }
 
   /**
-   * Parser
+   * Parse input to JSON
    * @param  {Array<string>} input
    * @returns  {Promise<Array<string> | object>}
    * @author Christopher Molin
    */
   static async parseIntoJSON(input) {
-    let array = await JSON.parse(input);
-    return array;
+    return await JSON.parse(input);
   }
 
   /**
@@ -538,60 +534,15 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async encrypt(content, decryptedRecordKey) {
-    let x = await crypt.encryptEHR(decryptedRecordKey, content);
+    let encryptedEHR = await crypt.encryptEHR(decryptedRecordKey, content);
 
-    console.log("----------------------------------");
-    console.log("Tag:" + x.Tag.toString("base64"));
-    console.log("IV:" + x.iv.toString("base64"));
-    console.log("Data:" + x.encryptedData);
-    console.log("----------------------------------");
+    console.table(encryptedEHR);
 
-    let result = "";
-
-    return result.concat(
-      x.Tag.toString("base64"),
-      x.iv.toString("base64"),
-      x.encryptedData
+    return "".concat(
+      encryptedEHR.Tag.toString("base64"),
+      encryptedEHR.iv.toString("base64"),
+      encryptedEHR.encryptedData
     );
-  }
-  /**
-   * Decrypts and returns the given file content
-   * @param  {string} fileContent file content (including Tag and IV at the beginning)
-   * @returns {Promise<string>} The decrypted content data (Tag and IV excluded)
-   * @author Christopher Molin
-   */
-  static async oldDecrypt(fileContent) {
-    let tag = fileContent.slice(0, 24);
-    let iv = fileContent.slice(24, 68);
-    let encrypted = fileContent.slice(68);
-
-    let ivBuffer = Buffer.from(iv, "base64");
-    let tagBuffer = Buffer.from(tag, "base64");
-
-    console.log("----------------");
-    console.log("ATTEMPTING DECRYPT");
-    console.log("DATA:");
-    console.log(encrypted);
-    console.log("IV:");
-    console.log(ivBuffer.toString("base64"));
-    console.log("TAG:");
-    console.log(tagBuffer.toString("base64"));
-
-    let EHR = {
-      iv: ivBuffer,
-      encryptedData: encrypted,
-      Tag: tagBuffer,
-    };
-
-    let x = await crypt.decryptEHR(
-      PlaceholderValues.recordKey,
-      EHR,
-      PlaceholderValues.medicPrivateKey
-    );
-
-    console.log("DECRYPTED DATA:");
-    console.log(x);
-    return x;
   }
 
   /**
@@ -610,26 +561,19 @@ export default class EHRService {
     let ivBuffer = Buffer.from(iv, "base64");
     let tagBuffer = Buffer.from(tag, "base64");
 
-    console.log("----------------");
-    console.log("ATTEMPTING DECRYPT");
-    console.log("DATA:");
-    console.log(encrypted);
-    console.log("IV:");
-    console.log(ivBuffer.toString("base64"));
-    console.log("TAG:");
-    console.log(tagBuffer.toString("base64"));
-
     let EHR = {
       iv: ivBuffer,
       encryptedData: encrypted,
       Tag: tagBuffer,
     };
 
-    let x = await crypt.decryptEHR(decryptedRecordKey, EHR);
+    console.table(EHR);
+
+    let decryptedData = await crypt.decryptEHR(decryptedRecordKey, EHR);
 
     console.log("DECRYPTED DATA:");
-    console.log(x);
-    return x;
+    console.log(decryptedData);
+    return decryptedData;
   }
 
   /**
@@ -719,28 +663,5 @@ export default class EHRService {
         throw error;
       });
     return institutionName;
-  }
-
-  /**
-   * Checks to see if provided PatientID exists on Firebase
-   * @param  {String} patientID A patient ID to look up
-   * @returns {Promise<boolean>} Whether or not the patient exist
-   * @author Christopher Molin
-   */
-  static async checkPatientExist(patientID) {
-    let dbRef = ref(database);
-    let exists = false;
-    await get(child(dbRef, "Patients/" + patientID))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          exists = true;
-        } else {
-          exists = false;
-        }
-      })
-      .catch((error) => {
-        throw error;
-      });
-    return exists;
   }
 }
