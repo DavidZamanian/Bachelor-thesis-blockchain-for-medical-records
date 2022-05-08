@@ -7,6 +7,7 @@ import styles from "./styles";
 import { useNavigation } from "@react-navigation/native";
 import EHRService from "../../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../../contexts/ChainConnectionContext";
+import FirebaseService from "../../../Helpers/firebaseService";
 
 export function PatientSearchScreen() {
 
@@ -50,7 +51,7 @@ export function PatientSearchScreen() {
   const searchPatient = async () => {
     //alert("[DEBUG] Attempting to search for patient: "+patientID);
     if(patientID.toString().length === expectedPatientIDLength &&
-      await EHRService.checkPatientExist(patientID)){
+      await FirebaseService.checkPatientExist(patientID)){
         
         let connection = await chainConnection;
 
