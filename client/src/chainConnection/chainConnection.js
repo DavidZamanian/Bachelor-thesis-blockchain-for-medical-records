@@ -69,10 +69,10 @@ export default class ChainConnection {
   }
 
   /**
-   * Checks it the method invoker has permission to 
+   * Checks if the method invoker has permission to 
    * access the given patient's EHR.
    * @param {String} patientId The id of the patient to check permision against. 
-   * @returns {Promise<boolean>} true iff the invoker is permissioned by the given patient. 
+   * @returns {Promise<boolean>} true if the invoker is permissioned by the given patient. 
    * @author Hampus Jernkrook
    */
   async hasPermission(patientId) {
@@ -229,4 +229,26 @@ export default class ChainConnection {
       throw new ChainConnectionError(err.message);
     }
   }
+
+  /**
+   * Get the healthcare institution a given medical personell works at. 
+   * @param {String} MedicalPersonnelId The id of the medical Personell. 
+   * @returns {HealthcareInst} The instituion object the given medical personell works at.
+   * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
+   *  due to a network error.
+   * @author Edenia Isaac
+   */
+  async getHealthCareInstitution(MedicalPersonnelId){
+    try{
+      const { accounts, contract } = this.state;
+      const healthcareInst = await contract.methods
+        .getHealthCareInstitution(MedicalPersonnelId)
+        .call({ from: accounts[0]});
+      return healthcareInst;
+    }catch (err){
+      throw new ChainConnectionError(err.message);
+    }
+  }
+
+
 }
