@@ -197,54 +197,6 @@ export default class EHRService {
         console.log("error when fetching!")
       }
       
-      /*
-      // Make into JSON objects
-      let stringEHR = await this.stringify(objectEHR);
-      let stringPrescriptions = await this.stringify(prescriptions);
-      let stringDiagnoses = await this.stringify(diagnoses);
-
-      console.log("Starting to encrypt files");
-
-
-      // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
-      let encryptedRecordKey = await FirebaseService.getDoctorRecordKey(patientID);
-
-
-      console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
-      console.warn("PrivateKey: " + this.privateKey);
-
-      let decryptedRecordKey = await crypt.decryptRecordKey(
-        encryptedRecordKey,
-        await this.privateKey
-      );
-
-      let encryptedEHR = await this.encrypt(stringEHR, decryptedRecordKey);
-      let encryptedPrescriptions = await this.encrypt(
-        stringPrescriptions,
-        decryptedRecordKey
-      );
-      let encryptedDiagnoses = await this.encrypt(
-        stringDiagnoses,
-        decryptedRecordKey
-      );
-
-      // Create JSON files
-      let ehrFile = await FileService.createJSONFile(
-        encryptedEHR,
-        "EHR_" + index
-      );
-      let prescriptionsFile = await FileService.createJSONFile(
-        encryptedPrescriptions,
-        "prescriptions"
-      );
-      let diagnosesFile = await FileService.createJSONFile(
-        encryptedDiagnoses,
-        "diagnoses"
-      );
-
-      // Put JSON files into list and upload
-      finalFiles.push(ehrFile, prescriptionsFile, diagnosesFile);
-      */
       finalFiles = finalFiles.concat( await this.createEHRFiles(objectEHR, prescriptions, diagnoses,index, patientID));
 
       try{
@@ -254,12 +206,6 @@ export default class EHRService {
         console.log(newCID);
 
         await connection.updateEHR(patientID, newCID);
-        
-        // DEBUG
-        let checkCID = await connection.getEHRCid(patientID);
-        console.debug("Expected: "+newCID+"\nActual: "+checkCID);
-        // END OF DEBUG
-
 
         // TESTING ONLY
         // Testing if the cid and the files were uploaded
@@ -270,6 +216,11 @@ export default class EHRService {
         for (const file of finalFiles) {
           console.log(file.name + ": " + (await file.text()).toString("base64"));
         }
+
+        // DEBUG
+        let checkCID = await connection.getEHRCid(patientID);
+        console.debug("Expected: "+newCID+"\nActual: "+checkCID);
+        // END OF DEBUG
 
       }catch(e){
         console.log("Error when uploading"+e.message);
@@ -362,7 +313,6 @@ export default class EHRService {
     // This is needed to ensure patientID is in fact a string...
     patientID = "".concat(patientID);
 
-    let decryptedRecordKey = "";
     let encryptedRecordKey = "";
 
     if (role == "doctor") {
@@ -373,14 +323,12 @@ export default class EHRService {
       throw "Invalid role!";
     }
 
-    decryptedRecordKey = await crypt.decryptRecordKey(
+    let decryptedRecordKey = await crypt.decryptRecordKey(
       encryptedRecordKey,
       this.privateKey
     );
 
     let connection = await this.chainConnection;
-
-    let cid = "";
 
     let EHR = {
       prescriptions: [],
@@ -391,10 +339,10 @@ export default class EHRService {
 
     try{
       // This may throw an error
-      cid = await connection.getEHRCid(patientID);
+      let cid = await connection.getEHRCid(patientID);
       console.debug(cid)
       if (cid.length == 59){
-        let fetchedFiles = await this.getFiles(cid, decryptedRecordKey, keepEncrypted); // ändra!
+        let fetchedFiles = await this.getFiles(cid, decryptedRecordKey, keepEncrypted);
 
         EHR = {
           prescriptions: fetchedFiles.prescriptions,
@@ -430,6 +378,7 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async encrypt(content, decryptedRecordKey) {
+
     let encryptedEHR = await crypt.encryptEHR(decryptedRecordKey, content);
 
     console.table(encryptedEHR);
@@ -450,6 +399,7 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async decrypt(fileContent, decryptedRecordKey) {
+
     let tag = fileContent.slice(0, 24);
     let iv = fileContent.slice(24, 68);
     let encrypted = fileContent.slice(68);
@@ -523,20 +473,19 @@ export default class EHRService {
    * @param {Array<String>} prescriptions
    * @param {Array<String>} diagnoses
    * @param {Number} index
+   * @param {String} patientID
    * @returns {Promise<Array<File>>} The resulting files
+   * @author Christopher Molin
    */
   static async createEHRFiles(objectEHR, prescriptions, diagnoses, index, patientID){
+
     // Make into JSON objects
     let stringEHR = await this.stringify(objectEHR);
     let stringPrescriptions = await this.stringify(prescriptions);
     let stringDiagnoses = await this.stringify(diagnoses);
 
-    console.log("Starting to encrypt files");
-
-
     // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
     let encryptedRecordKey = await FirebaseService.getDoctorRecordKey(patientID);
-
 
     console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
     console.warn("PrivateKey: " + this.privateKey);
@@ -547,10 +496,12 @@ export default class EHRService {
     );
 
     let encryptedEHR = await this.encrypt(stringEHR, decryptedRecordKey);
+
     let encryptedPrescriptions = await this.encrypt(
       stringPrescriptions,
       decryptedRecordKey
     );
+    
     let encryptedDiagnoses = await this.encrypt(
       stringDiagnoses,
       decryptedRecordKey
