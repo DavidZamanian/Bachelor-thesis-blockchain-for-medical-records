@@ -152,7 +152,7 @@ export default class EHRService {
     await get(
       child(
         dbRef,
-        "DoctorToRecordKey/" + auth.currentUser.uid + "/recordKeys/" + patientID
+        "DoctorToRecordKey/" + auth.currentUser.uid + "/recordKeys/" + patientID + "/recordKey/"
       )
     )
       .then((snapshot) => {
