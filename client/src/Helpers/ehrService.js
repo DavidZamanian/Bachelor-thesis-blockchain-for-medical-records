@@ -358,6 +358,8 @@ export default class EHRService {
       try{
         
         let newCID = await fs.uploadFiles(finalFiles);
+        
+        console.log(newCID);
 
         await connection.updateEHR(patientID, newCID);
         
@@ -445,10 +447,6 @@ export default class EHRService {
         decryptedEHRs: decryptedEHRs
     }
   }
-
-
-
-
 
 
   /**

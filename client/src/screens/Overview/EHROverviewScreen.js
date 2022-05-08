@@ -734,7 +734,7 @@ export function EHROverviewScreen(props) {
         <View style={styles.rowContainer}>
           <View style={[styles.container, styles.doubleContainer]}>
             <Text style={styles.header}>Past record entries</Text>
-            {state.patientInfo.prescriptions.length > 0 ?
+            {state.patientInfo.journals.length > 0 ?
             <FlatList
               style={{ width: "100%" }}
               data={state.patientInfo.journals}
