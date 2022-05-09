@@ -233,16 +233,16 @@ export default class ChainConnection {
   /**
    * Get the healthcare institution a given medical personell works at. 
    * @param {String} MedicalPersonnelId The id of the medical Personell. 
-   * @returns {HealthcareInst} The instituion object the given medical personell works at.
+   * @returns {Promise<Object>} The instituion object the given medical personell works at, with properties "id", "name", Region(object with it's own properties).
    * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
    *  due to a network error.
    * @author Edenia Isaac
    */
-  async getHealthCareInstitution(MedicalPersonnelId){
+  async getHealthCareInstitution(medicalPersonnelId){
     try{
       const { accounts, contract } = this.state;
       const healthcareInst = await contract.methods
-        .getHealthCareInstitution(MedicalPersonnelId)
+        .getHealthCareInstitution(medicalPersonnelId)
         .call({ from: accounts[0]});
       return healthcareInst;
     }catch (err){

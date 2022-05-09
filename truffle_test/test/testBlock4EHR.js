@@ -248,18 +248,18 @@ contract("Block4EHR", accounts => {
         });
     })
 
-    describe("getHealthCareInstitution returns the Healthcare Institutions the given medicall personnel works at", function (){
+    describe("getHealthCareInstitution returns the Healthcare Institution the given medicall personnel works at", function (){
         it("getHealthCareInstitution returns the correct Healthcare Institution given a valid medical personel ", async function (){
         let healthcareInst = await instance.getHealthCareInstitution(doc_gbg);
         let healthcareInstId = healthcareInst.id;
         assert.deepEqual(healthcareInstId, inst_gbg);
     });
-        it("getHealthCareInstitution fails given a valid medical personel ", async function () {
-            let healthcareInst = await instance.getHealthCareInstitution("7403191234");
+      
+      it("getHealthCareInstitution returns empty Healthcare Institution object (empty strings as properties) given an invalid medical personel ", async function () {
+            let healthcareInst = await instance.getHealthCareInstitution("1111111111");
             let healthcareInstId = healthcareInst.id;
-            assert.notEqual(healthcareInstId, "3");
+            assert.deepEqual(healthcareInstId, '');
         });
-
 })
 
 })
