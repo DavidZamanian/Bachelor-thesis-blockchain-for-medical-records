@@ -12,6 +12,7 @@ import ThemeButton from "../../../components/themeButton";
 import EHRService from "../../../Helpers/ehrService";
 import { UserDataContext } from "../../../../contexts/UserDataContext";
 import { ChainConnectionContext } from "../../../../contexts/ChainConnectionContext";
+import FirebaseService from "../../../Helpers/firebaseService";
 
 
 export function NewEntryScreen(props) {
@@ -155,9 +156,9 @@ export function NewEntryScreen(props) {
     // Add diagnoses to diagnoses list
     diagnosesList.forEach(element => diagnoseList.push(element.diagnosis.toString()));
 
-    let medicalPersonnel = await EHRService.getDoctorFullName(userSSN);
+    let medicalPersonnel = await FirebaseService.getDoctorFullName(userSSN);
 
-    let healthcareInstitution = await EHRService.getInstitutionName(institution);
+    let healthcareInstitution = await FirebaseService.getInstitutionName(institution);
 
 
     console.log(medicalPersonnel+institution+healthcareInstitution);
