@@ -95,7 +95,7 @@ export function EHROverviewScreen(props) {
           const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 */
 
-          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ), role);
+          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ), role, false);
 
           const patientPrescriptions = ehr.prescriptions
           const patientDiagnoses = ehr.diagnoses;
@@ -734,7 +734,7 @@ export function EHROverviewScreen(props) {
         <View style={styles.rowContainer}>
           <View style={[styles.container, styles.doubleContainer]}>
             <Text style={styles.header}>Past record entries</Text>
-            {state.patientInfo.prescriptions.length > 0 ?
+            {state.patientInfo.journals.length > 0 ?
             <FlatList
               style={{ width: "100%" }}
               data={state.patientInfo.journals}
