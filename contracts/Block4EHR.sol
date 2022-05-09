@@ -59,6 +59,9 @@ contract Block4EHR {
     //mapping medical personnel address to the corresponding personnel object
     mapping(address => MedicalPersonnel) medicalPersonnels;
 
+    //mapping medical personnel id to the corresponding Medical Personell object
+    mapping(string => MedicalPersonnel) idToMedicalPersonnel;
+
     // ===== HEALTHCARE INST. MAPPINGS ======
     // mapping institution id to the institution struct object. 
     mapping(string => HealthcareInst) healthcareInstitutions;
@@ -93,6 +96,7 @@ contract Block4EHR {
         HealthcareInst memory inst = healthcareInstitutions[_healthcareInstId];
         MedicalPersonnel memory _personnel = MedicalPersonnel(_addr, _id, inst);
         medicalPersonnels[_addr] = _personnel;
+        idToMedicalPersonnel[_id] = _personnel;
         string memory _regionId = inst.region.id;
         regionToPersonnel[_regionId].push(_personnel);
     }
@@ -119,6 +123,14 @@ contract Block4EHR {
     function getInstitutionName(string memory _instId) public view returns(string memory) {
         return healthcareInstitutions[_instId].name;
     }
+
+    //======= GETTING THE HELTHCARE INSTITUTION A GIVEN MEDICAL PERSONNEL WORKS AT ========
+    /** Get the healthcare institution given a medical personnel's id. */
+    function getHealthCareInstitution(string memory _medicalPersonnelId) public view returns(HealthcareInst memory){
+        return  idToMedicalPersonnel[_medicalPersonnelId].healthcareInst;
+    }
+     
+
 
     //======= CHECKING THAT THE FUNCTION INVOKER IS PERMISSIONED ========
     /** Check if the invoker is either the patient or a permissioned personnel. */ 
