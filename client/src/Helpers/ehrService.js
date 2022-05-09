@@ -51,7 +51,7 @@ export default class EHRService {
 
     this.setPrivateKey(privKey);
 
-    let pubKey = await FirebaseService.getPublicKey(); // ersätt med FirebaseService.getPublicKey
+    let pubKey = await FirebaseService.getPublicKey();
 
     this.setPublicKey(pubKey);
 

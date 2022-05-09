@@ -49,10 +49,9 @@ export default class FirebaseService{
 
     /**
    * Fetches the encrypted private key (and IV) of the current user from Firebase.
-   * @returns returns the encrypted private key + IV of the currently logged in user
+   * @returns {Promise<*>} returns the encrypted private key + IV of the currently logged in user
    * @author David Zamanian
    */
-
     static async getEncPrivateKeyAndIV() {
         let encryptedPrivateKey;
         const auth = getAuth();
@@ -80,7 +79,6 @@ export default class FirebaseService{
    * @returns {*} The record key of the specified patient (if permission is granted)
    * @author David Zamanian
    */
-
     static async getDoctorRecordKey(patientID) {
         let encDoctorRecordKey;
         const auth = getAuth();
@@ -106,11 +104,10 @@ export default class FirebaseService{
     }
 
     /**
-  * Fetches the current patient's record key.
-  * @returns The encrypted record key of the currently logged in patient
-  * @author David Zamanian
-  */
-
+    * Fetches the current patient's record key.
+    * @returns The encrypted record key of the currently logged in patient
+    * @author David Zamanian
+    */
     static async getPatientRecordKey() {
         let encPatientRecordKey;
         const auth = getAuth();
