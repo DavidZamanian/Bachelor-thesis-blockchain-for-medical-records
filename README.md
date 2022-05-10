@@ -21,16 +21,17 @@
 9. **NOTE** This JSON-file contains UIDs that are not present in your Firebase Database. Because of this, you will have to replace old references with the new ones that you find on the Authentication tab. **These are marked with the text: !!!!!{THEIR NAME}!!!!!** for your convenience.
 10. After replacing, go to the data tab, press the 3 dots to the right, press "Import JSON" and select the file you just edited.
 11. Finally, clone the repo and in the file `firebaseSetup.js`, replace the fields in the `firebaseConfig`-variable with the data found at `https://console.firebase.google.com/u/0/project/[YOURPROJECTNAME]/settings/general`:
+
 ``
 const firebaseConfig = {
-  apiKey: "AIzaSyCT5G4byurxGZYa8Mrv0euwHANFpDgew6Y",
-  authDomain: "blockchain-for-medical-records.firebaseapp.com",
-  projectId: "blockchain-for-medical-records",
-  storageBucket: "blockchain-for-medical-records.appspot.com",
-  messagingSenderId: "87615118642",
-  appId: "1:87615118642:web:a2c5837414566674638b2b",
-  measurementId: "G-GPGBNN21J7",
-  databaseURL: "https://blockmedical-default-rtdb.europe-west1.firebasedatabase.app/",
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
+  measurementId: "",
+  databaseURL: "",
 };
 ``
 
