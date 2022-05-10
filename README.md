@@ -6,7 +6,7 @@
 * daddykane@gmail.com
 * zoe.smith@hospital.mail.org
 * eric.anderson@hospital.mail.org
-* _ALL of which has the same password: 123456_
+* _ALL of which has the same password: 123456_ - **NOTE:** the passwords must be this
 4. Create a Realtime Database via the Realtime database tab.
 5. When prompted, select the "Locked" setting.
 6. Then, go to the tab within Realtime database named "Rules" and change read and write to:
