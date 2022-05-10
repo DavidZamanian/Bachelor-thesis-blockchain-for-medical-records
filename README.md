@@ -70,12 +70,6 @@ You should add all 10 accounts in Ganache to your metamask. Account $i$ will cor
 1. Launch Ganache. 
 1. If you have not previously deployed the contract to the blockchain, or a change has been made to the contract, then: Run `truffle --config truffle-config.cjs migrate`. This will deploy the smart contract on the local blockchain. This will cost some gas and increment the block count in Ganache. The smart contract will now be live and populated by the objects initialized in the migrations script `2_Block4EHR_migration.js`. 
 
-### (REDUNDANT) RUNNING THE SERVER
-
-Run `npm start` in a terminal to start the express server
-
-The server is now running on port 4000, go to http://localhost:4000/api to see messages from the server
-
 ### STEP 2: RUNNING THE WEB-INTERFACE
 1. Open your browser and log in to metamask.
 1. In a terminal window (not the one used for running the web server), cd to the `client` folder
