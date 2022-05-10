@@ -17,7 +17,7 @@
   }
 }``
 (Remember to publish/save these changes)
-8. Download [The exported Firebase Database](https://github.com/DavidZamanian/Bachelor-thesis-blockchain-for-medical-records/master/firebaseExport.json)
+8. Download [The exported Firebase Database](https://github.com/DavidZamanian/Bachelor-thesis-blockchain-for-medical-records/wiki/Firebase-Database-Export)
 9. **NOTE** This JSON-file contains UIDs that are not present in your Firebase Database. Because of this, you will have to replace old references with the new ones that you find on the Authentication tab. **These are marked with the text: !!!!!{THEIR NAME}!!!!!** for your convenience.
 10. After replacing, go to the data tab, press the 3 dots to the right, press "Import JSON" and select the file you just edited.
 11. Now, go to your project settings and add a web app via `https://console.firebase.google.com/u/0/project/[YOURPROJECTNAME]/settings/general`.
