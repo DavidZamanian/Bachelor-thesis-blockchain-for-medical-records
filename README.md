@@ -10,15 +10,31 @@
 4. Create a Realtime Database via the Realtime database tab.
 5. When prompted, select the "Locked" setting.
 6. Then, go to the tab within Realtime database named "Rules" and change read and write to:
-`{
+``{
   "rules": {
     ".read": true,
     ".write": true
   }
-}`
+}``
 (Remember to publish/save these changes)
-8. Now, go to the data tab, press the 3 dots to the right and press "Import JSON".
-9. 
+8. Download [The exported Firebase Database](https://github.com/DavidZamanian/Bachelor-thesis-blockchain-for-medical-records/master/firebaseExport.json)
+9. **NOTE** This JSON-file contains UIDs that are not present in your Firebase Database. Because of this, you will have to replace old references with the new ones that you find on the Authentication tab. **These are marked with the text: !!!!!{THEIR NAME}!!!!!** for your convenience.
+10. After replacing, go to the data tab, press the 3 dots to the right, press "Import JSON" and select the file you just edited.
+11. Finally, clone the repo and in the file `firebaseSetup.js`, replace the fields in the `firebaseConfig`-variable with the data found at `https://console.firebase.google.com/u/0/project/[YOURPROJECTNAME]/settings/general`:
+``
+const firebaseConfig = {
+  apiKey: "AIzaSyCT5G4byurxGZYa8Mrv0euwHANFpDgew6Y",
+  authDomain: "blockchain-for-medical-records.firebaseapp.com",
+  projectId: "blockchain-for-medical-records",
+  storageBucket: "blockchain-for-medical-records.appspot.com",
+  messagingSenderId: "87615118642",
+  appId: "1:87615118642:web:a2c5837414566674638b2b",
+  measurementId: "G-GPGBNN21J7",
+  databaseURL: "https://blockmedical-default-rtdb.europe-west1.firebasedatabase.app/",
+};
+``
+
+13. 
 
 
 
