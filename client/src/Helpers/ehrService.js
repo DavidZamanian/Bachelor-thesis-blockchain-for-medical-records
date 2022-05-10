@@ -139,7 +139,7 @@ export default class EHRService {
   /** Pass a user SSN and get back the respective UID
    *
    * @param {String} SSN
-   * @returns UID of the user
+   * @returns {Promise<String>}UID of the user
    * @author David Zamanian
    */
   static async getUIDFromSSN(SSN) {
@@ -279,36 +279,12 @@ export default class EHRService {
    * Update recordKeys for all involed doctors when updating permitted regions
    *
    * Need access to: Firebase, recordKey of patient and publicKey of doctor
-   *
-   * @param {*} newPermittedRegions
+   * @param {String} patientID
+   * @param {Array<String>} newPermittedRegions
+   * @author David Zamanian
    */
 
   static async updateRecordKeys(newPermittedRegions, patientID) {
-    console.log("We are in the method");
-    /* TODO
-
-1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
-2. Connect to Firebase 
-3. Find which regions that was removed and get doctors of each such region (with getRegionPersonnel). Store in deletedDoctors.
-4. For every new permitted region:  
-  i) Go through all doctors in 'Doctors' 
-  ii) and if said doctor is in the new permitted region, encrypt patient recordKey with doctors publicKey
-  ii) Add a new entry in 'DoctorsToRecordKey' under said doctor with the new encrypted recordKey.
-
-    1. Go through all new permitted regions and filter out the ones that has not changed (compare to state.permittedRegions)
-2. Connect to Firebase 
-3. Find which regions that was removed and get doctors of each such region. Store in deletedDoctors. 
-4. For every new permitted region: get the doctors of each such region. Store in addedDoctors. 
-5. Go through all doctors d in 'Firebase/Doctors'.
-  i) If d in removedDoctors: delete recordKey for d. 
-  ii) If d in addedDoctors: encrypt patient recordKey with doctors publicKey into recordKey_version and store recordKey_version in 'Firebase/DoctorsToRecordKey'
-*/
-
-    let connection = await this.chainConnection;
-
-    //The old permitted regions
-
-    console.log("NewPermittedRegions: " + newPermittedRegions);
     let p = await this.getPatientRegions(patientID);
     var permitted = new Set();
     p.map((item) => permitted.add(item));
@@ -349,40 +325,98 @@ export default class EHRService {
     //Go through all doctors in database and check if added or removed
     console.log("All assignments are done");
     let dbRef = ref(database);
-    let db = getDatabase();
-    const doctorSnapshot = await get(child(dbRef, "DoctorToRecordKey/"));
+    const DoctorToRecordKeySnapshot = await get(
+      child(dbRef, "DoctorToRecordKey/")
+    );
     //For each doctor (that has a recordKey, but basically all doctors in the system)
 
     //This should only be for removedDoctors. addedDoctors should not be in this forEach clause
-    doctorSnapshot.forEach(async function (child) {
-      //If the doctor is in the list of removed doctors, remove that recordKey from database
-      let doctorUID = Object.keys(doctorSnapshot.val())[0];
-      let doctorSSN = await EHRService.getSSNFromUID(doctorUID);
-      console.log("doctorUID: " + doctorUID);
-      console.log("doctorSSN: " + doctorSSN);
+    if (DoctorToRecordKeySnapshot.exists() && removedDoctors.length > 0) {
       console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
-      console.log("addedDoctors: " + addedDoctors + " Time: " + Date.now());
+      //Go over every item in removedDoctors and remove the respective recordKey from the database
+      for (let doctorSSN of removedDoctors) {
+        console.log(
+          "DoctorToRecordKeySnapshot.val(): " +
+            Object.keys(DoctorToRecordKeySnapshot.val())
+        );
+        let doctorUID = await EHRService.getUIDFromSSN(doctorSSN);
+        for (let fireBasedoctorUID of Object.keys(
+          DoctorToRecordKeySnapshot.val()
+        )) {
+          console.log("inside 1");
+          const listOfRecordKeysSnapshot = await get(
+            child(
+              dbRef,
+              "DoctorToRecordKey/" + fireBasedoctorUID + "/recordKeys/"
+            )
+          );
+          //For some reason this is null sometimes, but this check fixes that and everything is removed correctly
+          if (listOfRecordKeysSnapshot.val() != null) {
+            console.log("inside 2");
+            let listOfUserRecordKeys = [];
 
-      //This runs before removeDoctors is fully updated (works if you change one or few permissions at a time but too many and it is not updated)
-      if (removedDoctors.indexOf(doctorSSN) > -1) {
-        console.log("Doctor was found in removed list");
-        const dataToSave = {
-          recordKey: null,
-        };
-        const updates = {};
-        updates["DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID] =
-          dataToSave;
+            console.log(
+              "Object.keys(listOfRecordKeysSnapshot.val()): " +
+                Object.keys(listOfRecordKeysSnapshot.val())
+            );
+            for (let SSN of Object.keys(listOfRecordKeysSnapshot.val())) {
+              listOfUserRecordKeys.push(SSN);
+            }
+            console.log("inside 3");
+            //Object.keys(DoctorToRecordKeySnapshot.val()).forEach(async function (child)
+            //If the doctor is in the list of removed doctors, remove that recordKey from database
 
-        update(dbRef, updates)
-          .then(() => {
-            console.log("Data removed successfully");
-          })
-          .catch((e) => {
-            console.log("Data could not be removed due to: " + e);
-          });
-        console.log("RecordKey should have been removed");
-      } else if (addedDoctors.indexOf(doctorSSN) > -1) {
-        console.log("Doctor was found in added list");
+            console.log("Inside 3.5");
+            console.log("DoctorUID: " + doctorUID);
+            console.log("fireBaseDoctorUID: " + fireBasedoctorUID);
+            console.log("index: " + listOfUserRecordKeys.indexOf(patientID));
+            if (
+              doctorUID == fireBasedoctorUID &&
+              listOfUserRecordKeys.indexOf(patientID) > -1
+            ) {
+              console.log("inside 4");
+              //let doctorSSN = await EHRService.getSSNFromUID(doctorUID);
+              console.log("doctorUID: " + doctorUID);
+              console.log("doctorSSN: " + doctorSSN);
+
+              //This runs before removeDoctors is fully updated (works if you change one or few permissions at a time but too many and it is not updated)
+              //TODO    Add check here for the patient SSN!!!!!!
+
+              console.log("Doctor was found in removed list");
+              const dataToSave = {
+                recordKey: null,
+              };
+              const updates = {};
+              updates[
+                "DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID
+              ] = dataToSave;
+
+              update(dbRef, updates)
+                .then(() => {
+                  console.log("Data removed successfully");
+                })
+                .catch((e) => {
+                  console.log("Data could not be removed due to: " + e);
+                });
+              console.log("RecordKey should have been removed");
+            }
+          }
+        }
+      }
+    }
+    //Check that there are at least one added doctor
+    console.log("Do we get to here? Before checking added doctors");
+    console.log("addedDoctors: " + addedDoctors);
+    if (addedDoctors.length > 0) {
+      //Go through all added doctors and add recordKeys for all of them
+      console.log("Inside if");
+      for (let doctorSSN of addedDoctors) {
+        console.log("Inside for");
+        let doctorUID = await EHRService.getUIDFromSSN(doctorSSN);
+        console.log("Found UID: " + doctorUID);
+        //let doctorSSN = await EHRService.getSSNFromUID(doctorUID);
+        // if (addedDoctors.indexOf(doctorSSN) > -1) {
+        //console.log("Doctor was found in added list");
         let doctorPubKey = await EHRService.getPublicKeyWithUID(doctorUID);
         console.log("Get DoctorPublicKey: " + doctorPubKey);
         //Get recordKey from user, decrypt it en reencrypt it with doctors publicKey here..
@@ -396,7 +430,6 @@ export default class EHRService {
           "decrypted patient recordKey: " + patientRecordKey.toString("base64")
         );
 
-        //This gives error because publicKey is weirdly formatted (i need to redo the keys in database)
         let newEncryptedRecordKey = await crypt.encryptRecordKey(
           patientRecordKey,
           doctorPubKey
@@ -419,8 +452,10 @@ export default class EHRService {
           .catch((e) => {
             console.log("Data could not be saved: " + e);
           });
-      } else console.log("Something strange happened");
-    });
+      }
+    }
+    //console.log("Something strange happened");
+    //}
   }
 
   /**
