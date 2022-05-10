@@ -20,30 +20,10 @@
 8. Download [The exported Firebase Database](https://github.com/DavidZamanian/Bachelor-thesis-blockchain-for-medical-records/master/firebaseExport.json)
 9. **NOTE** This JSON-file contains UIDs that are not present in your Firebase Database. Because of this, you will have to replace old references with the new ones that you find on the Authentication tab. **These are marked with the text: !!!!!{THEIR NAME}!!!!!** for your convenience.
 10. After replacing, go to the data tab, press the 3 dots to the right, press "Import JSON" and select the file you just edited.
-11. Finally, clone the repo and in the file `firebaseSetup.js`, replace the fields in the `firebaseConfig`-variable with the data found at `https://console.firebase.google.com/u/0/project/[YOURPROJECTNAME]/settings/general`:
-
-``
-const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
-  measurementId: "",
-  databaseURL: "",
-};
-``
-
-13. 
-
-
-
-
-
-
-
-
+11. Now, go to your project settings and add a web app via `https://console.firebase.google.com/u/0/project/[YOURPROJECTNAME]/settings/general`.
+12. Then, partially copy the SDK-code that is shown, namely: `firebaseConfig`
+13. Now, clone the repo and in the file `firebaseSetup.js`, replace `firebaseConfig` with the one you copied.
+14. This concludes the Firebase setup.
 
 
 
