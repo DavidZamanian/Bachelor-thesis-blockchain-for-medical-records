@@ -1,3 +1,35 @@
+# Firebase-Setup (feel free to re-position this)
+
+1. Go to [Firebase](https://console.firebase.google.com) and create a project. _The name is irrelevant._
+2. Go to the Authentication tab and add the following accounts:
+* slick.rick@gmail.com
+* daddykane@gmail.com
+* zoe.smith@hospital.mail.org
+* eric.anderson@hospital.mail.org
+* _ALL of which has the same password: 123456_
+4. Create a Realtime Database via the Realtime database tab.
+5. When prompted, select the "Locked" setting.
+6. Then, go to the tab within Realtime database named "Rules" and change read and write to:
+`{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}`
+(Remember to publish/save these changes)
+8. Now, go to the data tab, press the 3 dots to the right and press "Import JSON".
+9. 
+
+
+
+
+
+
+
+
+
+
+
 # Blockchain-for-medical-records
 
 ## Application Features & Appearance
