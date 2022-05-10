@@ -295,6 +295,15 @@ it("FOR DERIVATION - Priting correct keys for users to put in firebase", async (
     console.log("error: " + e);
   }
 });
+
+describe('Test hashing string', async () => { 
+  it("Can hash a string", async () => {
+    let string = "999999";
+    let actualHashed = "d2db4e34c6c74f9ee33ad34ecf3b3356825e4d7d73a6f608002eb7825233a484422834bf05786b9265f82a3dc17f3bc74bbaf1a68764c445df180ada3af9849b";
+    assert.equal(actualHashed, (await crypt.hashString(string)));
+  });
+});
+
 /*
 describe("NOT VALID TESTS - Test encryption of file content", () => {
   let newRecordKey = "";

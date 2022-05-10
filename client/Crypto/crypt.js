@@ -164,6 +164,17 @@ async function derivePrivateKeyFromPassword(password, salt) {
   return hexKey.toString("hex"); // MUST be HEX format!
 }
 
+/**
+ * Takes a string and hash it using sha512 algorithm.
+ * @param {*} string 
+ * @returns Hashed string in hex format.
+ */
+async function hashString(string) {
+  const hash = crypto.createHash("sha512");
+  hash.update(string);
+  return hash.digest("hex");
+}
+
 /** This will not be needed anymore
  *
  * Creates a publicKey from a given privateKey
@@ -194,4 +205,5 @@ module.exports = {
   derivePrivateKeyFromPassword,
   encryptPrivateKey,
   decryptPrivateKey,
+  hashString,
 };
