@@ -271,8 +271,8 @@ export function EHROverviewScreen(props) {
     try {
       // TODO: decide whether to goa directly via chainconnection or via ehrService as with other region-functions...
       const connection = await chainConnection;
-      await EHRService.updateRecordKeys(newPermittedRegions, state.patientID);
       await connection.setPermissions(state.patientID, newPermittedRegions);
+      await EHRService.updateRecordKeys(newPermittedRegions, state.patientID);
 
       // update the list of permitted regions held by the state
       setState((prevState) => ({
