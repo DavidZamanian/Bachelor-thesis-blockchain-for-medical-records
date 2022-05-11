@@ -237,7 +237,10 @@ export default class EHRService {
     }
   }
 
-  /**
+  /** Updates the recordKeys in the database when changing permissions in patient overview.
+   * When permissions are removed, recordKeys are removed and when new permissions
+   * are added, new recordKeys are added for the doctors in the respectove region.
+   *
    *
    * @param {Array<String>} newPermittedRegions
    * @param {String} patientID
@@ -257,7 +260,6 @@ export default class EHRService {
     let doctorsWithRecordKeys =
       await FirebaseService.getDoctorsWithRecordKeys();
 
-    //This should only be for removedDoctors. addedDoctors should not be in this forEach clause
     if (doctorsWithRecordKeys.length > 0 && removedDoctors.length > 0) {
       console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
       //Go over every item in removedDoctors and remove the respective recordKey from the database

@@ -226,89 +226,6 @@ export default class FirebaseService {
     return publicKey;
   }
 
-  //____________
-
-  static async updateRecordKeysOld(newPermittedRegions, patientID) {
-    let changedDoctors = await this.getChangedDoctors(
-      newPermittedRegions,
-      patientID
-    );
-
-    let addedDoctors = changedDoctors.added;
-    let removedDoctors = changedDoctors.removed;
-
-    //For each doctor (that has a recordKey, but basically all doctors in the system)
-    let doctorsWithRecordKeys = await this.getDoctorsWithRecordKeys();
-
-    //This should only be for removedDoctors. addedDoctors should not be in this forEach clause
-    if (doctorsWithRecordKeys.length > 0 && removedDoctors.length > 0) {
-      console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
-      //Go over every item in removedDoctors and remove the respective recordKey from the database
-      for (let doctorSSN of removedDoctors) {
-        let doctorUID = await this.getUIDFromSSN(doctorSSN);
-
-        for (let fireBasedoctorUID of doctorsWithRecordKeys) {
-          let listOfUserRecordKeys = await this.getAllRecordKeysFromDoctor(
-            fireBasedoctorUID
-          );
-
-          console.log(
-            "DoctorUID: " +
-              doctorUID +
-              "\nfireBaseDoctorUID: " +
-              fireBasedoctorUID +
-              "\nindex: " +
-              listOfUserRecordKeys.indexOf(patientID)
-          );
-
-          if (
-            doctorUID == fireBasedoctorUID &&
-            listOfUserRecordKeys.indexOf(patientID) > -1
-          ) {
-            //This runs before removeDoctors is fully updated (works if you change one or few permissions at a time but too many and it is not updated)
-            //TODO    Add check here for the patient SSN!!!!!!
-
-            await this.updateDoctorRecordKey(doctorUID, patientID, null);
-            console.log("Doctor " + doctorUID + " removed");
-          }
-        }
-      }
-    }
-
-    if (addedDoctors.length > 0) {
-      // this is "static", no need to call it over and over again, simply call it once here
-      let encryptedPatientRecordKey = await this.getPatientRecordKey();
-
-      console.log("Got patient recordKey: " + encryptedPatientRecordKey);
-
-      let patientRecordKey = await crypt.decryptRecordKey(
-        encryptedPatientRecordKey,
-        EHRService.privateKey
-      );
-      console.log(
-        "decrypted patient recordKey: " + patientRecordKey.toString("base64")
-      );
-      // All of this is only needed once, so this was moved out
-
-      //Go through all added doctors and add recordKeys for all of them
-      for (let doctorSSN of addedDoctors) {
-        let doctorUID = await this.getUIDFromSSN(doctorSSN);
-        console.log("Found UID: " + doctorUID);
-
-        let newEncryptedRecordKey = await this.createRecordKeyForDoctorSSN(
-          doctorUID,
-          patientRecordKey
-        );
-
-        await this.updateDoctorRecordKey(
-          doctorUID,
-          patientID,
-          newEncryptedRecordKey
-        );
-      }
-    }
-  }
-
   /**
    * Returns all record-keys given to the provided doctorUID
    * @param  {String} doctorUID
@@ -393,11 +310,9 @@ export default class FirebaseService {
     p.map((item) => permitted.add(item));
 
     console.log("permittedRegions: " + p);
-    //Values disappear when creating a set with them..
-    //let permitted = new Set(p);
     console.log("permittedRegions: " + Array.from(permitted));
 
-    //the new permitted regions
+    //The new permitted regions
     let newPermitted = new Set(newPermittedRegions);
     console.log("newPermitted: " + Array.from(newPermitted));
     //The common regions between permitted and newPermitted. Basically A intersect B
