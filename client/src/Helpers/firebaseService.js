@@ -229,45 +229,16 @@ export default class FirebaseService {
   //____________
 
   static async updateRecordKeys(newPermittedRegions, patientID) {
-    let p = await EHRService.getPatientRegions(patientID);
-    var permitted = new Set();
-    p.map((item) => permitted.add(item));
-    console.log("permittedRegions: " + p);
-    //Values disappear when creating a set with them..
-    //let permitted = new Set(p);
-    console.log("permittedRegions: " + Array.from(permitted));
 
-    //the new permitted regions
-    let newPermitted = new Set(newPermittedRegions);
-    console.log("newPermitted: " + Array.from(newPermitted));
-    //The common regions between permitted and newPermitted. Basically A intersect B
-    let permitted_intersect_newPermitted = new Set(
-      [...permitted].filter((x) => newPermitted.has(x))
-    );
-    console.log(
-      "intersection: " + Array.from(permitted_intersect_newPermitted)
-    );
-    //All the deleted regions (from permitted). Basically A - (A intersect B)
-    let deletedRegions = new Set(
-      [...permitted].filter((x) => !permitted_intersect_newPermitted.has(x))
-    );
-    console.log("deleted regions: " + Array.from(deletedRegions));
-    //All the new regions that was added. Basically B - (A intersect B)
-    let addedRegions = new Set(
-      [...newPermitted].filter((x) => !permitted_intersect_newPermitted.has(x))
-    );
-    console.log("addedRegions: " + Array.from(addedRegions));
+    let changedDoctors = await this.getChangedDoctors(newPermittedRegions, patientID);
 
-    //Make array of all the added doctors
-    let addedDoctors = [""];
-    addedDoctors = await this.pushDoctorsToList(Array.from(addedRegions));
+    let addedDoctors = changedDoctors.added;
+    let removedDoctors = changedDoctors.removed;
 
-    //Make array of all the removed doctors
-    let removedDoctors = [""];
-    removedDoctors = await this.pushDoctorsToList(Array.from(deletedRegions));
 
     //Go through all doctors in database and check if added or removed
     console.log("All assignments are done");
+
     let dbRef = ref(database);
     const DoctorToRecordKeySnapshot = await get(
       child(dbRef, "DoctorToRecordKey/")
@@ -303,14 +274,13 @@ export default class FirebaseService {
               "Object.keys(listOfRecordKeysSnapshot.val()): " +
                 Object.keys(listOfRecordKeysSnapshot.val())
             );
+
             for (let SSN of Object.keys(listOfRecordKeysSnapshot.val())) {
               listOfUserRecordKeys.push(SSN);
             }
-            console.log("inside 3");
-            //Object.keys(DoctorToRecordKeySnapshot.val()).forEach(async function (child)
+
             //If the doctor is in the list of removed doctors, remove that recordKey from database
 
-            console.log("Inside 3.5");
             console.log("DoctorUID: " + doctorUID);
             console.log("fireBaseDoctorUID: " + fireBasedoctorUID);
             console.log("index: " + listOfUserRecordKeys.indexOf(patientID));
@@ -327,45 +297,29 @@ export default class FirebaseService {
               //TODO    Add check here for the patient SSN!!!!!!
 
               console.log("Doctor was found in removed list");
-              const dataToSave = {
-                recordKey: null,
-              };
-              const updates = {};
-              updates[
-                "DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID
-              ] = dataToSave;
 
-              update(dbRef, updates)
-                .then(() => {
-                  console.log("Data removed successfully");
-                })
-                .catch((e) => {
-                  console.log("Data could not be removed due to: " + e);
-                });
-              console.log("RecordKey should have been removed");
+              await this.updateDoctorRecordKey(doctorUID, patientID, null);
             }
           }
         }
       }
     }
     //Check that there are at least one added doctor
-    console.log("Do we get to here? Before checking added doctors");
     console.log("addedDoctors: " + addedDoctors);
     if (addedDoctors.length > 0) {
       //Go through all added doctors and add recordKeys for all of them
-      console.log("Inside if");
       for (let doctorSSN of addedDoctors) {
-        console.log("Inside for");
+
         let doctorUID = await this.getUIDFromSSN(doctorSSN);
         console.log("Found UID: " + doctorUID);
-        //let doctorSSN = await EHRService.getSSNFromUID(doctorUID);
-        // if (addedDoctors.indexOf(doctorSSN) > -1) {
-        //console.log("Doctor was found in added list");
+
         let doctorPubKey = await this.getPublicKeyWithUID(doctorUID);
         console.log("Get DoctorPublicKey: " + doctorPubKey);
+
         //Get recordKey from user, decrypt it en reencrypt it with doctors publicKey here..
         let encryptedPatientRecordKey = await this.getPatientRecordKey();
         console.log("Got patient recordKey: " + encryptedPatientRecordKey);
+
         let patientRecordKey = await crypt.decryptRecordKey(
           encryptedPatientRecordKey,
           EHRService.privateKey
@@ -378,29 +332,97 @@ export default class FirebaseService {
           patientRecordKey,
           doctorPubKey
         );
+
         console.log(
           "new encrypted patient recordKey: " + newEncryptedRecordKey
         );
 
-        const dataToSave = {
-          recordKey: newEncryptedRecordKey,
-        };
-        const updates = {};
-        updates["DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID] =
-          dataToSave;
+        await this.updateDoctorRecordKey(doctorUID, patientID, newEncryptedRecordKey);
 
-        update(dbRef, updates)
-          .then(() => {
-            console.log("Data saved successfully");
-          })
-          .catch((e) => {
-            console.log("Data could not be saved: " + e);
-          });
       }
     }
-    //console.log("Something strange happened");
-    //}
+
   }
+
+  /**
+   * @param  {Array<String>} newPermittedRegions
+   * @param  {String} patientID
+   * @returns {Promise<{removed:Array<String>, added: Array<String>}>}
+   */
+  static async getChangedDoctors(newPermittedRegions, patientID){
+
+    let p = await EHRService.getPatientRegions(patientID);
+
+    var permitted = new Set();
+
+    p.map((item) => permitted.add(item));
+
+
+    console.log("permittedRegions: " + p);
+    //Values disappear when creating a set with them..
+    //let permitted = new Set(p);
+    console.log("permittedRegions: " + Array.from(permitted));
+
+    //the new permitted regions
+    let newPermitted = new Set(newPermittedRegions);
+    console.log("newPermitted: " + Array.from(newPermitted));
+    //The common regions between permitted and newPermitted. Basically A intersect B
+    let permitted_intersect_newPermitted = new Set(
+      [...permitted].filter((x) => newPermitted.has(x))
+    );
+    console.log(
+      "intersection: " + Array.from(permitted_intersect_newPermitted)
+    );
+    //All the deleted regions (from permitted). Basically A - (A intersect B)
+    let deletedRegions = new Set(
+      [...permitted].filter((x) => !permitted_intersect_newPermitted.has(x))
+    );
+    console.log("deleted regions: " + Array.from(deletedRegions));
+    //All the new regions that was added. Basically B - (A intersect B)
+    let addedRegions = new Set(
+      [...newPermitted].filter((x) => !permitted_intersect_newPermitted.has(x))
+    );
+    console.log("addedRegions: " + Array.from(addedRegions));
+
+
+    //Make array of all the added doctors
+    let addedDoctors = [""];
+    addedDoctors = await this.pushDoctorsToList(Array.from(addedRegions));
+
+    //Make array of all the removed doctors
+    let removedDoctors = [""];
+    removedDoctors = await this.pushDoctorsToList(Array.from(deletedRegions));
+
+    return { added: addedDoctors, removed: removedDoctors }
+
+  }
+
+
+
+  static async updateDoctorRecordKey(doctorUID, patientID, recordKey){
+
+    let dbRef = ref(database);
+
+    const updates = {};
+
+    updates["DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID] =
+          {recordKey: recordKey};
+
+    update(dbRef, updates)
+      .then(() => {
+        console.log("Data saved successfully");
+      })
+      .catch((e) => {
+        console.log("Data could not be saved: " + e);
+      });
+  }
+
+
+
+
+
+
+
 
   /**
    *
