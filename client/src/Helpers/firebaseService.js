@@ -228,13 +228,14 @@ export default class FirebaseService {
 
   //____________
 
-  static async updateRecordKeys(newPermittedRegions, patientID) {
-
-    let changedDoctors = await this.getChangedDoctors(newPermittedRegions, patientID);
+  static async updateRecordKeysOld(newPermittedRegions, patientID) {
+    let changedDoctors = await this.getChangedDoctors(
+      newPermittedRegions,
+      patientID
+    );
 
     let addedDoctors = changedDoctors.added;
     let removedDoctors = changedDoctors.removed;
-
 
     //For each doctor (that has a recordKey, but basically all doctors in the system)
     let doctorsWithRecordKeys = await this.getDoctorsWithRecordKeys();
@@ -244,29 +245,37 @@ export default class FirebaseService {
       console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
       //Go over every item in removedDoctors and remove the respective recordKey from the database
       for (let doctorSSN of removedDoctors) {
-        
         let doctorUID = await this.getUIDFromSSN(doctorSSN);
 
-        for (let fireBasedoctorUID of doctorsWithRecordKeys) {   
+        for (let fireBasedoctorUID of doctorsWithRecordKeys) {
+          let listOfUserRecordKeys = await this.getAllRecordKeysFromDoctor(
+            fireBasedoctorUID
+          );
 
-          let listOfUserRecordKeys = await this.getAllRecordKeysFromDoctor(fireBasedoctorUID);
+          console.log(
+            "DoctorUID: " +
+              doctorUID +
+              "\nfireBaseDoctorUID: " +
+              fireBasedoctorUID +
+              "\nindex: " +
+              listOfUserRecordKeys.indexOf(patientID)
+          );
 
-          console.log("DoctorUID: " + doctorUID+"\nfireBaseDoctorUID: " + fireBasedoctorUID+"\nindex: " + listOfUserRecordKeys.indexOf(patientID));
-
-          if (doctorUID == fireBasedoctorUID && listOfUserRecordKeys.indexOf(patientID) > -1) {
-
+          if (
+            doctorUID == fireBasedoctorUID &&
+            listOfUserRecordKeys.indexOf(patientID) > -1
+          ) {
             //This runs before removeDoctors is fully updated (works if you change one or few permissions at a time but too many and it is not updated)
             //TODO    Add check here for the patient SSN!!!!!!
-            
+
             await this.updateDoctorRecordKey(doctorUID, patientID, null);
-            console.log("Doctor "+doctorUID+" removed");
+            console.log("Doctor " + doctorUID + " removed");
           }
-          
         }
       }
     }
 
-    if (addedDoctors.length > 0){
+    if (addedDoctors.length > 0) {
       // this is "static", no need to call it over and over again, simply call it once here
       let encryptedPatientRecordKey = await this.getPatientRecordKey();
 
@@ -283,17 +292,21 @@ export default class FirebaseService {
 
       //Go through all added doctors and add recordKeys for all of them
       for (let doctorSSN of addedDoctors) {
-
         let doctorUID = await this.getUIDFromSSN(doctorSSN);
         console.log("Found UID: " + doctorUID);
 
-        let newEncryptedRecordKey = await this.createRecordKeyForDoctorSSN(doctorUID,patientRecordKey);
+        let newEncryptedRecordKey = await this.createRecordKeyForDoctorSSN(
+          doctorUID,
+          patientRecordKey
+        );
 
-        await this.updateDoctorRecordKey(doctorUID, patientID, newEncryptedRecordKey);
-
+        await this.updateDoctorRecordKey(
+          doctorUID,
+          patientID,
+          newEncryptedRecordKey
+        );
       }
     }
-
   }
 
   /**
@@ -302,30 +315,26 @@ export default class FirebaseService {
    * @returns {Promise<Array<String>>}
    * @author David Zamanian, Christopher Molin
    */
-  static async getAllRecordKeysFromDoctor(doctorUID){
-
+  static async getAllRecordKeysFromDoctor(doctorUID) {
     let dbRef = ref(database);
 
     const listOfRecordKeysSnapshot = await get(
-      child(
-        dbRef,
-        "DoctorToRecordKey/" + doctorUID + "/recordKeys/"
-      )
+      child(dbRef, "DoctorToRecordKey/" + doctorUID + "/recordKeys/")
     );
-
-    let recordKeys = [].concat(Object.keys(listOfRecordKeysSnapshot.val()).flat());
-
-    return recordKeys;
+    if (listOfRecordKeysSnapshot.val() != null) {
+      let recordKeys = [].concat(
+        Object.keys(listOfRecordKeysSnapshot.val()).flat()
+      );
+      return recordKeys;
+    } else return null;
   }
-
 
   /**
    * Get all Doctor-UIDs with atleast one record key
    * @returns {Promise<Array<String>>}
    * @author David Zamanian, Christopher Molin
    */
-  static async getDoctorsWithRecordKeys(){
-
+  static async getDoctorsWithRecordKeys() {
     let doctorUIDs = [];
 
     let dbRef = ref(database);
@@ -334,8 +343,10 @@ export default class FirebaseService {
       child(dbRef, "DoctorToRecordKey/")
     );
 
-    if(doctorToRecordKeySnapshot.exists()){
-      doctorUIDs = doctorUIDs.concat(Object.keys(doctorToRecordKeySnapshot.val()).flat());
+    if (doctorToRecordKeySnapshot.exists()) {
+      doctorUIDs = doctorUIDs.concat(
+        Object.keys(doctorToRecordKeySnapshot.val()).flat()
+      );
     }
 
     return doctorUIDs;
@@ -347,8 +358,7 @@ export default class FirebaseService {
    * @param  {String} patientRecordKey
    * @returns {Promise<String>} patientRecordKey encrypted with doctorUID's public key
    */
-  static async createRecordKeyForDoctorSSN(doctorUID, patientRecordKey){
-
+  static async createRecordKeyForDoctorSSN(doctorUID, patientRecordKey) {
     let doctorPubKey = await this.getPublicKeyWithUID(doctorUID);
     console.log("Get DoctorPublicKey: " + doctorPubKey);
 
@@ -357,15 +367,13 @@ export default class FirebaseService {
       doctorPubKey
     );
 
-    console.log(
-      "new encrypted patient recordKey: " + newEncryptedRecordKey
-    );
+    console.log("new encrypted patient recordKey: " + newEncryptedRecordKey);
 
     return newEncryptedRecordKey;
   }
 
   /**
-   * Given a patientID and their new permitted regions, 
+   * Given a patientID and their new permitted regions,
    * return all the UIDs for the doctors that should:
    * Be given a record key for the patient or
    * have their record key for the patient removed.
@@ -376,14 +384,12 @@ export default class FirebaseService {
    * .added contains the UIDs for doctors that should have the record key for the patient.
    * @author David Zamanian
    */
-  static async getChangedDoctors(newPermittedRegions, patientID){
-
+  static async getChangedDoctors(newPermittedRegions, patientID) {
     let p = await EHRService.getPatientRegions(patientID);
 
     var permitted = new Set();
 
     p.map((item) => permitted.add(item));
-
 
     console.log("permittedRegions: " + p);
     //Values disappear when creating a set with them..
@@ -411,7 +417,6 @@ export default class FirebaseService {
     );
     console.log("addedRegions: " + Array.from(addedRegions));
 
-
     //Make array of all the added doctors
     let addedDoctors = [""];
     addedDoctors = await this.pushDoctorsToList(Array.from(addedRegions));
@@ -420,25 +425,23 @@ export default class FirebaseService {
     let removedDoctors = [""];
     removedDoctors = await this.pushDoctorsToList(Array.from(deletedRegions));
 
-    return { added: addedDoctors, removed: removedDoctors }
-
+    return { added: addedDoctors, removed: removedDoctors };
   }
-
 
   /**
    * @param {String} doctorUID
    * @param {String} patientID
    * @param {Promise<String>} recordKey
-   * 
+   *
    */
-  static async updateDoctorRecordKey(doctorUID, patientID, recordKey){
-
+  static async updateDoctorRecordKey(doctorUID, patientID, recordKey) {
     let dbRef = ref(database);
 
     const updates = {};
 
-    updates["DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID] =
-          {recordKey: recordKey};
+    updates["DoctorToRecordKey/" + doctorUID + "/recordKeys/" + patientID] = {
+      recordKey: recordKey,
+    };
 
     update(dbRef, updates)
       .then(() => {
@@ -448,13 +451,6 @@ export default class FirebaseService {
         console.log("Data could not be saved: " + e);
       });
   }
-
-
-
-
-
-
-
 
   /**
    *

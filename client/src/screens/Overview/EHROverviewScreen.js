@@ -271,14 +271,7 @@ export function EHROverviewScreen(props) {
     try {
       // TODO: decide whether to goa directly via chainconnection or via ehrService as with other region-functions...
       const connection = await chainConnection;
-      try {
-        await FirebaseService.updateRecordKeys(
-          newPermittedRegions,
-          state.patientID
-        );
-      } catch (e) {
-        console.log("error: " + e);
-      }
+      await EHRService.updateRecordKeys(newPermittedRegions, state.patientID);
       await connection.setPermissions(state.patientID, newPermittedRegions);
 
       // update the list of permitted regions held by the state
