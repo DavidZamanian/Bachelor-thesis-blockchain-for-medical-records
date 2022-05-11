@@ -296,7 +296,12 @@ export default class FirebaseService {
 
   }
 
-
+  /**
+   * Returns all record-keys given to the provided doctorUID
+   * @param  {String} doctorUID
+   * @returns {Promise<Array<String>>}
+   * @author David Zamanian, Christopher Molin
+   */
   static async getAllRecordKeysFromDoctor(doctorUID){
 
     let dbRef = ref(database);
@@ -421,9 +426,9 @@ export default class FirebaseService {
 
 
   /**
-   * @param  {} doctorUID
-   * @param  {} patientID
-   * @param  {} recordKey
+   * @param {String} doctorUID
+   * @param {String} patientID
+   * @param {Promise<String>} recordKey
    * 
    */
   static async updateDoctorRecordKey(doctorUID, patientID, recordKey){
