@@ -165,9 +165,9 @@ async function derivePrivateKeyFromPassword(password, salt) {
 }
 
 /**
- * Takes a string and hash it using sha512 algorithm.
- * @param {*} string 
- * @returns Hashed string in hex format.
+ * Takes a string and hashes it using sha256 algorithm.
+ * @param {String} the string to hash 
+ * @returns {String} Hashed string in hex format.
  */
 async function hashString(string) {
   const hash = crypto.createHash("sha256");
