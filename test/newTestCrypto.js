@@ -299,7 +299,7 @@ it("FOR DERIVATION - Priting correct keys for users to put in firebase", async (
 describe('Test hashing string', async () => { 
   it("Can hash a string", async () => {
     let string = "999999";
-    let actualHashed = "d2db4e34c6c74f9ee33ad34ecf3b3356825e4d7d73a6f608002eb7825233a484422834bf05786b9265f82a3dc17f3bc74bbaf1a68764c445df180ada3af9849b";
+    let actualHashed = "937377f056160fc4b15e0b770c67136a5f03c15205b4d3bf918268fefa2c6d0a";
     assert.equal(actualHashed, (await crypt.hashString(string)));
   });
 });

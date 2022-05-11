@@ -170,7 +170,7 @@ async function derivePrivateKeyFromPassword(password, salt) {
  * @returns Hashed string in hex format.
  */
 async function hashString(string) {
-  const hash = crypto.createHash("sha512");
+  const hash = crypto.createHash("sha256");
   hash.update(string);
   return hash.digest("hex");
 }
