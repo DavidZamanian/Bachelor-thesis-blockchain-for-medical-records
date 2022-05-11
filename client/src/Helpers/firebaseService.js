@@ -304,9 +304,22 @@ export default class FirebaseService {
         }
       }
     }
-    //Check that there are at least one added doctor
-    console.log("addedDoctors: " + addedDoctors);
-    if (addedDoctors.length > 0) {
+
+    if (addedDoctors.length > 0){
+      // this is "static", no need to call it over and over again, simply call it once here
+      let encryptedPatientRecordKey = await this.getPatientRecordKey();
+
+      console.log("Got patient recordKey: " + encryptedPatientRecordKey);
+
+      let patientRecordKey = await crypt.decryptRecordKey(
+        encryptedPatientRecordKey,
+        EHRService.privateKey
+      );
+      console.log(
+        "decrypted patient recordKey: " + patientRecordKey.toString("base64")
+      );
+      // All of this is only needed once, so this was moved out
+
       //Go through all added doctors and add recordKeys for all of them
       for (let doctorSSN of addedDoctors) {
 
@@ -315,18 +328,6 @@ export default class FirebaseService {
 
         let doctorPubKey = await this.getPublicKeyWithUID(doctorUID);
         console.log("Get DoctorPublicKey: " + doctorPubKey);
-
-        //Get recordKey from user, decrypt it en reencrypt it with doctors publicKey here..
-        let encryptedPatientRecordKey = await this.getPatientRecordKey();
-        console.log("Got patient recordKey: " + encryptedPatientRecordKey);
-
-        let patientRecordKey = await crypt.decryptRecordKey(
-          encryptedPatientRecordKey,
-          EHRService.privateKey
-        );
-        console.log(
-          "decrypted patient recordKey: " + patientRecordKey.toString("base64")
-        );
 
         let newEncryptedRecordKey = await crypt.encryptRecordKey(
           patientRecordKey,
