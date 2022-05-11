@@ -240,24 +240,24 @@ export default class FirebaseService {
     console.log("All assignments are done");
 
     let dbRef = ref(database);
-    const DoctorToRecordKeySnapshot = await get(
-      child(dbRef, "DoctorToRecordKey/")
-    );
+
+
+    let doctorsWithRecordKeys = await this.getDoctorsWithRecordKeys();
+
     //For each doctor (that has a recordKey, but basically all doctors in the system)
 
     //This should only be for removedDoctors. addedDoctors should not be in this forEach clause
-    if (DoctorToRecordKeySnapshot.exists() && removedDoctors.length > 0) {
+    if (doctorsWithRecordKeys.length > 0 && removedDoctors.length > 0) {
       console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
       //Go over every item in removedDoctors and remove the respective recordKey from the database
       for (let doctorSSN of removedDoctors) {
         console.log(
           "DoctorToRecordKeySnapshot.val(): " +
-            Object.keys(DoctorToRecordKeySnapshot.val())
+          doctorsWithRecordKeys
         );
         let doctorUID = await this.getUIDFromSSN(doctorSSN);
-        for (let fireBasedoctorUID of Object.keys(
-          DoctorToRecordKeySnapshot.val()
-        )) {
+        for (let fireBasedoctorUID of doctorsWithRecordKeys) {
+
           console.log("inside 1");
           const listOfRecordKeysSnapshot = await get(
             child(
@@ -344,10 +344,43 @@ export default class FirebaseService {
 
   }
 
+  static async getDoctorsWithRecordKeys(){
+
+    let doctorUIDs = [];
+
+    let dbRef = ref(database);
+
+    const doctorToRecordKeySnapshot = await get(
+      child(dbRef, "DoctorToRecordKey/")
+    );
+
+    if(doctorToRecordKeySnapshot.exists()){
+      for (let fireBasedoctorUID of Object.keys(
+        doctorToRecordKeySnapshot.val()
+      )) {
+        doctorUIDs.push(fireBasedoctorUID);
+      }
+    }
+
+    return doctorUIDs;
+  }
+
+
+
+
+
+
   /**
-   * @param  {Array<String>} newPermittedRegions
-   * @param  {String} patientID
-   * @returns {Promise<{removed:Array<String>, added: Array<String>}>}
+   * Given a patientID and their new permitted regions, 
+   * return all the UIDs for the doctors that should:
+   * Be given a record key for the patient or
+   * have their record key for the patient removed.
+   * @param {Array<String>} newPermittedRegions
+   * @param {String} patientID
+   * @returns {Promise<{ removed: Array<String>, added: Array<String> }>}
+   * .removed contains the UIDs for doctors that should no longer have the record key for the patient
+   * .added contains the UIDs for doctors that should have the record key for the patient.
+   * @author David Zamanian
    */
   static async getChangedDoctors(newPermittedRegions, patientID){
 
@@ -398,7 +431,12 @@ export default class FirebaseService {
   }
 
 
-
+  /**
+   * @param  {} doctorUID
+   * @param  {} patientID
+   * @param  {} recordKey
+   * 
+   */
   static async updateDoctorRecordKey(doctorUID, patientID, recordKey){
 
     let dbRef = ref(database);
