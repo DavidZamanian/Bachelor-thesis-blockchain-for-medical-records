@@ -63,7 +63,7 @@ module.exports = function (deployer, network, accounts) {
     await instance.addMedicalPersonnel(accounts[1], "7403191234", "2"); 
     // works for Segeltorps vårdcentral
     // mail: test@gmail.com
-    await instance.addMedicalPersonnel(accounts[2], "8701104455", "3"); 
+    //await instance.addMedicalPersonnel(accounts[2], "8701104455", "3"); 
     
     // region 2
 
