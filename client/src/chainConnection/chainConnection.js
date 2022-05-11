@@ -2,6 +2,7 @@ import Block4EHR from "../../../build/contracts/Block4EHR.json";
 import getWeb3 from "./getWeb3";
 import ChainOperationDeniedError from "./chainOperationDeniedError";
 import ChainConnectionError from "./chainConnectionError";
+import * as crypt from "../../Crypto/crypt";
 
 /**
  * Handles the connection to the smart contract Block4EHR on the blockchain. 
@@ -73,20 +74,21 @@ export default class ChainConnection {
    * access the given patient's EHR.
    * @param {String} patientId The id of the patient to check permision against. 
    * @returns {Promise<boolean>} true if the invoker is permissioned by the given patient. 
+   * @throws {ChainConnectionError} if the operation fialed, most likely due to a network error.
    * @author Hampus Jernkrook
    */
   async hasPermission(patientId) {
     const { accounts, contract } = this.state;
 
     let res = false;
+    const hashed_id = await crypt.hashString(patientId);
 
     try{
       res = await contract.methods
-      .hasPermission(patientId)
+      .hasPermission(hashed_id)
       .call({ from: accounts[0] });
-    }catch(e){
-      // Do something if this fails.
-      console.warn(e);
+    } catch(err) {
+      throw new ChainConnectionError(err.message);
     }
     
     return res;
@@ -102,9 +104,10 @@ export default class ChainConnection {
    */
   async getPermissionedRegions(patientId) {
     const { accounts, contract } = this.state;
+    const hashed_id = await crypt.hashString(patientId);
     try {
       const arr = await contract.methods
-      .getPermissionedRegions(patientId)
+      .getPermissionedRegions(hashed_id)
       .call({ from: accounts[0] });
       return arr;
     } catch (err) {
@@ -122,9 +125,10 @@ export default class ChainConnection {
    */
   async getEHRCid(patientId) {
     const { accounts, contract } = this.state;
+    const hashed_id = await crypt.hashString(patientId);
     try {
       const cid = await contract.methods
-          .getEHRCid(patientId)
+          .getEHRCid(hashed_id)
           .call({ from: accounts[0] });
       return cid;
     } catch (err) {
@@ -141,10 +145,11 @@ export default class ChainConnection {
    * @author Hampus Jernkrook
    */
   async updateEHR(patientId, cid) {
+    const { accounts, contract } = this.state;
+    const hashed_id = await crypt.hashString(patientId);
     try {
-      const { accounts, contract } = this.state;
       await contract.methods
-        .updateEHR(patientId, cid)
+        .updateEHR(hashed_id, cid)
         .send({ from: accounts[0] });
     } catch (err) {
       throw new ChainOperationDeniedError(err.message);
@@ -160,10 +165,11 @@ export default class ChainConnection {
    * @author Hampus Jernkrook 
    */
   async setPermissions(patientId, regions) {
+    const { accounts, contract } = this.state;
+    const hashed_id = await crypt.hashString(patientId);
     try {
-      const { accounts, contract } = this.state;
       await contract.methods
-          .setPermissions(patientId, regions)
+          .setPermissions(hashed_id, regions)
           .send({ from: accounts[0] });
     } catch (err) {
       throw new ChainOperationDeniedError(err.message);
@@ -178,8 +184,8 @@ export default class ChainConnection {
    * @author Hampus Jernkrook
    */
   async getAllRegions() {
+    const { accounts, contract } = this.state;
     try {
-      const { accounts, contract } = this.state;
       const regions = await contract.methods
         .getRegions()
         .call({ from: accounts[0] });
@@ -198,9 +204,9 @@ export default class ChainConnection {
    * @author Hampus Jernkrook
    */
   async getRegionPersonnel(regionId) {
+    const { accounts, contract } = this.state;
     let personnel;
     try {
-      const { accounts, contract } = this.state;
       personnel = await contract.methods
         .getRegionPersonnel(regionId)
         .call({ from : accounts[0] });
@@ -219,8 +225,8 @@ export default class ChainConnection {
    * @author Hampus Jernkrook
    */
   async getInstitutionName(institutionId) {
+    const { accounts, contract } = this.state;
     try {
-      const { accounts, contract } = this.state;
       const name = await contract.methods
         .getInstitutionName(institutionId)
         .call({ from: accounts[0] });
@@ -232,20 +238,20 @@ export default class ChainConnection {
 
   /**
    * Get the healthcare institution a given medical personell works at. 
-   * @param {String} MedicalPersonnelId The id of the medical Personell. 
+   * @param {String} medicalPersonnelId The id of the medical Personell. 
    * @returns {Promise<Object>} The instituion object the given medical personell works at, with properties "id", "name", Region(object with it's own properties).
    * @throws {ChainConnectionError} if the operation failed. In this case, it is most likely
    *  due to a network error.
    * @author Edenia Isaac
    */
-  async getHealthCareInstitution(medicalPersonnelId){
-    try{
-      const { accounts, contract } = this.state;
+  async getHealthCareInstitution(medicalPersonnelId) {
+    const { accounts, contract } = this.state;
+    try {
       const healthcareInst = await contract.methods
         .getHealthCareInstitution(medicalPersonnelId)
         .call({ from: accounts[0]});
       return healthcareInst;
-    }catch (err){
+    } catch (err){
       throw new ChainConnectionError(err.message);
     }
   }
