@@ -271,6 +271,7 @@ export function EHROverviewScreen(props) {
     try {
       // TODO: decide whether to goa directly via chainconnection or via ehrService as with other region-functions...
       const connection = await chainConnection;
+      //Would like to change the order of these two but not possible because updateRecordKeys needs to get the permissions before setPermissions updates them
       await EHRService.updateRecordKeys(newPermittedRegions, state.patientID);
       await connection.setPermissions(state.patientID, newPermittedRegions);
 

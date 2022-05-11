@@ -237,6 +237,13 @@ export default class EHRService {
     }
   }
 
+  /**
+   *
+   * @param {Array<String>} newPermittedRegions
+   * @param {String} patientID
+   * @author David Zamanian, Christopher Molin
+   */
+
   static async updateRecordKeys(newPermittedRegions, patientID) {
     let changedDoctors = await FirebaseService.getChangedDoctors(
       newPermittedRegions,

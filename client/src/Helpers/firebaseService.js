@@ -321,6 +321,7 @@ export default class FirebaseService {
     const listOfRecordKeysSnapshot = await get(
       child(dbRef, "DoctorToRecordKey/" + doctorUID + "/recordKeys/")
     );
+    //This is null in some occasions when removing the last permissions in the database!
     if (listOfRecordKeysSnapshot.val() != null) {
       let recordKeys = [].concat(
         Object.keys(listOfRecordKeysSnapshot.val()).flat()
