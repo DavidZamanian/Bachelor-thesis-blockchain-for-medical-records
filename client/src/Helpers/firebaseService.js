@@ -235,30 +235,22 @@ export default class FirebaseService {
     let addedDoctors = changedDoctors.added;
     let removedDoctors = changedDoctors.removed;
 
-
-    //Go through all doctors in database and check if added or removed
-    console.log("All assignments are done");
-
     let dbRef = ref(database);
 
-
-    let doctorsWithRecordKeys = await this.getDoctorsWithRecordKeys();
-
     //For each doctor (that has a recordKey, but basically all doctors in the system)
+    let doctorsWithRecordKeys = await this.getDoctorsWithRecordKeys();
 
     //This should only be for removedDoctors. addedDoctors should not be in this forEach clause
     if (doctorsWithRecordKeys.length > 0 && removedDoctors.length > 0) {
       console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
       //Go over every item in removedDoctors and remove the respective recordKey from the database
       for (let doctorSSN of removedDoctors) {
-        console.log(
-          "DoctorToRecordKeySnapshot.val(): " +
-          doctorsWithRecordKeys
-        );
+        
         let doctorUID = await this.getUIDFromSSN(doctorSSN);
+
         for (let fireBasedoctorUID of doctorsWithRecordKeys) {
 
-          console.log("inside 1");
+          
           const listOfRecordKeysSnapshot = await get(
             child(
               dbRef,
@@ -267,7 +259,7 @@ export default class FirebaseService {
           );
           //For some reason this is null sometimes, but this check fixes that and everything is removed correctly
           if (listOfRecordKeysSnapshot.val() != null) {
-            console.log("inside 2");
+
             let listOfUserRecordKeys = [];
 
             console.log(
@@ -275,21 +267,19 @@ export default class FirebaseService {
                 Object.keys(listOfRecordKeysSnapshot.val())
             );
 
-            for (let SSN of Object.keys(listOfRecordKeysSnapshot.val())) {
-              listOfUserRecordKeys.push(SSN);
-            }
+            //for (let SSN of Object.keys(listOfRecordKeysSnapshot.val())) {
+            //  listOfUserRecordKeys.push(SSN);
+            //}
+
+            listOfUserRecordKeys = listOfUserRecordKeys.concat(Object.keys(listOfRecordKeysSnapshot.val()).flat())
 
             //If the doctor is in the list of removed doctors, remove that recordKey from database
 
             console.log("DoctorUID: " + doctorUID);
             console.log("fireBaseDoctorUID: " + fireBasedoctorUID);
             console.log("index: " + listOfUserRecordKeys.indexOf(patientID));
-            if (
-              doctorUID == fireBasedoctorUID &&
-              listOfUserRecordKeys.indexOf(patientID) > -1
-            ) {
-              console.log("inside 4");
-              //let doctorSSN = await EHRService.getSSNFromUID(doctorUID);
+            if (doctorUID == fireBasedoctorUID && listOfUserRecordKeys.indexOf(patientID) > -1) {
+
               console.log("doctorUID: " + doctorUID);
               console.log("doctorSSN: " + doctorSSN);
 
@@ -326,17 +316,7 @@ export default class FirebaseService {
         let doctorUID = await this.getUIDFromSSN(doctorSSN);
         console.log("Found UID: " + doctorUID);
 
-        let doctorPubKey = await this.getPublicKeyWithUID(doctorUID);
-        console.log("Get DoctorPublicKey: " + doctorPubKey);
-
-        let newEncryptedRecordKey = await crypt.encryptRecordKey(
-          patientRecordKey,
-          doctorPubKey
-        );
-
-        console.log(
-          "new encrypted patient recordKey: " + newEncryptedRecordKey
-        );
+        let newEncryptedRecordKey = await this.createRecordKeyForDoctorSSN(doctorUID,patientRecordKey);
 
         await this.updateDoctorRecordKey(doctorUID, patientID, newEncryptedRecordKey);
 
@@ -367,7 +347,24 @@ export default class FirebaseService {
   }
 
 
+  static async createRecordKeyForDoctorSSN(doctorUID, patientRecordKey){
 
+    
+
+    let doctorPubKey = await this.getPublicKeyWithUID(doctorUID);
+    console.log("Get DoctorPublicKey: " + doctorPubKey);
+
+    let newEncryptedRecordKey = await crypt.encryptRecordKey(
+      patientRecordKey,
+      doctorPubKey
+    );
+
+    console.log(
+      "new encrypted patient recordKey: " + newEncryptedRecordKey
+    );
+
+    return newEncryptedRecordKey;
+  }
 
 
 
