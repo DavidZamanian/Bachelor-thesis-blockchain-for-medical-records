@@ -5,12 +5,10 @@ import Header from "../../../components/Header/Header";
 import ThemeButton from "../../../components/themeButton";
 import styles from "./styles";
 import { useNavigation } from "@react-navigation/native";
-import EHRService from "../../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../../contexts/ChainConnectionContext";
 import FirebaseService from "../../../Helpers/firebaseService";
 
 export function PatientSearchScreen() {
-
   const { chainConnection } = React.useContext(ChainConnectionContext);
 
   // Change this accordingly
@@ -21,10 +19,9 @@ export function PatientSearchScreen() {
   // Navigation: redirect to the overview (staff version)
   const navigation = useNavigation();
   const redirectTo = () => {
-    navigation.navigate("EHROverview",patientID);
+    navigation.navigate("EHROverview", patientID);
   };
 
-  
   /**
    * Validates the <TextInput> field to be only digits within certain length.
    * Quite secure, as it will also check when trying to paste non-numeric inputs.
@@ -34,14 +31,13 @@ export function PatientSearchScreen() {
   const makeValidPatientID = (id) => {
     setShowError("");
     const re = /^[0-9\b]+$/;
-      if (id.target.value === "" || re.test(id.target.value)) {
-        setPatientID(() => {
-          return [id.target.value]
-        })
-      }
+    if (id.target.value === "" || re.test(id.target.value)) {
+      setPatientID(() => {
+        return [id.target.value];
+      });
+    }
   };
 
- 
   /**
    * Check if the provided patient exist and if the ID is of correct length.
    * Ensures the doctor has permission to access the patient's EHR.
@@ -49,27 +45,24 @@ export function PatientSearchScreen() {
    * @author Christopher Molin
    */
   const searchPatient = async () => {
-    //alert("[DEBUG] Attempting to search for patient: "+patientID);
-    if(patientID.toString().length === expectedPatientIDLength &&
-      await FirebaseService.checkPatientExist(patientID)){
-        
-        let connection = await chainConnection;
+    if (
+      patientID.toString().length === expectedPatientIDLength &&
+      (await FirebaseService.checkPatientExist(patientID))
+    ) {
+      let connection = await chainConnection;
 
-        let patID = "".concat(patientID);
-        
-        if(await connection.hasPermission(patID)){
-          setPatientID("");
-          setShowError("");
-          redirectTo();
-        }
-        else{
-          setShowError("Error: You lack permission to access "+patientID+"!");
-        }
+      let patID = "".concat(patientID);
+
+      if (await connection.hasPermission(patID)) {
+        setPatientID("");
+        setShowError("");
+        redirectTo();
+      } else {
+        setShowError("Error: You lack permission to access " + patientID + "!");
       }
-    else{
-      setShowError("Error: "+patientID+" is not a valid patient ID!");
+    } else {
+      setShowError("Error: " + patientID + " is not a valid patient ID!");
     }
-    
   };
 
   return (
@@ -78,8 +71,10 @@ export function PatientSearchScreen() {
       <View style={styles.content}>
         <View style={styles.container}>
           <Text style={styles.headingText}>Patient Search</Text>
-          <Text style={styles.describeText}>Search for a patient using their Patient ID</Text>
-          <TextInput 
+          <Text style={styles.describeText}>
+            Search for a patient using their Patient ID
+          </Text>
+          <TextInput
             style={styles.searchBar}
             onChange={makeValidPatientID}
             value={patientID}
@@ -88,12 +83,22 @@ export function PatientSearchScreen() {
             placeholderTextColor={"grey"}
           />
           <Text style={styles.errorText}>{showError}</Text>
-          <View style={{width:325, alignSelf:"center", marginTop:5}}>
-            <ThemeButton extraStyle={styles.searchButton} iconName="search-sharp" iconSize={50} labelSize={25} labelText="View Patient EHR" bWidth="100%" onPress={() => {searchPatient()}}/>
+          <View style={{ width: 325, alignSelf: "center", marginTop: 5 }}>
+            <ThemeButton
+              extraStyle={styles.searchButton}
+              iconName="search-sharp"
+              iconSize={50}
+              labelSize={25}
+              labelText="View Patient EHR"
+              bWidth="100%"
+              onPress={() => {
+                searchPatient();
+              }}
+            />
           </View>
         </View>
-      </View> 
-      <Footer/>
+      </View>
+      <Footer />
     </View>
   );
-};
+}

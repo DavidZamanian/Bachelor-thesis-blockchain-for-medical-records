@@ -220,13 +220,10 @@ export function EHROverviewScreen(props) {
 
   /**
    * Submit new permitted regions to the blockchain.
-   * TODO: clean up, error handling, make the new permitted regions be reflected right away without
-   * needing to re-login.
    * @author Christopher Molin
    * @author Hampus Jernkrook
    */
   const submitData = async () => {
-    alert("Submitting settings...");
     const regStrings = state.regions.map(function (item) {
       return item["id"] + " " + item["name"] + " " + item["enabled"] + "\n";
     });
@@ -242,7 +239,6 @@ export function EHROverviewScreen(props) {
     alert(newPermittedRegions);
 
     try {
-      // TODO: decide whether to goa directly via chainconnection or via ehrService as with other region-functions...
       const connection = await chainConnection;
       //Would like to change the order of these two but not possible because updateRecordKeys needs to get the permissions before setPermissions updates them
       await EHRService.updateRecordKeys(newPermittedRegions, state.patientID);
@@ -255,7 +251,6 @@ export function EHROverviewScreen(props) {
           ...prevState.patientInfo,
           permittedRegions: newPermittedRegions,
         },
-        //remember which regions that should be marked as selected in the UI
         regionSnapshot: [...prevState.regions],
       }));
     } catch (err) {
@@ -303,15 +298,10 @@ export function EHROverviewScreen(props) {
 
   /*
     Method for redirecting to NewEntryScreen to make a new EHR entry
-    Possibly check privilege before proceeding?
 
     @Chrimle
   */
   const requestAddEHR = () => {
-    // CHECK PRIVILEGE?
-
-    //wipePatientData();
-
     navigation.navigate("NewEntryScreen", state.patientID);
   };
 
@@ -339,31 +329,6 @@ export function EHROverviewScreen(props) {
   };
 
   const discardContactInfo = async () => {
-    //TODO REMOVE ALL LINES UP UNTIL ...
-    console.log("Discarding..."); //TODO REMOVE
-    const connection = await chainConnection;
-    console.log(connection); //print the connection object to inspect things such as address used
-    // ====== TESTS: comment out all but the one you want to try and see result in your console =====
-
-    // ACCOUNT 10: Patient 9801011111 account.
-    // ACCOUNT 2, 3: account of a doctor in region 1 with access to 9801011111.
-    // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass.
-    // --> This came from BeforeDisaster branch --> const res = await connection.hasPermission("9801011111");
-    // TESTING getPermissionedRegions - set your account to Account 10 for this to pass.
-
-    // const res = await connection.getPermissionedRegions("9801011111");
-    // TESTING getEHRCid - set your account to Account 2 or 3 for this to pass.
-    // await connection.updateEHR("9801011111", "CID NR 1");
-    // const res = await connection.getEHRCid("9801011111"); //may have to run this separate from updateEHR
-    // TESTING setting new permissions - set your account to Account 10 for this to pass.
-    // await connection.setPermissions("9801011111", ["1", "3"]);
-    // const res = await connection.getPermissionedRegions("9801011111"); //may have to run this separate from setPermissions
-    // TESTING get all regions - any account can be used for this.
-    const res = await connection.getAllRegions();
-    console.log(res);
-    // ================
-    console.log("Done discarding.");
-    // UNTIL HERE
     toggleEditingContactInfo(false);
   };
 

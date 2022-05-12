@@ -1,9 +1,6 @@
 import * as assert from "assert";
 import crypto from "crypto";
-import * as path from "path";
 import crypt from "../client/Crypto/crypt.js";
-import JSONService from "../server/jsonHandling/jsonService.js";
-import * as fc from "fast-check";
 
 /**
  * Methods for encrypting/decrypting EHR and record keys.
@@ -296,86 +293,11 @@ it("FOR DERIVATION - Priting correct keys for users to put in firebase", async (
   }
 });
 
-describe('Test hashing string', async () => { 
+describe("Test hashing string", async () => {
   it("Can hash a string", async () => {
     let string = "999999";
-    let actualHashed = "937377f056160fc4b15e0b770c67136a5f03c15205b4d3bf918268fefa2c6d0a";
-    assert.equal(actualHashed, (await crypt.hashString(string)));
+    let actualHashed =
+      "937377f056160fc4b15e0b770c67136a5f03c15205b4d3bf918268fefa2c6d0a";
+    assert.equal(actualHashed, await crypt.hashString(string));
   });
 });
-
-/*
-describe("NOT VALID TESTS - Test encryption of file content", () => {
-  let newRecordKey = "";
-  crypto.generateKey("aes", { length: 256 }, (err, key) => {
-    if (err) throw err;
-
-    newRecordKey = key.export().toString("base64");
-  });
-
-  //This test is not valid. Everything works except the string " "
-  it("Encrypting and decrypting EHR with example keys", async () => {
-    fc.assert(
-      fc.property(fc.string({ minLength: 1 }), (originalData) => {
-
-        
-
-        let stringifiedData = JSON.stringify(originalData);
-        //For some reason these two cant have await
-        let encryptedData = crypt.encryptEHR(
-          exampleRecordKey,
-          stringifiedData
-        );
-
-        let decryptedData = crypt.decryptEHR(
-          exampleRecordKey,
-          encryptedData
-
-        );
-
-        assert.equal(stringifiedData, decryptedData);
-      })
-    );
-  });
-
-  it("Encrypting and decrypting EHR with real keys", async () => {
-    /**
-     * This test is not valid. Everything works except the string " "
-     *
-     * I want "text => notContains(text, " ")" in property but apparently not instance of Arbitrary..
-     * We will never encrypt en empty string so this test with always fail
-     *
-     
-    fc.assert(
-      fc.property(fc.string({ minLength: 1 }), async (originalData) => {
-
-        
-
-        let encryptedRecordKey = await crypt.encryptRecordKey(
-          newRecordKey,
-          derivedPublicKey
-        );
-
-        let stringifiedData = JSON.stringify(originalData);
-        //console.log(stringifiedData);
-        // encryptEHR decrypts the encryptedRecordKey, this throws an error.
-        let encryptedData = await crypt.encryptEHR(
-          newRecordKey,
-          stringifiedData
-        );
-        console.log("Encrypt Success" + encryptedData.encryptedData);
-        let decryptedData = await crypt.decryptEHR(
-          newRecordKey,
-          encryptedData
-        );
-        console.log("Decrypt Success: " + decryptedData);
-        console.log(stringifiedData == decryptedData);
-
-        assert.equal(stringifiedData, decryptedData);
-      })
-    );
-  }).timeout(10000);
-
-  
-});
-*/
