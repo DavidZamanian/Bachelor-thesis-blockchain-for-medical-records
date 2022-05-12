@@ -1,4 +1,5 @@
 const Block4EHR = artifacts.require("Block4EHR");
+const crypt = require("../client/Crypto/crypt");
 
 /**
  * Script for deploying the smart contract Block4EHR 
@@ -80,113 +81,16 @@ module.exports = function (deployer, network, accounts) {
 
     // No doctor can access this one's EHR until permission is granted via the patient's user. 
     // mail: daddykane@gmail.com
-    await instance.addPatient(accounts[9], "9801011111", []);
+    // hash of id: 011558ef6aae0f28d4ee91a60e78a7acb12f1ad17683cfcac8a79f9a575c203b
+    const daddy_id = await crypt.hashString("9801011111");
+    await instance.addPatient(accounts[9], daddy_id, []);
     
     // region 2
     
     // doctor with account [3] can access this one's EHR.
     // mail: slick.rick@gmail.com
-    await instance.addPatient(accounts[8], "6503036767", ["2"]);  
+    // hash of id: f632b8292dc7de720171aa1f8e3b777dcff0aa0ddc5babd25fc9713abe7a1e71
+    const slick_id = await crypt.hashString("6503036767"); 
+    await instance.addPatient(accounts[8], slick_id, ["2"]);  
   });
 };
-
-/* SOME COMMANDS FOR TESTING THIS IN THE TRUFFLE COMMAND LINE:
-
-truffle --config truffle-config.cjs compile
-truffle --config truffle-config.cjs develop
-migrate
-
-let instance = await Block4EHR.deployed();
-
-instance.medicalPersonnels(accounts[1])
-instance.medicalPersonnels(accounts[2])
-instance.healthcareInstitutions("iy")
-instance.healthcareInstitutions("in")
-instance.patients("p_gbg")
-instance.patients("p_boras")
-
-// change account and this will be denied
-instance.getPermissionedRegions("p_gbg", {from: accounts[9]})
-instance.getPermissionedRegions("p_boras", {from: accounts[8]})
-
-// change account and this will be denied
-instance.setPermissions("p_gbg", [ 'gbg', 'kungalv', 'skovde' ], {from: accounts[9]})
-*/
-/* ILLUSTRATING HOW TO GET THE LIST OF REGIONS FROM THE CHAIN
-AND HOW TO ACCESS THEIR ID AND NAME:
-
-truffle(develop)> let instance = await Block4EHR.deployed();
-undefined
-truffle(develop)> let regions = await instance.getRegions();
-undefined
-truffle(develop)> regions
-[
-  [ '1', 'Stockholm', id: '1', name: 'Stockholm' ],
-  [ '2', 'Uppsala', id: '2', name: 'Uppsala' ],
-  [ '3', 'Sörmland', id: '3', name: 'Sörmland' ]
-]
-truffle(develop)> regions[0]
-[ '1', 'Stockholm', id: '1', name: 'Stockholm' ]
-truffle(develop)> regions[0].id
-'1'
-truffle(develop)> regions[0].name
-'Stockholm'
-truffle(develop)> 
-
-
-//======= GETTING PERSONNEL FOR A GIVEN REGION ====
-// get an array with each personnel defined inside an array
-> let personnel1 = await instance.getRegionPersonnel('1');
-
-// printing personnel1:
-> personnel1
-[
-  [
-    '0x60F7D8aF0251235614809989AF2ECE3B6959cde5',
-    '7403191234',
-    [
-      '2',
-      'Liljeholmskajens vårdcentral',
-      [Array],
-      id: '2',
-      name: 'Liljeholmskajens vårdcentral',
-      region: [Array]
-    ],
-    addr: '0x60F7D8aF0251235614809989AF2ECE3B6959cde5',
-    id: '7403191234',
-    healthcareInst: [
-      '2',
-      'Liljeholmskajens vårdcentral',
-      [Array],
-      id: '2',
-      name: 'Liljeholmskajens vårdcentral',
-      region: [Array]
-    ]
-  ],
-  [
-    '0x3726B0d9d8624b343D0fBe1084C26Bd079e46D17',
-    '8701104455',
-    [
-      '3',
-      'Segeltorps vårdcentral',
-      [Array],
-      id: '3',
-      name: 'Segeltorps vårdcentral',
-      region: [Array]
-    ],
-    addr: '0x3726B0d9d8624b343D0fBe1084C26Bd079e46D17',
-    id: '8701104455',
-    healthcareInst: [
-      '3',
-      'Segeltorps vårdcentral',
-      [Array],
-      id: '3',
-      name: 'Segeltorps vårdcentral',
-      region: [Array]
-    ]
-  ]
-]
-
-// getting the first personnel's id:
-> personnel1[0].id
-*/
