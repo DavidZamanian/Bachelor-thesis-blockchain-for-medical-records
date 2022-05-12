@@ -64,7 +64,7 @@ module.exports = function (deployer, network, accounts) {
     await instance.addMedicalPersonnel(accounts[1], "7403191234", "2"); 
     // works for Segeltorps vårdcentral
     // mail: test@gmail.com
-    await instance.addMedicalPersonnel(accounts[2], "8701104455", "3"); 
+    //await instance.addMedicalPersonnel(accounts[2], "8701104455", "3"); 
     
     // region 2
 
@@ -77,13 +77,13 @@ module.exports = function (deployer, network, accounts) {
     // ==== ADDING PATIENTS ====
     // FORM: <account, id, permissioned_regions>
 
-    // region 1
+    // NO REGION
 
-    // doctors with accounts [1, 2] can access this one's EHR
+    // No doctor can access this one's EHR until permission is granted via the patient's user. 
     // mail: daddykane@gmail.com
     // hash of id: 011558ef6aae0f28d4ee91a60e78a7acb12f1ad17683cfcac8a79f9a575c203b
     const daddy_id = await crypt.hashString("9801011111");
-    await instance.addPatient(accounts[9], daddy_id, ["1"]);
+    await instance.addPatient(accounts[9], daddy_id, []);
     
     // region 2
     

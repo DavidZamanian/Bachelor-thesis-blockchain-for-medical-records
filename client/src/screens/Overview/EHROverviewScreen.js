@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Text, View, Modal, TextInput, ActivityIndicator, Image } from "react-native";
+import {
+  Text,
+  View,
+  Modal,
+  TextInput,
+  ActivityIndicator,
+  Image,
+} from "react-native";
 import Footer from "../../components/Footer";
 import Header from "../../components/Header/Header";
 import styles from "./styles";
@@ -18,6 +25,7 @@ import CouldNotLoadPermittedRegionsError from "../../Helpers/Errors/couldNotLoad
 import CouldNotLoadRegionsError from "../../Helpers/Errors/couldNotLoadRegionsError";
 import ChainOperationDeniedError from "../../chainConnection/chainOperationDeniedError";
 import { AuthContext } from "../../../contexts/AuthContext";
+import FirebaseService from "../../Helpers/firebaseService";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
@@ -83,7 +91,7 @@ export function EHROverviewScreen(props) {
               patientRef
           );
         } else {
-/*
+          /*
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND! //TODO REMOVE THIS COMMENT WHEN DONE
 
           // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
@@ -95,9 +103,13 @@ export function EHROverviewScreen(props) {
           const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
 */
 
-          let ehr = await EHRService.getEHR((state.doctorRole ? props.route.params : userSSN ), role, false);
+          let ehr = await EHRService.getEHR(
+            state.doctorRole ? props.route.params : userSSN,
+            role,
+            false
+          );
 
-          const patientPrescriptions = ehr.prescriptions
+          const patientPrescriptions = ehr.prescriptions;
           const patientDiagnoses = ehr.diagnoses;
           const patientJournals = ehr.journals;
 
@@ -108,11 +120,11 @@ export function EHROverviewScreen(props) {
           // TODO: clean this mess up and divide into functions!!!
           if (!state.doctorRole) {
             // TODO ADD THIS TO A GOOD SPOT...
-            let msg = (`Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`);
+            let msg = `Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`;
 
             // get all regions within the system
             let allRegions = [];
-            
+
             try {
               allRegions = await EHRService.getRegions();
             } catch (err) {
@@ -121,16 +133,19 @@ export function EHROverviewScreen(props) {
               await logOut();
               return;
             }
-            
 
-            // get the patient's id. May already be accessible but I could not see how /H. 
+            // get the patient's id. May already be accessible but I could not see how /H.
             // TODO: access in some other way if it is already possible. Else use this but clean up the comments.
-            const _patientId = state.doctorRole ? JSON.stringify(props.route.params).substring(2,12) : userSSN;
-            
+            const _patientId = state.doctorRole
+              ? JSON.stringify(props.route.params).substring(2, 12)
+              : userSSN;
+
             // get the patient's permitted regions
             let patientPermittedRegions;
             try {
-              patientPermittedRegions = await EHRService.getPatientRegions(_patientId);
+              patientPermittedRegions = await EHRService.getPatientRegions(
+                _patientId
+              );
             } catch (err) {
               alert(`FATAL: Failed to load Permission Settings.\n${msg}`);
               console.error(err.message);
@@ -140,12 +155,10 @@ export function EHROverviewScreen(props) {
 
             let regionIndexes = [];
 
-            allRegions.forEach((reg) =>
-              {
-                //console.log(reg)
-                regionIndexes.push({ id: reg[0], name: reg[1], enabled: false })
-              }
-            );
+            allRegions.forEach((reg) => {
+              //console.log(reg)
+              regionIndexes.push({ id: reg[0], name: reg[1], enabled: false });
+            });
             patientPermittedRegions.forEach(
               (reg) => (regionIndexes.find((r) => r.id === reg).enabled = true)
             );
@@ -178,7 +191,6 @@ export function EHROverviewScreen(props) {
           }
 
           //console.log(regionIndexes)
-
 
           // THIS IS HOW THE STATE WILL BE SET FOR DOCTOR'S
           // TODO: clean this mess up and divide into functions!!!
@@ -234,23 +246,23 @@ export function EHROverviewScreen(props) {
   };
 
   /**
-   * Submit new permitted regions to the blockchain. 
-   * TODO: clean up, error handling, make the new permitted regions be reflected right away without 
-   * needing to re-login. 
+   * Submit new permitted regions to the blockchain.
+   * TODO: clean up, error handling, make the new permitted regions be reflected right away without
+   * needing to re-login.
    * @author Christopher Molin
    * @author Hampus Jernkrook
    */
   const submitData = async () => {
     alert("Submitting settings...");
     const regStrings = state.regions.map(function (item) {
-      return item["id"]+" "+item["name"] + " " + item["enabled"] + "\n";
+      return item["id"] + " " + item["name"] + " " + item["enabled"] + "\n";
     });
     alert(regStrings.toString());
 
     let newPermittedRegions = [];
-    for (let region of state.regions){
-      if (region["enabled"]){
-        newPermittedRegions.push(region["id"])
+    for (let region of state.regions) {
+      if (region["enabled"]) {
+        newPermittedRegions.push(region["id"]);
       }
     }
 
@@ -259,8 +271,10 @@ export function EHROverviewScreen(props) {
     try {
       // TODO: decide whether to goa directly via chainconnection or via ehrService as with other region-functions...
       const connection = await chainConnection;
+      //Would like to change the order of these two but not possible because updateRecordKeys needs to get the permissions before setPermissions updates them
+      await EHRService.updateRecordKeys(newPermittedRegions, state.patientID);
       await connection.setPermissions(state.patientID, newPermittedRegions);
-      
+
       // update the list of permitted regions held by the state
       setState((prevState) => ({
         ...prevState,
@@ -269,12 +283,14 @@ export function EHROverviewScreen(props) {
           permittedRegions: newPermittedRegions,
         },
         //remember which regions that should be marked as selected in the UI
-        regionSnapshot: [...prevState.regions], 
+        regionSnapshot: [...prevState.regions],
       }));
     } catch (err) {
       if (err instanceof ChainOperationDeniedError)
-      alert(`Error on submitting new permission settings. Please check that you are connected to MetaMask.\n`+
-        `Error message: ${err.message}`);
+        alert(
+          `Error on submitting new permission settings. Please check that you are connected to MetaMask.\n` +
+            `Error message: ${err.message}`
+        );
     }
     togglePopup(false);
   };
@@ -301,10 +317,9 @@ export function EHROverviewScreen(props) {
   const toggleAllCheckbox = () => {
     let updated = [];
     let newEnabled = !state.allIsChecked;
-    for (let region of state.regions){
-      updated.push({ name: region.name, enabled: newEnabled, id: region.id })
+    for (let region of state.regions) {
+      updated.push({ name: region.name, enabled: newEnabled, id: region.id });
     }
-    
 
     setState((prevState) => ({
       ...prevState,
@@ -356,12 +371,12 @@ export function EHROverviewScreen(props) {
     const connection = await chainConnection;
     console.log(connection); //print the connection object to inspect things such as address used
     // ====== TESTS: comment out all but the one you want to try and see result in your console =====
-    
-    // ACCOUNT 10: Patient 9801011111 account. 
-    // ACCOUNT 2, 3: account of a doctor in region 1 with access to 9801011111. 
-    // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass. 
+
+    // ACCOUNT 10: Patient 9801011111 account.
+    // ACCOUNT 2, 3: account of a doctor in region 1 with access to 9801011111.
+    // TESTING hasPermission - set your account to either Account 2, 3 or 10 for this to pass.
     // --> This came from BeforeDisaster branch --> const res = await connection.hasPermission("9801011111");
-    // TESTING getPermissionedRegions - set your account to Account 10 for this to pass. 
+    // TESTING getPermissionedRegions - set your account to Account 10 for this to pass.
 
     // const res = await connection.getPermissionedRegions("9801011111");
     // TESTING getEHRCid - set your account to Account 2 or 3 for this to pass.
@@ -370,7 +385,7 @@ export function EHROverviewScreen(props) {
     // TESTING setting new permissions - set your account to Account 10 for this to pass.
     // await connection.setPermissions("9801011111", ["1", "3"]);
     // const res = await connection.getPermissionedRegions("9801011111"); //may have to run this separate from setPermissions
-    // TESTING get all regions - any account can be used for this. 
+    // TESTING get all regions - any account can be used for this.
     const res = await connection.getAllRegions();
     console.log(res);
     // ================
@@ -459,16 +474,36 @@ export function EHROverviewScreen(props) {
                   checking the corresponding box. Regions you currently have
                   given permission to are pre-filled.
                 </Text>
-                  <View style={[styles.regionContainer,{width:"100%",justifyContent:"center", borderColor:"black",borderWidth:1}]}>
-                    <TouchableOpacity style={[styles.checkbox,{backgroundColor: state.allIsChecked? theme.PRIMARY_COLOR: "white",},]}
-                      onPress={() => toggleAllCheckbox()}
-                    >
-                      {state.allIsChecked && (
-                        <Icon name="checkmark-outline" size={20}color="white"/>
-                      )}
-                    </TouchableOpacity>
-                    <Text style={styles.regionLabel}>Toggle all regions On or Off</Text>
-                  </View>
+                <View
+                  style={[
+                    styles.regionContainer,
+                    {
+                      width: "100%",
+                      justifyContent: "center",
+                      borderColor: "black",
+                      borderWidth: 1,
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={[
+                      styles.checkbox,
+                      {
+                        backgroundColor: state.allIsChecked
+                          ? theme.PRIMARY_COLOR
+                          : "white",
+                      },
+                    ]}
+                    onPress={() => toggleAllCheckbox()}
+                  >
+                    {state.allIsChecked && (
+                      <Icon name="checkmark-outline" size={20} color="white" />
+                    )}
+                  </TouchableOpacity>
+                  <Text style={styles.regionLabel}>
+                    Toggle all regions On or Off
+                  </Text>
+                </View>
                 <FlatList
                   style={styles.regionList}
                   data={state.regions}
@@ -542,15 +577,15 @@ export function EHROverviewScreen(props) {
         >
           <View style={styles.loadingOverlay}>
             <Image
-                source={require("../../../assets/WhiteLogo.png")}
-                style={{ 
-                  width: 50, 
-                  height: 50, 
-                  marginTop:10,
-                }}
-              />
+              source={require("../../../assets/WhiteLogo.png")}
+              style={{
+                width: 50,
+                height: 50,
+                marginTop: 10,
+              }}
+            />
             <Text style={styles.loadingText}>Loading patient data...</Text>
-            <ActivityIndicator size="large" color={theme.PRIMARY_COLOR}/>
+            <ActivityIndicator size="large" color={theme.PRIMARY_COLOR} />
           </View>
         </Modal>
         <Text style={styles.contentHeader}>Patient Overview</Text>
@@ -702,7 +737,9 @@ export function EHROverviewScreen(props) {
         <View style={styles.rowContainer}>
           <View style={styles.container}>
             <Text style={styles.header}>Prescriptions</Text>
-            {state.patientInfo.prescriptions.length == 0 && <Text style={styles.description}>No prescriptions found.</Text>}
+            {state.patientInfo.prescriptions.length == 0 && (
+              <Text style={styles.description}>No prescriptions found.</Text>
+            )}
             <FlatList
               data={state.patientInfo.prescriptions}
               keyExtractor={({ item, index }) => index}
@@ -717,7 +754,9 @@ export function EHROverviewScreen(props) {
           </View>
           <View style={styles.container}>
             <Text style={styles.header}>Diagnoses</Text>
-            {state.patientInfo.diagnoses.length == 0 && <Text style={styles.description}>No diagnoses found.</Text>}
+            {state.patientInfo.diagnoses.length == 0 && (
+              <Text style={styles.description}>No diagnoses found.</Text>
+            )}
             <FlatList
               data={state.patientInfo.diagnoses}
               keyExtractor={({ item, index }) => index}
@@ -734,124 +773,126 @@ export function EHROverviewScreen(props) {
         <View style={styles.rowContainer}>
           <View style={[styles.container, styles.doubleContainer]}>
             <Text style={styles.header}>Past record entries</Text>
-            {state.patientInfo.journals.length > 0 ?
-            <FlatList
-              style={{ width: "100%" }}
-              data={state.patientInfo.journals}
-              keyExtractor={({ item, index }) => index}
-              ListHeaderComponent={
-                <View style={styles.journalListItem}>
-                  <Text
-                    style={[styles.journalItemText, styles.journalListHeader]}
-                  >
-                    Date
-                  </Text>
-                  <Text
-                    style={[
-                      styles.journalItemText,
-                      styles.journalListHeader,
-                      { flex: 4 },
-                    ]}
-                  >
-                    Location
-                  </Text>
-                  <Text
-                    style={[
-                      styles.journalItemText,
-                      styles.journalListHeader,
-                      { flex: 4 },
-                    ]}
-                  >
-                    Issued by
-                  </Text>
-                  <Text
-                    style={[
-                      styles.journalItemText,
-                      styles.journalListHeader,
-                      { flex: 1 },
-                    ]}
-                  ></Text>
-                </View>
-              }
-              renderItem={({ item, index }) => (
-                <View style={styles.journalContainer} key={index}>
-                  <TouchableOpacity
-                    style={[
-                      styles.journalListItem,
-                      {
-                        backgroundColor: state.journalExpanded[index]
-                          ? theme.SECONDARY_COLOR
-                          : "#F3F3F3",
-                      },
-                    ]}
-                    onPress={() => toggleExpandJournal(index)}
-                  >
-                    <Text style={styles.journalItemText}>
-                      {item.date.toString().slice(0, 10)}
+            {state.patientInfo.journals.length > 0 ? (
+              <FlatList
+                style={{ width: "100%" }}
+                data={state.patientInfo.journals}
+                keyExtractor={({ item, index }) => index}
+                ListHeaderComponent={
+                  <View style={styles.journalListItem}>
+                    <Text
+                      style={[styles.journalItemText, styles.journalListHeader]}
+                    >
+                      Date
                     </Text>
-                    <Text style={[styles.journalItemText, { flex: 4 }]}>
-                      {item.healthcareInstitution}
-                    </Text>
-                    <Text style={[styles.journalItemText, { flex: 4 }]}>
-                      {item.medicalPersonnel}
-                    </Text>
-                    <Icon
-                      name={
-                        state.journalExpanded[index]
-                          ? "chevron-up-outline"
-                          : "chevron-down-outline"
-                      }
-                      color={theme.PRIMARY_COLOR}
+                    <Text
                       style={[
                         styles.journalItemText,
-                        { flex: 1, fontSize: 40 },
+                        styles.journalListHeader,
+                        { flex: 4 },
                       ]}
-                    />
-                  </TouchableOpacity>
-                  {state.journalExpanded[index] > 0 && (
-                    <View style={styles.journalExpandedContainer}>
-                      <View style={styles.journalExpandedRow}>
-                        <View style={styles.journalDataBlock}>
-                          <Text style={styles.journalDetailsHeader}>
-                            Details
-                          </Text>
-                          <Text style={styles.journalDetails}>
-                            {item.details}
-                          </Text>
+                    >
+                      Location
+                    </Text>
+                    <Text
+                      style={[
+                        styles.journalItemText,
+                        styles.journalListHeader,
+                        { flex: 4 },
+                      ]}
+                    >
+                      Issued by
+                    </Text>
+                    <Text
+                      style={[
+                        styles.journalItemText,
+                        styles.journalListHeader,
+                        { flex: 1 },
+                      ]}
+                    ></Text>
+                  </View>
+                }
+                renderItem={({ item, index }) => (
+                  <View style={styles.journalContainer} key={index}>
+                    <TouchableOpacity
+                      style={[
+                        styles.journalListItem,
+                        {
+                          backgroundColor: state.journalExpanded[index]
+                            ? theme.SECONDARY_COLOR
+                            : "#F3F3F3",
+                        },
+                      ]}
+                      onPress={() => toggleExpandJournal(index)}
+                    >
+                      <Text style={styles.journalItemText}>
+                        {item.date.toString().slice(0, 10)}
+                      </Text>
+                      <Text style={[styles.journalItemText, { flex: 4 }]}>
+                        {item.healthcareInstitution}
+                      </Text>
+                      <Text style={[styles.journalItemText, { flex: 4 }]}>
+                        {item.medicalPersonnel}
+                      </Text>
+                      <Icon
+                        name={
+                          state.journalExpanded[index]
+                            ? "chevron-up-outline"
+                            : "chevron-down-outline"
+                        }
+                        color={theme.PRIMARY_COLOR}
+                        style={[
+                          styles.journalItemText,
+                          { flex: 1, fontSize: 40 },
+                        ]}
+                      />
+                    </TouchableOpacity>
+                    {state.journalExpanded[index] > 0 && (
+                      <View style={styles.journalExpandedContainer}>
+                        <View style={styles.journalExpandedRow}>
+                          <View style={styles.journalDataBlock}>
+                            <Text style={styles.journalDetailsHeader}>
+                              Details
+                            </Text>
+                            <Text style={styles.journalDetails}>
+                              {item.details}
+                            </Text>
+                          </View>
+                        </View>
+                        <View style={styles.journalExpandedRow}>
+                          <View style={styles.journalDataBlock}>
+                            <Text style={styles.journalDetailsHeader}>
+                              Prescriptions
+                            </Text>
+                            {item.prescriptions.map((txt) => {
+                              return <Text key={txt}>{txt}</Text>;
+                            })}
+                          </View>
+                          <View style={styles.journalDataBlock}>
+                            <Text style={styles.journalDetailsHeader}>
+                              Diagnoses
+                            </Text>
+                            {item.diagnoses.map((txt) => {
+                              return <Text key={txt}>{txt}</Text>;
+                            })}
+                          </View>
+                          <View style={styles.journalDataBlock}>
+                            <Text style={styles.journalDetailsHeader}>
+                              Written by
+                            </Text>
+                            <Text style={styles.journalAuthor}>
+                              {item.medicalPersonnel}
+                            </Text>
+                          </View>
                         </View>
                       </View>
-                      <View style={styles.journalExpandedRow}>
-                        <View style={styles.journalDataBlock}>
-                          <Text style={styles.journalDetailsHeader}>
-                            Prescriptions
-                          </Text>
-                          {item.prescriptions.map((txt) => {
-                            return <Text key={txt}>{txt}</Text>;
-                          })}
-                        </View>
-                        <View style={styles.journalDataBlock}>
-                          <Text style={styles.journalDetailsHeader}>
-                            Diagnoses
-                          </Text>
-                          {item.diagnoses.map((txt) => {
-                            return <Text key={txt}>{txt}</Text>;
-                          })}
-                        </View>
-                        <View style={styles.journalDataBlock}>
-                          <Text style={styles.journalDetailsHeader}>
-                            Written by
-                          </Text>
-                          <Text style={styles.journalAuthor}>
-                            {item.medicalPersonnel}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  )}
-                </View>
-              )}
-            />
-            :<Text style={styles.description}>No past journals found.</Text>}
+                    )}
+                  </View>
+                )}
+              />
+            ) : (
+              <Text style={styles.description}>No past journals found.</Text>
+            )}
           </View>
         </View>
       </View>

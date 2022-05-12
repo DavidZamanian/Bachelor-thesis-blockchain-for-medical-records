@@ -9,29 +9,30 @@ import { PlaceholderValues } from "../placeholders/placeholderValues";
 import * as crypt from "../../Crypto/crypt";
 import { getAuth } from "@firebase/auth";
 import crypto, { createPrivateKey } from "crypto";
-import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError"
+import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError";
 import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
 import ChainConnectionError from "../chainConnection/chainConnectionError";
 import CouldNotLoadRegionsError from "./Errors/couldNotLoadRegionsError";
 import FirebaseService from "./firebaseService";
 
-
 export default class EHRService {
-
   // Class variables
   static chainConnection = ChainConnectionFactory.getChainConnection();
   static privateKey;
   static publicKey;
 
   // Setters
-  static async setPrivateKey(newPrivateKey) { this.privateKey = newPrivateKey; }
-  static async setPublicKey(newPublicKey) { this.publicKey = newPublicKey; }
-
+  static async setPrivateKey(newPrivateKey) {
+    this.privateKey = newPrivateKey;
+  }
+  static async setPublicKey(newPublicKey) {
+    this.publicKey = newPublicKey;
+  }
 
   /**
    * Derives symmetric key from password and salt,
-   * fetches private and public keys, 
+   * fetches private and public keys,
    * and uses symmetric key to decrypt private key.
    * Then sets the class instance's private and public key variables to these keys.
    * @param  {String} password
@@ -39,10 +40,10 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async setKeys(password, salt) {
-    
     let symmetricKey = await crypt.derivePrivateKeyFromPassword(password, salt);
 
-    let encryptedPrivateKeyAndIV = await FirebaseService.getEncPrivateKeyAndIV();
+    let encryptedPrivateKeyAndIV =
+      await FirebaseService.getEncPrivateKeyAndIV();
     let encryptedData = encryptedPrivateKeyAndIV.slice(46);
     let iv = encryptedPrivateKeyAndIV.slice(0, 44);
     let keyAndIv = { encryptedData, iv };
@@ -88,7 +89,6 @@ export default class EHRService {
       });
     return apiToken;
   }
-
 
   /**
    * Constructs an EHR object
@@ -156,7 +156,6 @@ export default class EHRService {
     diagnoses
   ) {
     try {
-
       patientID = "".concat(patientID);
 
       let finalFiles = [];
@@ -177,32 +176,37 @@ export default class EHRService {
         prescriptions,
         diagnoses
       );
-      
+
       console.log("Attempting Fetch");
 
-      try{
-
+      try {
         let patientEHR = await this.getEHR(patientID, "doctor", true);
 
-        console.table(patientEHR)
+        console.table(patientEHR);
 
         prescriptions = prescriptions.concat(patientEHR.prescriptions);
         diagnoses = diagnoses.concat(patientEHR.diagnoses);
         finalFiles = finalFiles.concat(patientEHR.journals);
 
         index = patientEHR.nextIndex;
-
-      }catch(e){
-        console.log(e)
-        console.log("error when fetching!")
+      } catch (e) {
+        console.log(e);
+        console.log("error when fetching!");
       }
-      
-      finalFiles = finalFiles.concat( await this.createEHRFiles(objectEHR, prescriptions, diagnoses,index, patientID));
 
-      try{
-        
+      finalFiles = finalFiles.concat(
+        await this.createEHRFiles(
+          objectEHR,
+          prescriptions,
+          diagnoses,
+          index,
+          patientID
+        )
+      );
+
+      try {
         let newCID = await fs.uploadFiles(finalFiles);
-        
+
         console.log(newCID);
 
         await connection.updateEHR(patientID, newCID);
@@ -214,42 +218,147 @@ export default class EHRService {
             `https://${newCID}.ipfs.dweb.link/`
         );
         for (const file of finalFiles) {
-          console.log(file.name + ": " + (await file.text()).toString("base64"));
+          console.log(
+            file.name + ": " + (await file.text()).toString("base64")
+          );
         }
 
         // DEBUG
         let checkCID = await connection.getEHRCid(patientID);
-        console.debug("Expected: "+newCID+"\nActual: "+checkCID);
+        console.debug("Expected: " + newCID + "\nActual: " + checkCID);
         // END OF DEBUG
-
-      }catch(e){
-        console.log("Error when uploading"+e.message);
+      } catch (e) {
+        console.log("Error when uploading" + e.message);
       }
-      
-      return "Success";
 
-    } catch (e) {throw e;}
+      return "Success";
+    } catch (e) {
+      throw e;
+    }
   }
 
- /**
-  * Method for downloading, decrypting and parsing files from IPFS.
-  * @param {string} cid
-  * @param {string} decryptedRecordKey
-  * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
-  * @returns {Promise<{ 
-  * prescriptions: Array<string>, 
-  * diagnoses: Array<string>,
-  * decryptedEHRs: Array<object>,
-  * encryptedEHRFiles: Array<File>,
-  * nextIndex: number
-  * }>}
-  * If keepEHRencrypted is true, decryptedEHRs will be empty. 
-  * If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
-  * @author Christopher Molin
-  */
-  static async getFiles(cid, decryptedRecordKey, keepEHRencrypted){
+  /** Updates the recordKeys in the database when changing permissions in patient overview.
+   * When permissions are removed, recordKeys are removed and when new permissions
+   * are added, new recordKeys are added for the doctors in the respectove region.
+   *
+   *
+   * @param {Array<String>} newPermittedRegions
+   * @param {String} patientID
+   * @author David Zamanian, Christopher Molin
+   */
 
-    let apiToken = await EHRService.getWeb3StorageToken()
+  static async updateRecordKeys(newPermittedRegions, patientID) {
+    let changedDoctors = await FirebaseService.getChangedDoctors(
+      newPermittedRegions,
+      patientID
+    );
+
+    let addedDoctors = changedDoctors.added;
+    let removedDoctors = changedDoctors.removed;
+
+    //For each doctor (that has a recordKey, but basically all doctors in the system)
+    let doctorsWithRecordKeys =
+      await FirebaseService.getDoctorsWithRecordKeys();
+
+    if (doctorsWithRecordKeys.length > 0 && removedDoctors.length > 0) {
+      console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
+      //Go over every item in removedDoctors and remove the respective recordKey from the database
+      for (let doctorSSN of removedDoctors) {
+        let doctorUID = await FirebaseService.getUIDFromSSN(doctorSSN);
+
+        for (let fireBasedoctorUID of doctorsWithRecordKeys) {
+          if (
+            (await FirebaseService.getAllRecordKeysFromDoctor(
+              fireBasedoctorUID
+            )) != null
+          ) {
+            let listOfUserRecordKeys =
+              await FirebaseService.getAllRecordKeysFromDoctor(
+                fireBasedoctorUID
+              );
+
+            console.log(
+              "DoctorUID: " +
+                doctorUID +
+                "\nfireBaseDoctorUID: " +
+                fireBasedoctorUID +
+                "\nindex: " +
+                listOfUserRecordKeys.indexOf(patientID)
+            );
+
+            if (
+              doctorUID == fireBasedoctorUID &&
+              listOfUserRecordKeys.indexOf(patientID) > -1
+            ) {
+              //This runs before removeDoctors is fully updated (works if you change one or few permissions at a time but too many and it is not updated)
+              //TODO    Add check here for the patient SSN!!!!!!
+
+              await FirebaseService.updateDoctorRecordKey(
+                doctorUID,
+                patientID,
+                null
+              );
+              console.log("Doctor " + doctorUID + " removed");
+            }
+          }
+        }
+      }
+    }
+
+    if (addedDoctors.length > 0) {
+      // this is "static", no need to call it over and over again, simply call it once here
+      let encryptedPatientRecordKey =
+        await FirebaseService.getPatientRecordKey();
+
+      console.log("Got patient recordKey: " + encryptedPatientRecordKey);
+
+      let patientRecordKey = await crypt.decryptRecordKey(
+        encryptedPatientRecordKey,
+        EHRService.privateKey
+      );
+      console.log(
+        "decrypted patient recordKey: " + patientRecordKey.toString("base64")
+      );
+      // All of this is only needed once, so this was moved out
+
+      //Go through all added doctors and add recordKeys for all of them
+      for (let doctorSSN of addedDoctors) {
+        let doctorUID = await FirebaseService.getUIDFromSSN(doctorSSN);
+        console.log("Found UID: " + doctorUID);
+
+        let newEncryptedRecordKey =
+          await FirebaseService.createRecordKeyForDoctorSSN(
+            doctorUID,
+            patientRecordKey
+          );
+
+        await FirebaseService.updateDoctorRecordKey(
+          doctorUID,
+          patientID,
+          newEncryptedRecordKey
+        );
+      }
+    }
+  }
+
+  /**
+   * Method for downloading, decrypting and parsing files from IPFS.
+   * @param {string} cid
+   * @param {string} decryptedRecordKey
+   * @param  {boolean} keepEHRencrypted Whether the EHR-files should be decrypted and parsed, or remain encrypted.
+   * @returns {Promise<{
+   * prescriptions: Array<string>,
+   * diagnoses: Array<string>,
+   * decryptedEHRs: Array<object>,
+   * encryptedEHRFiles: Array<File>,
+   * nextIndex: number
+   * }>}
+   * If keepEHRencrypted is true, decryptedEHRs will be empty.
+   * If keepEHRencrypted is false, encryptedEHRFiles will be empty and nextIndex will be -1.
+   * @author Christopher Molin
+   */
+  static async getFiles(cid, decryptedRecordKey, keepEHRencrypted) {
+    let apiToken = await EHRService.getWeb3StorageToken();
     let fs = new FileService(apiToken);
 
     let prescriptions = [];
@@ -258,41 +367,39 @@ export default class EHRService {
     let encryptedEHRFiles = [];
     let index = 0;
 
-    if (cid.length == 59){
+    if (cid.length == 59) {
       let filesAndIndex = await fs.fetchEHRFiles(cid, keepEHRencrypted);
       index = filesAndIndex.index;
-      for (const file of filesAndIndex.files){
-
-        if (keepEHRencrypted && file.name.search("EHR") != -1){
+      for (const file of filesAndIndex.files) {
+        if (keepEHRencrypted && file.name.search("EHR") != -1) {
           encryptedEHRFiles.push(file);
-        }
-        else{
+        } else {
           let fileContent = await file.text();
-          let decryptedData = await this.decrypt(fileContent, decryptedRecordKey);
+          let decryptedData = await this.decrypt(
+            fileContent,
+            decryptedRecordKey
+          );
           let parsedData = await this.parseIntoJSON(decryptedData);
 
-          if(file.name == "prescriptions.json"){
+          if (file.name == "prescriptions.json") {
             prescriptions = prescriptions.concat(parsedData);
-          }
-          else if(file.name == "diagnoses.json"){
+          } else if (file.name == "diagnoses.json") {
             diagnoses = diagnoses.concat(parsedData);
-          }
-          else if (file.name.search("EHR") != -1){
+          } else if (file.name.search("EHR") != -1) {
             decryptedEHRs = decryptedEHRs.concat(parsedData);
           }
         }
       }
-    } 
+    }
 
     return {
-        prescriptions: prescriptions, 
-        diagnoses: diagnoses, 
-        nextIndex: index,
-        encryptedEHRFiles: encryptedEHRFiles,
-        decryptedEHRs: decryptedEHRs
-    }
+      prescriptions: prescriptions,
+      diagnoses: diagnoses,
+      nextIndex: index,
+      encryptedEHRFiles: encryptedEHRFiles,
+      decryptedEHRs: decryptedEHRs,
+    };
   }
-
 
   /**
    * Gets EHR-files and parses contents to an object containing:
@@ -309,7 +416,6 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async getEHR(patientID, role, keepEncrypted) {
-
     // This is needed to ensure patientID is in fact a string...
     patientID = "".concat(patientID);
 
@@ -337,27 +443,33 @@ export default class EHRService {
       nextIndex: 0,
     };
 
-    try{
+    try {
       // This may throw an error
       let cid = await connection.getEHRCid(patientID);
-      console.debug(cid)
-      if (cid.length == 59){
-        let fetchedFiles = await this.getFiles(cid, decryptedRecordKey, keepEncrypted);
+      console.debug(cid);
+      if (cid.length == 59) {
+        let fetchedFiles = await this.getFiles(
+          cid,
+          decryptedRecordKey,
+          keepEncrypted
+        );
 
         EHR = {
           prescriptions: fetchedFiles.prescriptions,
           diagnoses: fetchedFiles.diagnoses,
-          journals: keepEncrypted ? fetchedFiles.encryptedEHRFiles : fetchedFiles.decryptedEHRs,
+          journals: keepEncrypted
+            ? fetchedFiles.encryptedEHRFiles
+            : fetchedFiles.decryptedEHRs,
           nextIndex: fetchedFiles.nextIndex,
         };
       }
+    } catch (e) {
+      console.warn(
+        "The requested patient " + patientID + " has no prior CIDs. \n " + e
+      );
     }
-    catch(e){
-      console.warn("The requested patient "+patientID+" has no prior CIDs. \n "+e)
-    }
-    
+
     return EHR;
-    
   }
 
   /**
@@ -378,7 +490,6 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async encrypt(content, decryptedRecordKey) {
-
     let encryptedEHR = await crypt.encryptEHR(decryptedRecordKey, content);
 
     console.table(encryptedEHR);
@@ -399,7 +510,6 @@ export default class EHRService {
    * @author Christopher Molin
    */
   static async decrypt(fileContent, decryptedRecordKey) {
-
     let tag = fileContent.slice(0, 24);
     let iv = fileContent.slice(24, 68);
     let encrypted = fileContent.slice(68);
@@ -423,49 +533,51 @@ export default class EHRService {
   }
 
   /**
-     * Gets all regions from the blockchain, and returns them as a list of region names.
-     * @returns {Promise<Array<String>>}
-     * @throws {CouldNotLoadRegionsError} If the operation failed, e.g. due to network error. 
-     * @author Hampus Jernkrook
-     */
-    static async getRegions() {
-        let connection = await this.chainConnection;
-        let regions;
-        try {
-            regions = await connection.getAllRegions();
-        } catch (err) {
-            if (err instanceof ChainConnectionError) {
-                throw new CouldNotLoadRegionsError(`Could not load the regions from the blockchain. `+
-                `The connection failed. Error: ${err.message}`);
-            }
-        }
-        return regions;
-    }
-
-    
-  /**
-   * Gets all regions the given patient has granted permission to.
-   * @param {String} patientID The id of the patient to retrieve permissioned regions for. 
-   * @returns {Promise<Array<String>>} Array of regions authorised by the patient.
-   * @throws {CouldNotLoadPermittedRegionsError} If the operation failed, e.g. due to network error 
-   *  or that the caller is unauthorised to call this function. 
+   * Gets all regions from the blockchain, and returns them as a list of region names.
+   * @returns {Promise<Array<String>>}
+   * @throws {CouldNotLoadRegionsError} If the operation failed, e.g. due to network error.
    * @author Hampus Jernkrook
    */
-  static async getPatientRegions(patientID){
+  static async getRegions() {
     let connection = await this.chainConnection;
     let regions;
     try {
-        regions = await connection.getPermissionedRegions(patientID);
+      regions = await connection.getAllRegions();
     } catch (err) {
-        if (err instanceof ChainOperationDeniedError) {
-            // show that the operation was denied, followed by generic message. 
-            throw new CouldNotLoadPermittedRegionsError(`Operation denied:\n` +
-            `Could not load permitted regions. Error thrown with message ${err.message}`);
-        } 
-    }   
+      if (err instanceof ChainConnectionError) {
+        throw new CouldNotLoadRegionsError(
+          `Could not load the regions from the blockchain. ` +
+            `The connection failed. Error: ${err.message}`
+        );
+      }
+    }
     return regions;
   }
 
+  /**
+   * Gets all regions the given patient has granted permission to.
+   * @param {String} patientID The id of the patient to retrieve permissioned regions for.
+   * @returns {Promise<Array<String>>} Array of regions authorised by the patient.
+   * @throws {CouldNotLoadPermittedRegionsError} If the operation failed, e.g. due to network error
+   *  or that the caller is unauthorised to call this function.
+   * @author Hampus Jernkrook
+   */
+  static async getPatientRegions(patientID) {
+    let connection = await this.chainConnection;
+    let regions;
+    try {
+      regions = await connection.getPermissionedRegions(patientID);
+    } catch (err) {
+      if (err instanceof ChainOperationDeniedError) {
+        // show that the operation was denied, followed by generic message.
+        throw new CouldNotLoadPermittedRegionsError(
+          `Operation denied:\n` +
+            `Could not load permitted regions. Error thrown with message ${err.message}`
+        );
+      }
+    }
+    return regions;
+  }
 
   /**
    * Takes the raw data, parses, encrypts and creates files.
@@ -477,15 +589,22 @@ export default class EHRService {
    * @returns {Promise<Array<File>>} The resulting files
    * @author Christopher Molin
    */
-  static async createEHRFiles(objectEHR, prescriptions, diagnoses, index, patientID){
-
+  static async createEHRFiles(
+    objectEHR,
+    prescriptions,
+    diagnoses,
+    index,
+    patientID
+  ) {
     // Make into JSON objects
     let stringEHR = await this.stringify(objectEHR);
     let stringPrescriptions = await this.stringify(prescriptions);
     let stringDiagnoses = await this.stringify(diagnoses);
 
     // GET RECORD KEY FOR ENCRYPTION & DECRYPTION
-    let encryptedRecordKey = await FirebaseService.getDoctorRecordKey(patientID);
+    let encryptedRecordKey = await FirebaseService.getDoctorRecordKey(
+      patientID
+    );
 
     console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
     console.warn("PrivateKey: " + this.privateKey);
@@ -501,7 +620,7 @@ export default class EHRService {
       stringPrescriptions,
       decryptedRecordKey
     );
-    
+
     let encryptedDiagnoses = await this.encrypt(
       stringDiagnoses,
       decryptedRecordKey
@@ -523,5 +642,4 @@ export default class EHRService {
 
     return [ehrFile, prescriptionsFile, diagnosesFile];
   }
-
 }
