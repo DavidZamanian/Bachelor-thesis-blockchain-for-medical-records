@@ -22,7 +22,7 @@
 10. After replacing, go to the data tab, press the 3 dots to the right, press "Import JSON" and select the file you just edited.
 11. Now, go to your project settings and add a web app via `https://console.firebase.google.com/u/0/project/[YOURPROJECTNAME]/settings/general`.
 12. Then, partially copy the SDK-code that is shown, namely: `firebaseConfig`
-13. Now, clone the repo and in the file `firebaseSetup.js`, replace `firebaseConfig` with the one you copied.
+13. Now, clone the repo and in the file `client/firebaseSetup.js`, replace `firebaseConfig` with the one you copied.
 14. This concludes the Firebase setup.
 
 
@@ -104,4 +104,4 @@ You can play around with the contract in truffle should you wish. If so, then do
 1. Run `truffle --config truffle-config.cjs compile`.
 1. Run `truffle --config truffle-config.cjs develop`. This will start a local test environment. 
 1. Run `migrate`. This will deploy the smart contract. 
-1. See `2_Block4EHR_migration.js` for some comments showing how to use the testing environment. 
+1. You can now play around with the contract's functions.
