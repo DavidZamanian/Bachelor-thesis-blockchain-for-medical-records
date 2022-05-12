@@ -76,11 +76,11 @@ module.exports = function (deployer, network, accounts) {
     // ==== ADDING PATIENTS ====
     // FORM: <account, id, permissioned_regions>
 
-    // region 1
+    // NO REGION
 
-    // doctors with accounts [1, 2] can access this one's EHR
+    // No doctor can access this one's EHR until permission is granted via the patient's user. 
     // mail: daddykane@gmail.com
-    await instance.addPatient(accounts[9], "9801011111", ["1"]);
+    await instance.addPatient(accounts[9], "9801011111", []);
     
     // region 2
     
