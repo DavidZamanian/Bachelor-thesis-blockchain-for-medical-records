@@ -3,7 +3,7 @@
  * @author Hampus Jenkrook
  */
 export default class CouldNotLoadRegionsError extends Error {
-    constructor(msg) {
-        super(msg);
-    }
+  constructor(msg) {
+    super(msg);
+  }
 }

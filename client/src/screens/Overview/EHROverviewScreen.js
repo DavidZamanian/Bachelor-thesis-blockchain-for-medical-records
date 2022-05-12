@@ -21,22 +21,18 @@ import { PlaceholderValues } from "../../placeholders/placeholderValues";
 import { UserDataContext } from "../../../contexts/UserDataContext";
 import EHRService from "../../Helpers/ehrService";
 import { ChainConnectionContext } from "../../../contexts/ChainConnectionContext";
-import CouldNotLoadPermittedRegionsError from "../../Helpers/Errors/couldNotLoadPermittedRegionsError";
-import CouldNotLoadRegionsError from "../../Helpers/Errors/couldNotLoadRegionsError";
 import ChainOperationDeniedError from "../../chainConnection/chainOperationDeniedError";
 import { AuthContext } from "../../../contexts/AuthContext";
-import FirebaseService from "../../Helpers/firebaseService";
 
 export function EHROverviewScreen(props) {
   const { updateEmail, updateAddress, updatePhoneNr } =
     React.useContext(SubmitContext);
 
   const { role, userSSN } = React.useContext(UserDataContext);
-  const route = useRoute();
   const navigation = useNavigation();
 
   const { chainConnection } = React.useContext(ChainConnectionContext);
-  const { logOut } = React.useContext(AuthContext); //TODO: remove if not usable here
+  const { logOut } = React.useContext(AuthContext);
 
   const [state, setState] = useState({
     doctorRole: role == "doctor",
@@ -69,7 +65,6 @@ export function EHROverviewScreen(props) {
   */
 
   const fetchPatientData = () => {
-    //alert("userSSN: "+userSSN+"\npatientID: "+state.patientID+"\npatientInfo.ID:"+state.patientInfo.id+"\nprops: "+props.route.params)
     if (
       (state.patientID != null && state.patientID == state.patientInfo.id) ||
       (state.doctorRole && props.route.params == state.patientInfo.id)
@@ -81,126 +76,78 @@ export function EHROverviewScreen(props) {
       "Patients/" + (state.doctorRole ? props.route.params : userSSN)
     );
 
-    try {
-      onValue(patientRef, async (snapshot) => {
-        if (snapshot.val() === null) {
-          alert(
-            "ERROR: This patient does not exist:" +
-              state.patientID +
-              "\n" +
-              patientRef
-          );
-        } else {
-          /*
-          // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND! //TODO REMOVE THIS COMMENT WHEN DONE
+    onValue(patientRef, async (snapshot) => {
+      if (snapshot.val() === null) {
+        alert(
+          "ERROR: This patient does not exist:" +
+            state.patientID +
+            "\n" +
+            patientRef
+        );
+      } else {
+        let ehr = await EHRService.getEHR(
+          state.doctorRole ? props.route.params : userSSN,
+          role,
+          false
+        );
 
-          // REPLACE ALL OF THESE WITH METHOD CALLS TO BACKEND!
+        const patientPrescriptions = ehr.prescriptions;
+        const patientDiagnoses = ehr.diagnoses;
+        const patientJournals = ehr.journals;
 
+        let journalIndexes = [];
+        patientJournals.forEach(() => journalIndexes.push(false));
 
-          let connection = await chainConnection;
-          let allRegions = await connection.getAllRegions();
-          //const allRegions = await EHRService.getRegions();
-          const patientPermittedRegions = await EHRService.getPatientRegions((state.doctorRole ? props.route.params : userSSN ))
-*/
+        // ========= Only fetch regions for patients ==========
+        if (!state.doctorRole) {
+          let msg = `Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`;
 
-          let ehr = await EHRService.getEHR(
-            state.doctorRole ? props.route.params : userSSN,
-            role,
-            false
-          );
+          // get all regions within the system
+          let allRegions = [];
 
-          const patientPrescriptions = ehr.prescriptions;
-          const patientDiagnoses = ehr.diagnoses;
-          const patientJournals = ehr.journals;
-
-          let journalIndexes = [];
-          patientJournals.forEach(() => journalIndexes.push(false));
-
-          // ========= Only fetch regions for patients ==========
-          // TODO: clean this mess up and divide into functions!!!
-          if (!state.doctorRole) {
-            // TODO ADD THIS TO A GOOD SPOT...
-            let msg = `Aborting login.\nTry to login anew.\nContact Customer Service if the issue remains.`;
-
-            // get all regions within the system
-            let allRegions = [];
-
-            try {
-              allRegions = await EHRService.getRegions();
-            } catch (err) {
-              alert(`FATAL: Failed to fetch list of regions.\n${msg}`);
-              console.error(err.message);
-              await logOut();
-              return;
-            }
-
-            // get the patient's id. May already be accessible but I could not see how /H.
-            // TODO: access in some other way if it is already possible. Else use this but clean up the comments.
-            const _patientId = state.doctorRole
-              ? JSON.stringify(props.route.params).substring(2, 12)
-              : userSSN;
-
-            // get the patient's permitted regions
-            let patientPermittedRegions;
-            try {
-              patientPermittedRegions = await EHRService.getPatientRegions(
-                _patientId
-              );
-            } catch (err) {
-              alert(`FATAL: Failed to load Permission Settings.\n${msg}`);
-              console.error(err.message);
-              await logOut();
-              return;
-            }
-
-            let regionIndexes = [];
-
-            allRegions.forEach((reg) => {
-              //console.log(reg)
-              regionIndexes.push({ id: reg[0], name: reg[1], enabled: false });
-            });
-            patientPermittedRegions.forEach(
-              (reg) => (regionIndexes.find((r) => r.id === reg).enabled = true)
-            );
-
-            // THIS IS HOW THE STATE WILL BE SET FOR PATIENTS
-            setState((prevState) => ({
-              ...prevState,
-              isLoading: false,
-              patientID: state.doctorRole ? props.route.params : userSSN,
-              journalExpanded: journalIndexes,
-              regions: [...regionIndexes],
-              regionSnapshot: [...regionIndexes],
-              patientInfo: {
-                id: state.doctorRole ? props.route.params : userSSN,
-                firstName: snapshot.val().firstName,
-                lastName: snapshot.val().lastName,
-                email: snapshot.val().email,
-                address: snapshot.val().address,
-                phoneNr: snapshot.val().phoneNr,
-                // getPrescriptions
-                // getDiagnoses
-                // getPermittedRegions
-                // getJournals
-                prescriptions: patientPrescriptions,
-                diagnoses: patientDiagnoses,
-                permittedRegions: patientPermittedRegions,
-                journals: patientJournals,
-              },
-            }));
+          try {
+            allRegions = await EHRService.getRegions();
+          } catch (err) {
+            alert(`FATAL: Failed to fetch list of regions.\n${msg}`);
+            console.error(err.message);
+            await logOut();
+            return;
           }
 
-          //console.log(regionIndexes)
+          const _patientId = state.doctorRole
+            ? JSON.stringify(props.route.params).substring(2, 12)
+            : userSSN;
 
-          // THIS IS HOW THE STATE WILL BE SET FOR DOCTOR'S
-          // TODO: clean this mess up and divide into functions!!!
+          // get the patient's permitted regions
+          let patientPermittedRegions;
+          try {
+            patientPermittedRegions = await EHRService.getPatientRegions(
+              _patientId
+            );
+          } catch (err) {
+            alert(`FATAL: Failed to load Permission Settings.\n${msg}`);
+            console.error(err.message);
+            await logOut();
+            return;
+          }
+
+          let regionIndexes = [];
+
+          allRegions.forEach((reg) => {
+            regionIndexes.push({ id: reg[0], name: reg[1], enabled: false });
+          });
+          patientPermittedRegions.forEach(
+            (reg) => (regionIndexes.find((r) => r.id === reg).enabled = true)
+          );
+
+          // THIS IS HOW THE STATE WILL BE SET FOR PATIENTS
           setState((prevState) => ({
             ...prevState,
             isLoading: false,
             patientID: state.doctorRole ? props.route.params : userSSN,
             journalExpanded: journalIndexes,
-            // regions: [...regionIndexes],
-            // regionSnapshot: [...regionIndexes],
+            regions: [...regionIndexes],
+            regionSnapshot: [...regionIndexes],
             patientInfo: {
               id: state.doctorRole ? props.route.params : userSSN,
               firstName: snapshot.val().firstName,
@@ -214,13 +161,39 @@ export function EHROverviewScreen(props) {
               // getJournals
               prescriptions: patientPrescriptions,
               diagnoses: patientDiagnoses,
-              // permittedRegions: patientPermittedRegions,
+              permittedRegions: patientPermittedRegions,
               journals: patientJournals,
             },
           }));
         }
-      });
-    } catch (err) {} //TODO REMOVE THIS TRY CATCH BLOCK??
+
+        // THIS IS HOW THE STATE WILL BE SET FOR DOCTORS
+        setState((prevState) => ({
+          ...prevState,
+          isLoading: false,
+          patientID: state.doctorRole ? props.route.params : userSSN,
+          journalExpanded: journalIndexes,
+          // regions: [...regionIndexes],
+          // regionSnapshot: [...regionIndexes],
+          patientInfo: {
+            id: state.doctorRole ? props.route.params : userSSN,
+            firstName: snapshot.val().firstName,
+            lastName: snapshot.val().lastName,
+            email: snapshot.val().email,
+            address: snapshot.val().address,
+            phoneNr: snapshot.val().phoneNr,
+            // getPrescriptions
+            // getDiagnoses
+            // getPermittedRegions
+            // getJournals
+            prescriptions: patientPrescriptions,
+            diagnoses: patientDiagnoses,
+            // permittedRegions: patientPermittedRegions,
+            journals: patientJournals,
+          },
+        }));
+      }
+    });
   };
 
   // To toggle editing of contact info

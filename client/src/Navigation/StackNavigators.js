@@ -9,23 +9,21 @@ import { UserDataContext } from "../../contexts/UserDataContext";
 
 const Stack = createStackNavigator();
 
-
-
 /**
  * Here we will put all the screens(pages) we have
  *
  * @author David Zamanian
  */
 
-//With development of new screen/page, place it on top off this navigator, it will
-//pop up after signing in (hopefully..) Also need to place <Header><Header/> on top of
-//every screen right now. Might come up with a better solution in the future.
 const StackNavigators = () => {
-
   const { role } = React.useContext(UserDataContext);
 
   return (
-    <Stack.Navigator initialRouteName={role == "doctor" ? "PatientSearchScreen" : "EHROverview"}>
+    <Stack.Navigator
+      initialRouteName={
+        role == "doctor" ? "PatientSearchScreen" : "EHROverview"
+      }
+    >
       <Stack.Screen
         options={{
           headerShown: false,
