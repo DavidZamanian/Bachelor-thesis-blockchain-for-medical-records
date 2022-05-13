@@ -227,7 +227,6 @@ export function EHROverviewScreen(props) {
     const regStrings = state.regions.map(function (item) {
       return item["id"] + " " + item["name"] + " " + item["enabled"] + "\n";
     });
-    alert(regStrings.toString());
 
     let newPermittedRegions = [];
     for (let region of state.regions) {
@@ -235,8 +234,6 @@ export function EHROverviewScreen(props) {
         newPermittedRegions.push(region["id"]);
       }
     }
-
-    alert(newPermittedRegions);
 
     try {
       const connection = await chainConnection;
