@@ -165,8 +165,6 @@ export default class EHRService {
       try {
         let patientEHR = await this.getEHR(patientID, "doctor", true);
 
-        console.table(patientEHR);
-
         prescriptions = prescriptions.concat(patientEHR.prescriptions);
         diagnoses = diagnoses.concat(patientEHR.diagnoses);
         finalFiles = finalFiles.concat(patientEHR.journals);

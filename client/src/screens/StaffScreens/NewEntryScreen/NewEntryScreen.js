@@ -164,11 +164,7 @@ export function NewEntryScreen(props) {
 
     let medicalPersonnel = await FirebaseService.getDoctorFullName(userSSN);
 
-    let healthcareInstitution = await FirebaseService.getInstitutionName(
-      institution
-    );
-
-    console.log(medicalPersonnel + institution + healthcareInstitution);
+    let healthcareInstitution = institution.name;
 
     try {
       let cid = await EHRService.packageAndUploadEHR(

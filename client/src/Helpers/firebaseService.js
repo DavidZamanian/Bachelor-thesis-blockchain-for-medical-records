@@ -131,29 +131,6 @@ export default class FirebaseService {
   }
 
   /**
-   * Fetches the name of the institution from Firebase.
-   * @param  {String} institution A valid id
-   * @returns {Promise<String>} The name of the institution
-   * @author Christopher Molin
-   */
-  static async getInstitutionName(institution) {
-    let dbRef = ref(database);
-    let institutionName = "";
-    await get(child(dbRef, "Institutions/" + institution))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          institutionName = snapshot.val().name;
-        } else {
-          throw "No data available";
-        }
-      })
-      .catch((error) => {
-        throw error;
-      });
-    return institutionName;
-  }
-
-  /**
    * Fetches the doctor's full name from Firebase.
    * @param  {String} doctorID A valid SSN
    * @returns {Promise<String>} Doctor's full name
