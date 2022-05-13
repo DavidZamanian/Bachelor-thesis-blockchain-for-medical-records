@@ -1,4 +1,36 @@
-# Firebase-Setup (feel free to re-position this)
+# Blockchain-for-medical-records
+
+## Application Features & Appearance
+These can be found over at our [Wiki](https://github.com/DavidZamanian/Bachelor-thesis-blockchain-for-medical-records/wiki)!
+
+## INSTALLATION:
+
+### Start by installing expo and NodeJS (automatically includes NPM in the installation) on your machine
+
+1. Install NodeJS: https://nodejs.org/en/
+
+`cd` to the root folder of the project
+
+2. Install expo: `npm install --global expo-cli` (Need to install NodeJS first)
+3. run `npm install` (or `npm i` for short)
+
+### Installing truffle
+Run `npm install -g truffle` in your terminal. 
+
+### Installing and setting up Ganache
+1. Download Ganache as described here: https://trufflesuite.com/docs/ganache/quickstart.html 
+1. Launch Ganache
+1. Create a new workspace. Name it whatever you wish. Before saving the workspace, be sure to go to `SERVER` and change `PORT NUMBER` to 8545. Also go to `ACCOUNTS & KEYS` and set the default number of Ether per account superhigh, if you wish to be sure that you will never run out of gas. 
+
+### Installing Metamask
+1. Have either Chrome or Firefox installed. Use either as your platform for running the website. 
+1. In your browser, install Metamask either in Chrome: https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn or in Firefox: https://addons.mozilla.org/sv-SE/firefox/addon/ether-metamask/.
+1. Go through the Metamask setup steps. Select `IMPORT WALLET` and input the 12-word string displayed right above your accounts in Ganache. 
+1. Once Metamask is setup, go to Setting > Advanced, and enable `Show test networks`. Then select `Localhost 8545` as the network to connect to. 
+1. Account 1 in Metamask will already be initialized to Account 0 from Ganache. Add more accounts by clicking on your profile pic > import account, and then paste in the private key of the account you wish to import from Ganache. You find the private key by clicking the key to the far right in Ganache's Account overview. 
+You should add all 10 accounts in Ganache to your metamask. Account $i$ will correspond to accounts[$i-1$] (i.e. the account in Ganache with index $i-1$).
+
+### Firebase-Setup
 
 1. Go to [Firebase](https://console.firebase.google.com) and create a project. _The name is irrelevant._
 2. Go to the Authentication tab and add the following accounts:
@@ -19,50 +51,12 @@
 (Remember to publish/save these changes)
 8. Download [The exported Firebase Database](https://github.com/DavidZamanian/Bachelor-thesis-blockchain-for-medical-records/wiki/Firebase-Database-Export)
 9. **NOTE** This JSON-file contains UIDs that are not present in your Firebase Database. Because of this, you will have to replace old references with the new ones that you find on the Authentication tab. **These are marked with the text: !!!!!{THEIR NAME}!!!!!** for your convenience.
-10. After replacing, go to the data tab, press the 3 dots to the right, press "Import JSON" and select the file you just edited.
-11. Now, go to your project settings and add a web app via `https://console.firebase.google.com/u/0/project/[YOURPROJECTNAME]/settings/general`.
-12. Then, partially copy the SDK-code that is shown, namely: `firebaseConfig`
-13. Now, clone the repo and in the file `client/firebaseSetup.js`, replace `firebaseConfig` with the one you copied.
-14. This concludes the Firebase setup.
-
-
-
-# Blockchain-for-medical-records
-
-## Application Features & Appearance
-These can be found over at our [Wiki](https://github.com/DavidZamanian/Bachelor-thesis-blockchain-for-medical-records/wiki)!
-
-## INSTALLATION:
-
-### Start by installing expo and NodeJS (automatically includes NPM in the installation) on your machine
-
-1. Install NodeJS: https://nodejs.org/en/
-
-`cd` to the root folder of the project
-
-2. Install expo: `npm install --global expo-cli` (Need to install NodeJS first)
-3. run `npm install` (or `npm i` for short)
-
-
-### Setting up the server:
-
-Install express server with: `npm i express`
-
-### Installing truffle
-Run `npm install -g truffle` in your terminal. 
-
-### Installing and setting up Ganache
-1. Download Ganache as described here: https://trufflesuite.com/docs/ganache/quickstart.html 
-1. Launch Ganache
-1. Create a new workspace. Name it whatever you wish. Before saving the workspace, be sure to go to `SERVER` and change `PORT NUMBER` to 8545. Also go to `ACCOUNTS & KEYS` and set the default number of Ether per account superhigh, if you wish to be sure that you will never run out of gas. 
-
-### Installing Metamask
-1. Have either Chrome or Firefox installed. Use either as your platform for running the website. 
-1. In your browser, install Metamask either in Chrome: https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn or in Firefox: https://addons.mozilla.org/sv-SE/firefox/addon/ether-metamask/.
-1. Go through the Metamask setup steps. Select `IMPORT WALLET` and input the 12-word string displayed right above your accounts in Ganache. 
-1. Once Metamask is setup, go to Setting > Advanced, and enable `Show test networks`. Then select `Localhost 8545` as the network to connect to. 
-1. Account 1 in Metamask will already be initialized to Account 0 from Ganache. Add more accounts by clicking on your profile pic > import account, and then paste in the private key of the account you wish to import from Ganache. You find the private key by clicking the key to the far right in Ganache's Account overview. 
-You should add all 10 accounts in Ganache to your metamask. Account $i$ will correspond to accounts[$i-1$] (i.e. the account in Ganache with index $i-1$).
+10. **ALSO** You need to paste your Web3.Storage API-token in the JSON-file, at the appropriate spot (look for `Web3` and you'll find it). 
+11. After replacing, go to the data tab, press the 3 dots to the right, press "Import JSON" and select the file you just edited.
+12. Now, go to your project settings and add a web app via `https://console.firebase.google.com/u/0/project/[YOURPROJECTNAME]/settings/general`.
+13. Then, partially copy the SDK-code that is shown, namely: `firebaseConfig`
+14. Now, clone the repo and in the file `client/firebaseSetup.js`, replace `firebaseConfig` with the one you copied.
+15. This concludes the Firebase setup.
 
 ## RUNNING THE APPLICATION
 
