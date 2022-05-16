@@ -6,7 +6,6 @@ const MainStack = createStackNavigator();
 
 export function MainStackNavigator() {
   /**
-   * This might not be needed but let it stay for now
    *
    * @author David Zamanian
    */

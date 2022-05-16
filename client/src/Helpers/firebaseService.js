@@ -96,7 +96,6 @@ export default class FirebaseService {
         if (snapshot.exists()) {
           encDoctorRecordKey = snapshot.val();
         } else {
-          //Maybe do something else here
           throw "Doctor does not have permission to view this patient's records";
         }
       })
@@ -122,8 +121,6 @@ export default class FirebaseService {
         if (snapshot.exists()) {
           encPatientRecordKey = snapshot.val();
         } else {
-          //Maybe do something else here
-          console.error("GetPatientRecordKey Error: " + auth.currentUser.uid);
           throw "Something went wrong";
         }
       })
@@ -131,30 +128,6 @@ export default class FirebaseService {
         throw error;
       });
     return encPatientRecordKey;
-  }
-
-  /**
-   * Fetches the name of the institution from Firebase.
-   * @param  {String} institution A valid id
-   * @returns {Promise<String>} The name of the institution
-   * @author Christopher Molin
-   */
-  static async getInstitutionName(institution) {
-    // kommer ersättas av metod i chainconnection
-    let dbRef = ref(database);
-    let institutionName = "";
-    await get(child(dbRef, "Institutions/" + institution))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          institutionName = snapshot.val().name;
-        } else {
-          throw "No data available";
-        }
-      })
-      .catch((error) => {
-        throw error;
-      });
-    return institutionName;
   }
 
   /**
@@ -278,14 +251,11 @@ export default class FirebaseService {
    */
   static async createRecordKeyForDoctorSSN(doctorUID, patientRecordKey) {
     let doctorPubKey = await this.getPublicKeyWithUID(doctorUID);
-    console.log("Get DoctorPublicKey: " + doctorPubKey);
 
     let newEncryptedRecordKey = await crypt.encryptRecordKey(
       patientRecordKey,
       doctorPubKey
     );
-
-    console.log("new encrypted patient recordKey: " + newEncryptedRecordKey);
 
     return newEncryptedRecordKey;
   }
@@ -309,29 +279,20 @@ export default class FirebaseService {
 
     p.map((item) => permitted.add(item));
 
-    console.log("permittedRegions: " + p);
-    console.log("permittedRegions: " + Array.from(permitted));
-
     //The new permitted regions
     let newPermitted = new Set(newPermittedRegions);
-    console.log("newPermitted: " + Array.from(newPermitted));
     //The common regions between permitted and newPermitted. Basically A intersect B
     let permitted_intersect_newPermitted = new Set(
       [...permitted].filter((x) => newPermitted.has(x))
-    );
-    console.log(
-      "intersection: " + Array.from(permitted_intersect_newPermitted)
     );
     //All the deleted regions (from permitted). Basically A - (A intersect B)
     let deletedRegions = new Set(
       [...permitted].filter((x) => !permitted_intersect_newPermitted.has(x))
     );
-    console.log("deleted regions: " + Array.from(deletedRegions));
     //All the new regions that was added. Basically B - (A intersect B)
     let addedRegions = new Set(
       [...newPermitted].filter((x) => !permitted_intersect_newPermitted.has(x))
     );
-    console.log("addedRegions: " + Array.from(addedRegions));
 
     //Make array of all the added doctors
     let addedDoctors = [""];
@@ -379,20 +340,14 @@ export default class FirebaseService {
     let connection = await EHRService.chainConnection;
     let doctors = [];
 
-    console.log("setOfRegions: " + Array.from(setOfRegions));
-
     for (let regionID of setOfRegions) {
       let results = await connection.getRegionPersonnel(regionID);
-
-      console.log(results);
 
       if (results.length > 0) {
         doctors = doctors.concat(results);
       }
     }
 
-    console.log("Doctors:");
-    console.table(doctors);
     return doctors;
   }
 }

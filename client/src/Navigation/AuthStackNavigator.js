@@ -8,8 +8,7 @@ const AuthStack = createStackNavigator();
 const LoginStack = createStackNavigator();
 
 /**
- * The authentication stack. Need to think about how we split up patient and doctors,
- * might need one more AuthStack to separate.
+ * The authentication and miscellaneous stack.
  *
  * @author David Zamanian
  */

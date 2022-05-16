@@ -21,26 +21,24 @@ async function encryptPrivateKey(privateKey, symmetricKey) {
   let encryptedPrivateKey = cipher.update(Buffer.from(privateKey, "utf8"));
   encryptedPrivateKey = Buffer.concat([encryptedPrivateKey, cipher.final()]);
 
-  //console.log("IV: " + iv.toString("base64"));
-  //console.log("EncryptedPrivateKey: " + encryptedPrivateKey.toString("hex"));
   return {
     iv: iv.toString("base64"),
     encryptedData: encryptedPrivateKey.toString("hex"),
   };
 }
 
-/** Not done yet. This will be called everytime user logs in to get the privateKey.
+/** This will be called everytime user logs in to get the privateKey.
  *
  * @param {*} encryptedPrivateKeyAndIV Get this from the database
  * @param {*} symmetricKey This is derived from the passward and salt of the signed in user
  * @returns
  */
 async function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
-  let iv = Buffer.from(encryptedPrivateKeyAndIV.iv, "base64"); //slice(0, 44); //Need to find the end of the IV (30 is not correct i dont think)
+  let iv = Buffer.from(encryptedPrivateKeyAndIV.iv, "base64");
   let encryptedPrivateKey = Buffer.from(
     encryptedPrivateKeyAndIV.encryptedData,
     "hex"
-  ); //.slice(44);
+  );
 
   let decipher = crypto.createDecipheriv(
     algorithm,
@@ -48,11 +46,9 @@ async function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
     iv
   );
 
-  // Updating encrypted text
   let decryptedKey = decipher.update(encryptedPrivateKey);
-  //decryptedKey = Buffer.concat([decryptedKey, decipher.final()]);
 
-  return decryptedKey; //.toString("base64");
+  return decryptedKey;
 }
 
 /**
@@ -62,7 +58,6 @@ async function decryptPrivateKey(encryptedPrivateKeyAndIV, symmetricKey) {
  * @returns {Promise<{iv: string, Tag: Buffer, encryptedData: string}>} The IV for the encryption and the encrypted EHR.
  */
 async function encryptEHR(decryptedRecordKey, EHR) {
-  //const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
   const iv = crypto.randomBytes(32);
 
   let cipher = crypto.createCipheriv(
@@ -88,8 +83,6 @@ async function encryptEHR(decryptedRecordKey, EHR) {
  * @returns {Promise<string>} The decrypted EHR in string.
  */
 async function decryptEHR(decryptedRecordKey, EHR) {
-  //const decryptedRecordKey = decryptRecordKey(recordKey, privateKey);
-
   let iv = Buffer.from(EHR.iv, "base64");
   let encryptedEHR = Buffer.from(EHR.encryptedData, "hex");
 
@@ -100,11 +93,9 @@ async function decryptEHR(decryptedRecordKey, EHR) {
   );
   decipher.setAuthTag(EHR.Tag);
 
-  // Updating encrypted text
   let decryptedEHR = decipher.update(encryptedEHR);
   decryptedEHR = Buffer.concat([decryptedEHR, decipher.final()]);
 
-  // returns data after decryption
   return decryptedEHR.toString();
 }
 
@@ -125,17 +116,11 @@ async function encryptRecordKey(recordKey, publicKey) {
 
 /**
  * Decrypts the record key using asymmetric encryption.
- * // Creating a function to decrypt string
  * @param {string} recordKey Encrypted record key.
  * @param {string} privateKey A users private key.
  * @returns {Promise<string>} The decrypted record key.
  */
 async function decryptRecordKey(recordKey, privateKey) {
-  //const privateKey = fs.readFileSync(privateKeyFile, "utf8");
-  // privateDecrypt() method with its parameters
-
-  // console.log("!!!!!PrivateKEy; " + privateKey);
-
   const decrypted = crypto.privateDecrypt(
     privateKey,
     Buffer.from(recordKey, "base64")
@@ -155,18 +140,18 @@ async function decryptRecordKey(recordKey, privateKey) {
 async function derivePrivateKeyFromPassword(password, salt) {
   var hexKey;
 
-  var iterations = 1000;
-  var outputBitLen = 16; // this could be wrong
-  var digest = "sha512"; // this could be wrong
+  var iterations = 1000; //Should be longer in a real world implementation
+  var outputBitLen = 16;
+  var digest = "sha512";
 
   hexKey = crypto.pbkdf2Sync(password, salt, iterations, outputBitLen, digest);
 
-  return hexKey.toString("hex"); // MUST be HEX format!
+  return hexKey.toString("hex");
 }
 
 /**
  * Takes a string and hashes it using sha256 algorithm.
- * @param {String} the string to hash 
+ * @param {String} the string to hash
  * @returns {Promise<String>} Hashed string in hex format.
  */
 async function hashString(string) {
@@ -174,28 +159,6 @@ async function hashString(string) {
   hash.update(string);
   return hash.digest("hex");
 }
-
-/** This will not be needed anymore
- *
- * Creates a publicKey from a given privateKey
- * @param {string} privateKey The privateKey that has originally been derived from the user's password
- * @returns {Promise<string>} The publicKey that has been extracted
- */
-/*
-function extractPublicKeyFromPrivateKey(privateKey) {
-  const pubKeyObject = crypto.createPublicKey({
-    key: privateKey,
-    format: "pem",
-  });
-
-  const publicKey = pubKeyObject.export({
-    format: "pem",
-    type: "spki",
-  });
-
-  return publicKey.toString("base64");
-}
-*/
 
 module.exports = {
   encryptRecordKey,

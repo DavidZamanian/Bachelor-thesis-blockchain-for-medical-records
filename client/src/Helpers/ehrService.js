@@ -1,14 +1,7 @@
 import EhrEntry from "./ehrEntry";
-import CreateFileObjectError from "./Errors/createFileObjectError";
-import fetchFileContentError from "./Errors/FetchFileContentError";
-import UploadFileError from "./Errors/uploadFileError";
 import FileService from "./fileService";
 import { database, ref, get, child } from "../../firebaseSetup";
-import FetchFileContentError from "./Errors/FetchFileContentError";
-import { PlaceholderValues } from "../placeholders/placeholderValues";
 import * as crypt from "../../Crypto/crypt";
-import { getAuth } from "@firebase/auth";
-import crypto, { createPrivateKey } from "crypto";
 import ChainOperationDeniedError from "../chainConnection/chainOperationDeniedError";
 import ChainConnectionFactory from "../chainConnection/chainConnectionFactory";
 import CouldNotLoadPermittedRegionsError from "./Errors/couldNotLoadPermittedRegionsError";
@@ -57,14 +50,6 @@ export default class EHRService {
     this.setPublicKey(pubKey);
 
     this.setPrivateKey(privKey);
-
-    console.warn(this.privateKey);
-    console.warn(this.publicKey);
-
-    console.log(
-      "Password:" + password + "\nSalt:" + salt + "\nSymmetric:" + symmetricKey
-    );
-    console.log("Private:" + privKey + "\nPublic:" + pubKey);
   }
 
   /**
@@ -177,12 +162,8 @@ export default class EHRService {
         diagnoses
       );
 
-      console.log("Attempting Fetch");
-
       try {
         let patientEHR = await this.getEHR(patientID, "doctor", true);
-
-        console.table(patientEHR);
 
         prescriptions = prescriptions.concat(patientEHR.prescriptions);
         diagnoses = diagnoses.concat(patientEHR.diagnoses);
@@ -207,26 +188,7 @@ export default class EHRService {
       try {
         let newCID = await fs.uploadFiles(finalFiles);
 
-        console.log(newCID);
-
         await connection.updateEHR(patientID, newCID);
-
-        // TESTING ONLY
-        // Testing if the cid and the files were uploaded
-        console.log(
-          "TESTING UPLOAD, (THIS IS WHAT WAS SUBMITTED + THE OLD EHR):\n" +
-            `https://${newCID}.ipfs.dweb.link/`
-        );
-        for (const file of finalFiles) {
-          console.log(
-            file.name + ": " + (await file.text()).toString("base64")
-          );
-        }
-
-        // DEBUG
-        let checkCID = await connection.getEHRCid(patientID);
-        console.debug("Expected: " + newCID + "\nActual: " + checkCID);
-        // END OF DEBUG
       } catch (e) {
         console.log("Error when uploading" + e.message);
       }
@@ -261,7 +223,6 @@ export default class EHRService {
       await FirebaseService.getDoctorsWithRecordKeys();
 
     if (doctorsWithRecordKeys.length > 0 && removedDoctors.length > 0) {
-      console.log("removedDoctors: " + removedDoctors + " Time: " + Date.now());
       //Go over every item in removedDoctors and remove the respective recordKey from the database
       for (let doctorSSN of removedDoctors) {
         let doctorUID = await FirebaseService.getUIDFromSSN(doctorSSN);
@@ -277,28 +238,15 @@ export default class EHRService {
                 fireBasedoctorUID
               );
 
-            console.log(
-              "DoctorUID: " +
-                doctorUID +
-                "\nfireBaseDoctorUID: " +
-                fireBasedoctorUID +
-                "\nindex: " +
-                listOfUserRecordKeys.indexOf(patientID)
-            );
-
             if (
               doctorUID == fireBasedoctorUID &&
               listOfUserRecordKeys.indexOf(patientID) > -1
             ) {
-              //This runs before removeDoctors is fully updated (works if you change one or few permissions at a time but too many and it is not updated)
-              //TODO    Add check here for the patient SSN!!!!!!
-
               await FirebaseService.updateDoctorRecordKey(
                 doctorUID,
                 patientID,
                 null
               );
-              console.log("Doctor " + doctorUID + " removed");
             }
           }
         }
@@ -306,25 +254,17 @@ export default class EHRService {
     }
 
     if (addedDoctors.length > 0) {
-      // this is "static", no need to call it over and over again, simply call it once here
       let encryptedPatientRecordKey =
         await FirebaseService.getPatientRecordKey();
-
-      console.log("Got patient recordKey: " + encryptedPatientRecordKey);
 
       let patientRecordKey = await crypt.decryptRecordKey(
         encryptedPatientRecordKey,
         EHRService.privateKey
       );
-      console.log(
-        "decrypted patient recordKey: " + patientRecordKey.toString("base64")
-      );
-      // All of this is only needed once, so this was moved out
 
       //Go through all added doctors and add recordKeys for all of them
       for (let doctorSSN of addedDoctors) {
         let doctorUID = await FirebaseService.getUIDFromSSN(doctorSSN);
-        console.log("Found UID: " + doctorUID);
 
         let newEncryptedRecordKey =
           await FirebaseService.createRecordKeyForDoctorSSN(
@@ -523,12 +463,8 @@ export default class EHRService {
       Tag: tagBuffer,
     };
 
-    console.table(EHR);
-
     let decryptedData = await crypt.decryptEHR(decryptedRecordKey, EHR);
 
-    console.log("DECRYPTED DATA:");
-    console.log(decryptedData);
     return decryptedData;
   }
 
@@ -605,9 +541,6 @@ export default class EHRService {
     let encryptedRecordKey = await FirebaseService.getDoctorRecordKey(
       patientID
     );
-
-    console.warn("Encrypted decryptedRecordKey: " + encryptedRecordKey);
-    console.warn("PrivateKey: " + this.privateKey);
 
     let decryptedRecordKey = await crypt.decryptRecordKey(
       encryptedRecordKey,
